@@ -7,10 +7,5 @@ build
 # Ignore optional Gradle file
 gradle/
 
-# Ignore specific Eclipse file
-.classpath
-.project
-.settings/
-
 # Ignore Java output
 bin/
