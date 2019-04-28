@@ -29,6 +29,8 @@ dependencies {
     // Use JUnit test framework
     testImplementation 'junit:junit:4.12'
     
+    compile group: 'org.reflections', name: 'reflections', version: '0.9.11'
+    
     implementation 'com.discord4j:discord4j-core:3.0.2'
 }
 

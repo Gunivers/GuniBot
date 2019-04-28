@@ -1,10 +1,13 @@
 package net.gunivers.gunibot;
 
+import java.util.Optional;
+
 import discord4j.core.DiscordClient;
 import discord4j.core.event.EventDispatcher;
 import discord4j.core.event.domain.guild.GuildCreateEvent;
 import discord4j.core.event.domain.lifecycle.ReadyEvent;
 import discord4j.core.event.domain.message.MessageCreateEvent;
+import net.gunivers.gunibot.commands.Command;
 
 public class Listener {
 
@@ -27,7 +30,9 @@ public class Listener {
 		});
 
 		dispatcher.on(MessageCreateEvent.class).subscribe(event -> {
-			//code à éxécuter lorsque le bot reçoit un message
+			Optional<String> msg = event.getMessage().getContent();
+			if(msg.isPresent() && msg.get().startsWith(Command.PREFIX));
+				
 		});
 	}
 
