@@ -21,7 +21,8 @@ public abstract class Command {
 		 Set<Class<? extends Command>> allCommands = reflections.getSubTypesOf(Command.class);
 		 allCommands.forEach(cmd -> {
 			try {
-				commands.add(cmd.newInstance());
+				if(!cmd.isAnnotationPresent(Ignore.class))
+					commands.add(cmd.newInstance());
 			} catch (InstantiationException | IllegalAccessException e) {
 				e.printStackTrace();
 			}
