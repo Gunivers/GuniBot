@@ -18,7 +18,7 @@ plugins {
 }
 
 compileJava.options.encoding = "UTF-8"
-eclipse.classpath.defaultOutputDir = "bin"
+eclipse.classpath.defaultOutputDir = file("bin")
 
 repositories {
     // Use jcenter for resolving your dependencies.
