@@ -1,0 +1,16 @@
+{
+	"backup":
+	{
+		"description":"Enable backups for your discord server",
+		"permissions": ["server.owner"],
+		"execute": "backup",
+		"arguments":
+		[
+			{
+				"type": "string",
+				"matches": ".[^\"/ ]+|\".[^\"/]+\"",
+				"execute": "backup.named"	
+			}
+		]
+	}
+}
