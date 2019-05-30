@@ -4,11 +4,14 @@ import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
 import discord4j.core.DiscordClient;
+import discord4j.core.event.EventDispatcher;
 import discord4j.core.event.domain.lifecycle.ReadyEvent;
+import discord4j.core.event.domain.message.MessageCreateEvent;
 import discord4j.core.object.entity.Guild;
 import discord4j.core.object.presence.Activity;
 import discord4j.core.object.presence.Presence;
 import discord4j.core.object.util.Snowflake;
+import net.gunivers.gunibot.commands.lib.Command;
 
 /**
  * Centre de contrôle des données du bot
@@ -33,6 +36,25 @@ public class DataCenter {
 		dataGuilds = new ConcurrentHashMap<>();
 
 		//TODO disable:sql = new SQLClient();
+
+		registerEvents();
+	}
+
+	/**
+	 * Enregistre tout les évènements nécessaire après l'initialisation du DataCenter
+	 */
+	private void registerEvents() {
+		EventDispatcher dispatcher = botClient.getEventDispatcher();
+
+		dispatcher.on(MessageCreateEvent.class).subscribe(event -> {
+			Optional<String> msg = event.getMessage().getContent();
+			if(msg.isPresent() && msg.get().startsWith(Command.PREFIX)) {
+				String[] cmd = msg.get().substring(Command.PREFIX.length()).split(" ");
+				Command command = Command.commands.get(Command.commands.keySet().stream().filter(x -> x.contains(cmd[0])).findFirst().orElse(null));
+				if(command != null)
+					command.apply(cmd);
+			}
+		});
 	}
 
 	/**
