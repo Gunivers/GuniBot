@@ -9,3 +9,4 @@ gradle/
 
 # Ignore Java output
 bin/
+/bin-default/

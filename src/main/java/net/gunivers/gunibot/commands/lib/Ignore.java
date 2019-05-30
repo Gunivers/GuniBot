@@ -1,4 +1,4 @@
-package net.gunivers.gunibot.commands;
+package net.gunivers.gunibot.commands.lib;
 
 import static java.lang.annotation.ElementType.TYPE;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;

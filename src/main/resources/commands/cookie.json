@@ -1,0 +1,28 @@
+{
+	"cookie": 
+	{
+		"description": "Allow to give a number of cookies at a user",
+		"permissions": ["write", "read"],
+		"arguments": 
+		[
+			{
+				"type": "integer",
+				"matches": "0..150",
+				"arguments": 
+				[
+					{
+						"type": "alias",
+						"matches": "user",
+						"execute": "giveCookie"
+					},
+
+					{
+						"type": "string",
+						"matches": "user",
+						"execute": "giveCookieAll"
+					}
+				]
+			}
+		]
+	}
+}
