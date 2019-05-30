@@ -19,7 +19,7 @@ import net.gunivers.gunibot.commands.CookieCommand;
 import net.gunivers.gunibot.utils.tuple.Tuple;
 import net.gunivers.gunibot.utils.tuple.Tuple2;
 
-public class CommandSyntaxParser {
+public class CommandParser {
 
 	public static void main(String... args) {
 		createTree(new CookieCommand());
@@ -92,6 +92,7 @@ public class CommandSyntaxParser {
 		Node n = null;
 		String type = "";
 		String matches = "";
+		boolean keepValue = false;
 		Method execute = null;
 		JSONArray args = null;
 		
@@ -118,13 +119,20 @@ public class CommandSyntaxParser {
 				args = obj.getJSONArray("arguments");
 				nbrKeysCount++; 
 			}
+			if(obj.has("keep_value")) {
+				keepValue = obj.getBoolean("keep_value");
+				nbrKeysCount++; 
+			}
 			if(obj.has("execute")) {
 				String methodName = obj.getString("execute");
-				try {
-					execute = c.getClass().getMethod(methodName);
-				} catch(NoSuchMethodException e) {
+					Method[] methods = c.getClass().getMethods();
+					for(Method method : methods)
+						if(method.getName().equals(methodName)) {
+							execute = method;
+							break;
+						}
+				if(execute == null)
 					throw new JsonCommandFormatException("La fonction " + methodName + " n'existe pas dans la classe " + c.getClass().getSimpleName());
-				}
 				nbrKeysCount++; 
 			}
 			if(nbrKeysCount != nbrKeys)
@@ -132,6 +140,7 @@ public class CommandSyntaxParser {
 			
 			n = createNodeByType(type, matches);
 			n.setExecute(execute);
+			n.setKeepValue(keepValue);
 			if(args != null)
 				n.setChild(parseArguments(args, c));
 			return n;

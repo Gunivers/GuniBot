@@ -8,17 +8,18 @@
 			{
 				"type": "integer",
 				"matches": "0..150",
+				"keep_value": true,
 				"arguments": 
 				[
 					{
-						"type": "alias",
-						"matches": "user",
+						"type": "string",
+						"matches": "theo",
 						"execute": "giveCookie"
 					},
 
 					{
 						"type": "string",
-						"matches": "user",
+						"matches": "leirof",
 						"execute": "giveCookieAll"
 					}
 				]

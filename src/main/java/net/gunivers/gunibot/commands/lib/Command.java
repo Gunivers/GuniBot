@@ -1,12 +1,17 @@
 package net.gunivers.gunibot.commands.lib;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.reflections.Reflections;
+
+import net.gunivers.gunibot.utils.tuple.Tuple2;
 
 public abstract class Command {
 	
@@ -45,6 +50,22 @@ public abstract class Command {
 	public void setSyntax(Node n) {
 		syntax = n;
 	}
+	
+	public void apply(String[] command) {
+		Tuple2<Tuple2<List<String>, Method>, CommandSyntaxError> result = syntax.matches(command);
+		if(result._1 != null) {
+			try {
+				if(result._1._1 != null)
+				result._1._2.invoke(this, result._1._1);
+				else
+					result._1._2.invoke(this);
+			} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
+				e.printStackTrace();
+			}
+		} else {
+			System.out.println("Une erreur a été détectée ici : " + result._2.getPath().stream().collect(Collectors.joining(" ")));
+		}
+	}
 
 	public abstract String getSyntaxFile();
 	
@@ -58,7 +79,7 @@ public abstract class Command {
 			try {
 				if(!cmd.isAnnotationPresent(Ignore.class)) {
 					Command c = cmd.newInstance();
-					List<String> aliases = CommandSyntaxParser.createTree(c);
+					List<String> aliases = CommandParser.createTree(c);
 					commands.put(aliases, c);
 				}
 			} catch (InstantiationException | IllegalAccessException e) {
