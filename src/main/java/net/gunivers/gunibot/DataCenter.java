@@ -24,7 +24,7 @@ public class DataCenter {
 	 */
 	private ConcurrentHashMap<Snowflake, DataGuild> dataGuilds;
 
-	private SQLClient sql;
+	//TODO disable:private SQLClient sql;
 
 	public DataCenter(ReadyEvent event) {
 		botClient = event.getClient();
@@ -32,7 +32,7 @@ public class DataCenter {
 
 		dataGuilds = new ConcurrentHashMap<>();
 
-		sql = new SQLClient();
+		//TODO disable:sql = new SQLClient();
 	}
 
 	/**
@@ -89,11 +89,12 @@ public class DataCenter {
 	}
 
 	private boolean hasRegisteredData(Guild guild) {
-		return sql.hasGuildData(guild.getId().asLong());
+		//TODO disable:return sql.hasGuildData(guild.getId().asLong());
+		return false;
 	}
 
 	private void removeRegisteredData(Guild guild) {
-		sql.removeGuildData(guild.getId().asLong());
+		//TODO disable:sql.removeGuildData(guild.getId().asLong());
 	}
 
 }
