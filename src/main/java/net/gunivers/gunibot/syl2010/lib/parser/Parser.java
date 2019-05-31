@@ -481,7 +481,7 @@ public class Parser {
 
 		} else if (entity_flux.any(entity -> entity instanceof User).block()) {
 			type_unknown = "Utilisateur inconnu !";
-			type_multiple = "Plusieurs serveurs ont le même nom, veuillez utilisez l'ID de l'utilisateur ou une mention à la place de son nom !";
+			type_multiple = "Plusieurs utilisateurs ont le même nom, veuillez utilisez l'ID de l'utilisateur ou une mention à la place de son nom !";
 
 		} else if (entity_flux.any(entity -> entity instanceof Category).block()) {
 			type_unknown = "Catégorie inconnue !";

@@ -20,7 +20,7 @@ dependencies
 {	
     implementation "org.json:json:$version_json"
 	implementation 'com.google.guava:guava:26.0-jre'
-	implementation 'com.discord4j:discord4j-core:3.0.2'
+	implementation 'com.discord4j:discord4j-core:3.0.6'
 	
 	testImplementation 'junit:junit:4.12'
 	compile group: 'org.reflections', name: 'reflections', version: '0.9.11'
