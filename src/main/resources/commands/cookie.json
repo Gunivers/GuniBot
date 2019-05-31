@@ -3,11 +3,13 @@
 	{
 		"description": "Allow to give a number of cookies at a user",
 		"permissions": ["write", "read"],
+		"aliases": ["🍪"],
 		"arguments": 
 		[
 			{
 				"type": "integer",
 				"matches": "0..150",
+				"execute": "giveCookieAll",
 				"keep_value": true,
 				"arguments": 
 				[
@@ -20,7 +22,7 @@
 					{
 						"type": "string",
 						"matches": "leirof",
-						"execute": "giveCookieAll"
+						"execute": "giveCookieLeirof"
 					}
 				]
 			}

@@ -1,4 +1,4 @@
-package net.gunivers.gunibot.commands.lib;
+package net.gunivers.gunibot.command.lib;
 
 import java.util.Arrays;
 import java.util.LinkedList;

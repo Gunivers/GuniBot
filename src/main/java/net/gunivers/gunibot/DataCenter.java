@@ -11,7 +11,7 @@ import discord4j.core.object.entity.Guild;
 import discord4j.core.object.presence.Activity;
 import discord4j.core.object.presence.Presence;
 import discord4j.core.object.util.Snowflake;
-import net.gunivers.gunibot.commands.lib.Command;
+import net.gunivers.gunibot.command.lib.Command;
 
 /**
  * Centre de contrôle des données du bot
@@ -52,7 +52,7 @@ public class DataCenter {
 				String[] cmd = msg.get().substring(Command.PREFIX.length()).split(" ");
 				Command command = Command.commands.get(Command.commands.keySet().stream().filter(x -> x.contains(cmd[0])).findFirst().orElse(null));
 				if(command != null)
-					command.apply(cmd);
+					command.apply(cmd, event);
 			}
 		});
 	}

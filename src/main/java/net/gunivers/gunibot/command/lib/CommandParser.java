@@ -1,10 +1,6 @@
-package net.gunivers.gunibot.commands.lib;
+package net.gunivers.gunibot.command.lib;
 
 import java.lang.reflect.Method;
-import java.net.URI;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.regex.Pattern;
@@ -15,27 +11,29 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import net.gunivers.gunibot.commands.CookieCommand;
+import net.gunivers.gunibot.command.commands.CookieCommand;
 import net.gunivers.gunibot.utils.tuple.Tuple;
 import net.gunivers.gunibot.utils.tuple.Tuple2;
 
 public class CommandParser {
 
 	public static void main(String... args) {
-		createTree(new CookieCommand());
+		parseCommand(new CookieCommand());
 	}
 
-	public static List<String> createTree(Command c) {
+	/**
+	 * Parse la syntaxe d'une commande
+	 * @param c la commande dont la syntaxe doit être parsée
+	 * @return la liste des alias de la commande
+	 */
+	public static Node parseCommand(Command c) {
 		try {
-		URI uri = ClassLoader.getSystemResource("commands/").toURI();
-		String mainPath = Paths.get(uri).toString();
-		Path path = Paths.get(mainPath, c.getSyntaxFile());
-		String s = Files.readAllLines(path).stream().collect(Collectors.joining("\n"));
-		JSONObject obj = new JSONObject(s);
-		Node n = parseRoot(obj, c);
-		c.setSyntax(n);
-		return ((NodeRoot)n).getAliases();
-		} catch(Exception e) {
+			String s = Utils.getResourceFileContent("commands/", c.getSyntaxFile());
+			JSONObject obj = new JSONObject(s);
+			Node n = parseRoot(obj, c);
+			c.setSyntax(n);
+			return n;
+		} catch (Exception e) {
 			e.printStackTrace();
 			return null;
 		}
@@ -81,7 +79,7 @@ public class CommandParser {
 		throw new JsonCommandFormatException("En-tête de fichier invalide");
 	}
 
-	private static List<Node> parseArguments(JSONArray array, Command c) {
+	protected static List<Node> parseArguments(JSONArray array, Command c) {
 		List<Node> list = new LinkedList<>();
 		for(int i = 0; i < array.length(); i++)
 			list.add(parseArgument(array.getJSONObject(i), c));
@@ -103,8 +101,8 @@ public class CommandParser {
 		
 			int nbrKeysCount = 0;
 			
-			if(obj.has("arguments") && obj.has("execute"))
-				throw new JsonCommandFormatException("Les clés \"execute\" et \"arguments\" ne peuvent pas être tous deux dans le même argument");
+//			if(obj.has("arguments") && obj.has("execute"))
+//				throw new JsonCommandFormatException("Les clés \"execute\" et \"arguments\" ne peuvent pas être tous deux dans le même argument");
 			if(obj.has("type")) {
 				type = obj.getString("type");
 				nbrKeysCount++; 
@@ -158,7 +156,7 @@ public class CommandParser {
 			return new NodeInt(bounds._1, bounds._2);
 		case "string":
 			return new NodeString(matches == "" ? ".*" : parseRegex(matches));
-		case "alias": 
+		case "function": 
 			return new NodeInt(5, 5);
 		default:
 			throw new JsonCommandFormatException("Type d'argument \"" + type + "\" invalide");

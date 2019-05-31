@@ -1,4 +1,4 @@
-package net.gunivers.gunibot.commands.lib;
+package net.gunivers.gunibot.command.lib;
 
 import java.lang.reflect.Method;
 import java.util.Arrays;
@@ -7,8 +7,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
-import net.gunivers.gunibot.commands.CookieCommand;
-import net.gunivers.gunibot.commands.lib.CommandSyntaxError.SyntaxError;
+import net.gunivers.gunibot.command.lib.CommandSyntaxError.SyntaxError;
 import net.gunivers.gunibot.utils.tuple.Tuple;
 import net.gunivers.gunibot.utils.tuple.Tuple2;
 
@@ -18,7 +17,7 @@ abstract class Node {
 	public static void main(String... args) {
 		String[] cmd = "cookie 15 theo".split(" ");
 		Command.loadCommands();
-		Command.commands.values().stream().filter(c -> c instanceof CookieCommand).findFirst().get().apply(cmd);
+//		Command.commands.values().stream().filter(c -> c instanceof CookieCommand).findFirst().get().apply(cmd);
 	}
 	
 	private List<Node> children = new LinkedList<Node>();

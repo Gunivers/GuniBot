@@ -1,4 +1,4 @@
-package net.gunivers.gunibot.commands.lib;
+package net.gunivers.gunibot.command.lib;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -11,6 +11,7 @@ import java.util.stream.Collectors;
 
 import org.reflections.Reflections;
 
+import discord4j.core.event.domain.message.MessageCreateEvent;
 import net.gunivers.gunibot.utils.tuple.Tuple2;
 
 public abstract class Command {
@@ -51,35 +52,40 @@ public abstract class Command {
 		syntax = n;
 	}
 	
-	public void apply(String[] command) {
+	public void apply(String[] command, MessageCreateEvent event) {
 		Tuple2<Tuple2<List<String>, Method>, CommandSyntaxError> result = syntax.matches(command);
 		if(result._1 != null) {
 			try {
-				if(result._1._1 != null)
-				result._1._2.invoke(this, result._1._1);
+				if(result._1._1.size() > 0)
+				result._1._2.invoke(this, event, result._1._1);
 				else
-					result._1._2.invoke(this);
+					result._1._2.invoke(event, this);
 			} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
 				e.printStackTrace();
 			}
 		} else {
-			System.out.println("Une erreur a été détectée ici : " + result._2.getPath().stream().collect(Collectors.joining(" ")));
+			List<String> list = result._2.getPath();
+			list.set(list.size() - 1, "__" + list.get(list.size() - 1) + "__");
+			event.getMessage().getChannel().block().createMessage("Une erreur a été détectée ici : " + list.stream().collect(Collectors.joining(" "))).subscribe();
+//			System.out.println("Une erreur a été détectée ici : " + result._2.getPath().stream().collect(Collectors.joining(" ")));
 		}
 	}
 
 	public abstract String getSyntaxFile();
 	
 	/**
-	 * Permet de charger toutes les commandes du Package net.gunivers.gunibot.commands
+	 * Permet de charger toutes les commandes du Package net.gunivers.gunibot.command.commands
 	 */
 	public static void loadCommands() {
-		Reflections reflections = new Reflections("net.gunivers.gunibot.commands");
+		Reflections reflections = new Reflections("net.gunivers.gunibot.command.commands");
 		 Set<Class<? extends Command>> allCommands = reflections.getSubTypesOf(Command.class);
 		 allCommands.forEach(cmd -> {
 			try {
 				if(!cmd.isAnnotationPresent(Ignore.class)) {
 					Command c = cmd.newInstance();
-					List<String> aliases = CommandParser.createTree(c);
+					NodeRoot n = (NodeRoot)CommandParser.parseCommand(c);
+					List<String> aliases = n.getAliases();
+//					Function.functions.put(aliases.get(0), n);
 					commands.put(aliases, c);
 				}
 			} catch (InstantiationException | IllegalAccessException e) {
