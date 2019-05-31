@@ -67,6 +67,12 @@ public class CommandParser {
 				case "arguments":
 					nr.setChild(parseArguments(obj.getJSONArray(key), c));
 					break;
+				case "execute":
+					Method m = getMethodByName(obj.getString(key), c);
+					nr.setExecute(m);
+					if(m == null)
+						throw new JsonCommandFormatException("La fonction " + obj.getString(key) + " n'existe pas dans la classe " + c.getClass().getSimpleName());
+					break;
 				case "comment":
 					break;
 				default:
@@ -123,12 +129,7 @@ public class CommandParser {
 			}
 			if(obj.has("execute")) {
 				String methodName = obj.getString("execute");
-					Method[] methods = c.getClass().getMethods();
-					for(Method method : methods)
-						if(method.getName().equals(methodName)) {
-							execute = method;
-							break;
-						}
+				execute = getMethodByName(methodName, c);
 				if(execute == null)
 					throw new JsonCommandFormatException("La fonction " + methodName + " n'existe pas dans la classe " + c.getClass().getSimpleName());
 				nbrKeysCount++; 
@@ -147,6 +148,14 @@ public class CommandParser {
 			e.printStackTrace();
 			return null;
 		}
+	}
+	
+	private static Method getMethodByName(String name, Command clazz) {
+		Method[] methods = clazz.getClass().getMethods();
+		for(Method method : methods)
+			if(method.getName().equals(name))
+				return method;
+		return null;
 	}
 
 	private static Node createNodeByType(String type, String matches) throws JsonCommandFormatException {
