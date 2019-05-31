@@ -59,7 +59,7 @@ public abstract class Command {
 				if(result._1._1.size() > 0)
 				result._1._2.invoke(this, event, result._1._1);
 				else
-					result._1._2.invoke(event, this);
+					result._1._2.invoke(this, event);
 			} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
 				e.printStackTrace();
 			}
