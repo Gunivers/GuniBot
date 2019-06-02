@@ -13,7 +13,7 @@
 			},
 			{
 				"type": "string",
-				"matches": "help|h|?",
+				"matches": "help|h|\\?",
 				"execute": "help"
 			},
 			{
@@ -26,7 +26,8 @@
 					"keep_value": true,
 					"arguments":
 					[{
-						"type": "boolean",
+						"type": "string",
+						"matches": "true|false",
 						"keep_value": true,
 						"arguments":
 						[
