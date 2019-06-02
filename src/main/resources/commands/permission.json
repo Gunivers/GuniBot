@@ -1,0 +1,72 @@
+{
+	"permission":
+	{
+		"description": "Manage bot permissions",
+		"permissions": ["discord.administrator", "discord.manage_guild"],
+		"aliases": ["perm", "perms"],
+		"arguments":
+		[
+			{
+				"type": "string",
+				"matches": "list",
+				"execute": "list"
+			},
+			{
+				"type": "string",
+				"matches": "help|h|?",
+				"execute": "help"
+			},
+			{
+				"type": "string",
+				"matches": "set",
+				"arguments":
+				[{
+					"type": "string",
+					"matches": "custom\\.([a-z_]+\\.)*[a-z_]+",
+					"keep_value": true,
+					"arguments":
+					[{
+						"type": "boolean",
+						"keep_value": true,
+						"arguments":
+						[
+							{
+								"comment": "(Un)grant specified permission to specified users",
+								"type": "string",
+								"matches": "(<@!?[0-9]+>;)*<@!?[0-9]+>",
+								"keep_value": true,
+								"execute": "setUsers"
+							},
+							{
+								"comment": "(Un)grant specified permission to specified roles",
+								"type": "string",
+								"matches": "(<@\\&[0-9]+>;)*<@\\&[0-9]+>",
+								"keep_value": true,
+								"execute": "setRoles"
+							},
+						]
+					}]
+				}]
+			},
+			{
+				"type": "string",
+				"matches": "get",
+				"arguments":
+				[
+					{
+						"type": "string",
+						"matches": "<@!?[0-9]+>",
+						"keep_value": true,
+						"execute": "getUser",
+					},
+					{
+						"type": "string",
+						"matches": "<@\\&[0-9]+>",
+						"keep_value": true,
+						"execute": "getRole",
+					}
+				]
+			}
+		]
+	}
+}

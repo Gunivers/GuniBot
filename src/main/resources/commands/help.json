@@ -1,0 +1,16 @@
+{
+	"help":
+	{
+		"description": "You may access the ultimate knowledge!",
+		"permissions": ["discord.view_channel", "discord.send_messages", "discord.read_messages_history"],
+		"aliases": ["h", "?"],
+		"executes": "help",
+		"arguments":
+		[{
+			"type": "string",
+			"matches": ".+",
+			"keep_value": true,
+			"executes": "getHelp"
+		}]
+	}
+}
