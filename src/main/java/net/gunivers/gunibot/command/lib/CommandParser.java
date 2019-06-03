@@ -165,11 +165,19 @@ public class CommandParser {
 			return new NodeInt(bounds._1, bounds._2);
 		case "string":
 			return new NodeString(matches == "" ? ".*" : parseRegex(matches));
+		case "boolean":
+			return new NodeBoolean(parseBool(matches));
 		case "function": 
 			return new NodeInt(5, 5);
 		default:
 			throw new JsonCommandFormatException("Type d'argument \"" + type + "\" invalide");
 		}
+	}
+	
+	private static boolean parseBool(String s) throws JsonCommandFormatException {
+		if(s.equalsIgnoreCase("true") || s.equalsIgnoreCase("false"))
+			return Boolean.parseBoolean(s);
+		throw new JsonCommandFormatException(s + " n'est pas de type boolean");
 	}
 
 	private static Tuple2<Integer, Integer> parseBound(String bound) throws JsonCommandFormatException {
