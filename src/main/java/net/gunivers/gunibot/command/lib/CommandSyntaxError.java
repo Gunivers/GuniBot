@@ -7,9 +7,13 @@ import java.util.List;
 public class CommandSyntaxError {
 	
 	public enum SyntaxError {
-		SYNTAX_SHORTER,
-		SYNTAX_LONGER,
-		ARG_INVALID
+		SYNTAX_SHORTER("Too much arguments provided!"),
+		SYNTAX_LONGER("Missing required argument(s)"),
+		ARG_INVALID("Invalid argument"),
+		;
+		
+		public final String text;
+		private SyntaxError(String text) { this.text = text; }
 	}
 
 	private List<String> path = new LinkedList<>();
@@ -55,4 +59,7 @@ public class CommandSyntaxError {
 	public List<String> getPath() {
 		return new LinkedList<String>(path);
 	}
+	
+	@Override
+	public String toString() { return error.text; }
 }

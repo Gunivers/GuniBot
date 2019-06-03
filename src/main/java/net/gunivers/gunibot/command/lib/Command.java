@@ -32,7 +32,7 @@ public abstract class Command {
 		this.description = description;
 	}
 
-	public Set<String> getPersmissions() {
+	public Set<String> getPermissions() {
 		return permissions;
 	}
 
@@ -52,21 +52,26 @@ public abstract class Command {
 		syntax = n;
 	}
 	
-	public void apply(String[] command, MessageCreateEvent event) {
+	public void apply(String[] command, MessageCreateEvent event)
+	{
 		Tuple2<Tuple2<List<String>, Method>, CommandSyntaxError> result = syntax.matches(command);
-		if(result._1 != null) {
-			try {
+		if(result._1 != null)
+		{
+			try
+			{
 				if(result._1._1.size() > 0)
 				result._1._2.invoke(this, event, result._1._1);
 				else
 					result._1._2.invoke(this, event);
-			} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
+			} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e)
+			{
 				e.printStackTrace();
 			}
-		} else {
+		} else
+		{
 			List<String> list = result._2.getPath();
 			list.set(list.size() - 1, "__" + list.get(list.size() - 1) + "__");
-			event.getMessage().getChannel().block().createMessage("Une erreur a été détectée ici : " + list.stream().collect(Collectors.joining(" "))).subscribe();
+			event.getMessage().getChannel().block().createMessage("Une erreur a été détectée ici : " + list.stream().collect(Collectors.joining(" ")) + '\n' + result._2).subscribe();
 //			System.out.println("Une erreur a été détectée ici : " + result._2.getPath().stream().collect(Collectors.joining(" ")));
 		}
 	}

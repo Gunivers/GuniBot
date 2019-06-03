@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map.Entry;
-import java.util.Set;
 
 import javax.naming.InvalidNameException;
 
@@ -15,27 +14,25 @@ public class Permission
 {
 	public static final HashMap<Permission, ArrayList<Member>> custom = new HashMap<>();
 	public static final HashMap<Permission, discord4j.core.object.util.Permission> discord = new HashMap<>();
-
 	public static final HashMap<Role, ArrayList<Permission>> roles = new HashMap<>();
 	
 	static
 	{
 		Arrays.asList(discord4j.core.object.util.Permission.values()).forEach(perm ->
-			new Permission("discord." + perm.name().toLowerCase(), perm));	
+			new Permission(perm.name().toLowerCase(), perm));
 	}
-	
 	
 	private final String name;
 	
 	public Permission(String name)
 	{
-		this(name, true);
+		this("custom." + name, true);
 		custom.putIfAbsent(this, new ArrayList<>());
 	}
 
 	public Permission(String name, discord4j.core.object.util.Permission perm)
 	{
-		this(name, false);
+		this("discord." + name, false);
 		discord.putIfAbsent(this, perm);
 	}
 	
@@ -44,7 +41,7 @@ public class Permission
 		if (!name.matches("([a-z_]+\\.)+[a-z_]+"))
 			throw new RuntimeException(new InvalidNameException("Permission name should matche '([a-z_]+\\.)+[a-z_]+'"));
 		
-		this.name = (custom ? "custom." : "discord.") + name;
+		this.name = name;
 	}
 
 	
@@ -72,12 +69,15 @@ public class Permission
 
 		if (!name.matches("([a-z_]+\\.)+" + (multiple ? "\\*" : "[a-z_]+"))) return perms;
 		
-		Set<Permission> permissions = custom.keySet();
-		permissions.addAll(discord.keySet());
+		ArrayList<Permission> permissions = new ArrayList<>(discord.keySet());
+		permissions.addAll(custom.keySet());
 		
 		for (Permission p : permissions)
 		{
-			if (multiple) { if (p.getName().matches(name.substring(0, name.length() -3) + "(.[a-z_]+)+")) perms.add(p); }
+			if (multiple)
+			{
+				if (p.getName().matches(name.substring(0, name.length() -2) + "(\\.[a-z_]+)+")) perms.add(p);
+			}
 			else if (p.getName().equals(name)) perms.add(p);
 		}
 		
