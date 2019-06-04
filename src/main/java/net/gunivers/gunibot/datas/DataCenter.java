@@ -141,7 +141,7 @@ public class DataCenter {
 			//TODO disable:sql.saveGuildData(guild.getId().asLong(), dataGuild.save());
 			//dataGuild.clearAllCache();
 		} else {
-			System.err.println(String.format("The guild '%s' (%s) ha no data object to save!", guild.getName(), guild.getId().asString()));
+			System.err.println(String.format("The guild '%s' (%s) has no data object to save!", guild.getName(), guild.getId().asString()));
 		}
 	}
 
@@ -196,6 +196,12 @@ public class DataCenter {
 			}
 		}
 		 */
+	}
+
+	public void shutdown() {
+		botClient.updatePresence(Presence.doNotDisturb(Activity.watching("Shutdown...")));
+		saveGuilds();
+		botClient.logout().subscribe();
 	}
 
 }

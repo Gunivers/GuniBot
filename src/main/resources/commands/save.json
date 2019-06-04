@@ -1,0 +1,8 @@
+{
+	"save": 
+	{
+		"description": "Save internal data of the guild",
+		"permissions": ["administrator"],
+		"execute": "save"
+	}
+}
