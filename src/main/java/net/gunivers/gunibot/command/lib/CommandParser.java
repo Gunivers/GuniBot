@@ -116,7 +116,6 @@ public class CommandParser {
 			} else
 				throw new JsonCommandFormatException("Clé \"type\" obligatoire dans la déclaration d'un argument");
 			if (obj.has("matches")) {
-				// if(type.equals("string"))
 				matches = obj.getString("matches");
 				nbrKeysCount++;
 			}
