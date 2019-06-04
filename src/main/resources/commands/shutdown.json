@@ -1,0 +1,8 @@
+{
+	"shutdown": 
+	{
+		"description": "Shutdown the bot",
+		"permissions": ["dev"],
+		"execute": "shutdown"
+	}
+}
