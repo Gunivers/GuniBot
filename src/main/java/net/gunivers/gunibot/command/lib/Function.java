@@ -6,6 +6,7 @@ import java.util.Set;
 
 import org.reflections.Reflections;
 
+import net.gunivers.gunibot.command.lib.nodes.Node;
 import net.gunivers.gunibot.utils.tuple.Tuple2;
 
 public abstract class Function {

@@ -12,6 +12,8 @@ import java.util.stream.Collectors;
 import org.reflections.Reflections;
 
 import discord4j.core.event.domain.message.MessageCreateEvent;
+import net.gunivers.gunibot.command.lib.nodes.Node;
+import net.gunivers.gunibot.command.lib.nodes.NodeList;
 import net.gunivers.gunibot.utils.tuple.Tuple2;
 
 public abstract class Command {
@@ -83,8 +85,8 @@ public abstract class Command {
 			try {
 				if(!cmd.isAnnotationPresent(Ignore.class)) {
 					Command c = cmd.newInstance();
-					NodeRoot n = (NodeRoot)CommandParser.parseCommand(c);
-					List<String> aliases = n.getAliases();
+					NodeList<String> n = (NodeList<String>)CommandParser.parseCommand(c);
+					List<String> aliases = n.getElements();
 //					Function.functions.put(aliases.get(0), n);
 					commands.put(aliases, c);
 				}

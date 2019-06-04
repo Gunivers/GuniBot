@@ -1,30 +1,22 @@
-package net.gunivers.gunibot.command.lib;
+package net.gunivers.gunibot.command.lib.nodes;
 
 import java.lang.reflect.Method;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Set;
 
+import net.gunivers.gunibot.command.lib.CommandSyntaxError;
 import net.gunivers.gunibot.command.lib.CommandSyntaxError.SyntaxError;
 import net.gunivers.gunibot.utils.tuple.Tuple;
 import net.gunivers.gunibot.utils.tuple.Tuple2;
 
-abstract class Node {
-
-	public static void main(String... args) {
-		String[] cmd = "cookie 15 theo".split(" ");
-		Command.loadCommands();
-		// Command.commands.values().stream().filter(c -> c instanceof
-		// CookieCommand).findFirst().get().apply(cmd);
-	}
+public abstract class Node {
 
 	private List<Node> children = new LinkedList<Node>();
 	private Method run = null;
 	private boolean keepValue = false;
 
-	public Tuple2<Tuple2<List<String>, Method>, CommandSyntaxError> matches(String[] s) {
+	public final Tuple2<Tuple2<List<String>, Method>, CommandSyntaxError> matches(String[] s) {
 
 		// L'élément courant n'est pas valide
 		if (!matchesNode(s[0]))
@@ -78,6 +70,10 @@ abstract class Node {
 		return Tuple.newTuple(null, farthest._2);
 	}
 
+	/**
+	 * @param s une chaîne de caractères
+	 * @return true si s corresponds au prédicat du noeud, false sinon
+	 */
 	protected abstract boolean matchesNode(String s);
 
 	public void setChild(List<Node> nodes) {
@@ -100,77 +96,5 @@ abstract class Node {
 		return run;
 	}
 
-}
-
-class NodeInt extends Node {
-
-	private int min;
-	private int max;
-
-	public NodeInt(int mi, int ma) {
-		min = mi;
-		max = ma;
-	}
-
-	@Override
-	protected boolean matchesNode(String s) {
-		try {
-			int x = Integer.parseInt(s);
-			return x >= min || x <= max;
-		} catch (NumberFormatException e) {
-			return false;
-		}
-	}
-}
-
-class NodeString extends Node {
-
-	private String regex;
-
-	public NodeString(String reg) {
-		regex = reg;
-	}
-
-	@Override
-	protected boolean matchesNode(String s) {
-		return s.matches(regex);
-	}
-}
-
-class NodeBoolean extends Node {
-
-	private boolean bool;
-
-	public NodeBoolean(boolean b) {
-		bool = b;
-	}
-
-	@Override
-	protected boolean matchesNode(String s) {
-		boolean b = Boolean.parseBoolean(s);
-		return b == bool;
-	}
-}
-
-class NodeRoot extends Node {
-
-	private Set<String> aliases = new HashSet<>();
-
-	public NodeRoot(String al) {
-		aliases.add(al);
-	}
-
-	public void addAliases(List<String> args) {
-		aliases.addAll(args);
-	}
-
-	public List<String> getAliases() {
-		return new LinkedList<String>(aliases);
-	}
-
-	@Override
-	protected boolean matchesNode(String s) {
-		return aliases.contains(s);
-	}
 
 }
