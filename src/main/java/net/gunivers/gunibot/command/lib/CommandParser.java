@@ -9,17 +9,12 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import net.gunivers.gunibot.command.commands.CookieCommand;
 import net.gunivers.gunibot.command.lib.nodes.Node;
 import net.gunivers.gunibot.command.lib.nodes.NodeEnum;
 import net.gunivers.gunibot.command.lib.nodes.NodeList;
 import net.gunivers.gunibot.command.lib.nodes.TypeNode;
 
 public class CommandParser {
-
-	public static void main(String... args) {
-		parseCommand(new CookieCommand());
-	}
 
 	/**
 	 * Parse la syntaxe d'une commande
@@ -47,7 +42,7 @@ public class CommandParser {
 			String keyRoot = keys.get(0);
 			return parseHead(obj.getJSONObject(keyRoot), keyRoot, c);
 		}
-		throw new JsonCommandFormatException("Racine invalide");
+		throw new JsonCommandFormatException("Racine invalide\n\tat " + c.getSyntaxFile());
 	}
 
 	private static NodeList<String> parseHead(JSONObject obj, String root, Command c) throws Exception {
@@ -79,13 +74,13 @@ public class CommandParser {
 				case "comment":
 					break;
 				default:
-					throw new JsonCommandFormatException("Clé d'en-tête \"" + key + "\" invalide");
+					throw new JsonCommandFormatException("Clé d'en-tête \"" + key + "\" invalide\n\\at " + c.getSyntaxFile());
 				}
 			}
 			if (c.getDescription() != "")
 				return nr;
 		}
-		throw new JsonCommandFormatException("En-tête de fichier invalide");
+		throw new JsonCommandFormatException("En-tête de fichier invalide\n\tat " + c.getSyntaxFile());
 	}
 
 	protected static List<Node> parseArguments(JSONArray array, Command c) {
@@ -99,6 +94,7 @@ public class CommandParser {
 		Node n = null;
 		String type = "";
 		String matches = "";
+		String tag = "";
 		boolean keepValue = false;
 		Method execute = null;
 		JSONArray args = null;
@@ -106,7 +102,7 @@ public class CommandParser {
 		try {
 			int nbrKeys = (int) obj.keySet().stream().filter(s -> !s.equals("comment")).count();
 			if (nbrKeys != obj.keySet().stream().filter(s -> !s.equals("comment")).distinct().count())
-				throw new JsonCommandFormatException("Multiplicité d'une clé dans un argument");
+				throw new JsonCommandFormatException("Multiplicité d'une clé dans un argument\n\tat " + c.getSyntaxFile());
 
 			int nbrKeysCount = 0;
 
@@ -114,7 +110,7 @@ public class CommandParser {
 				type = obj.getString("type");
 				nbrKeysCount++;
 			} else
-				throw new JsonCommandFormatException("Clé \"type\" obligatoire dans la déclaration d'un argument");
+				throw new JsonCommandFormatException("Clé \"type\" obligatoire dans la déclaration d'un argument\n\tat " + c.getSyntaxFile());
 			if (obj.has("matches")) {
 				matches = obj.getString("matches");
 				nbrKeysCount++;
@@ -127,6 +123,11 @@ public class CommandParser {
 				keepValue = obj.getBoolean("keep_value");
 				nbrKeysCount++;
 			}
+			if(obj.has("tag")) {
+				tag = obj.getString("tag");
+				nbrKeysCount++;
+			} else
+				throw new JsonCommandFormatException("Clé \"tag\" obligatoire dans la déclaration d'un argument\n\tat " + c.getSyntaxFile());
 			if (obj.has("execute")) {
 				String methodName = obj.getString("execute");
 				execute = getMethodByName(methodName, c);
@@ -136,10 +137,11 @@ public class CommandParser {
 				nbrKeysCount++;
 			}
 			if (nbrKeysCount != nbrKeys)
-				throw new JsonCommandFormatException("Arguments invalides");
+				throw new JsonCommandFormatException("Arguments invalides\n\tat " + c.getSyntaxFile());
 
-			n = createNodeByType(type, matches);
+			n = createNodeByType(type, matches, c);
 			n.setExecute(execute);
+			n.setTag(tag);
 			n.setKeepValue(keepValue);
 			if (args != null)
 				n.setChild(parseArguments(args, c));
@@ -159,14 +161,14 @@ public class CommandParser {
 		return null;
 	}
 
-	private static Node createNodeByType(String type, String matches) throws JsonCommandFormatException {
+	private static Node createNodeByType(String type, String matches, Command c) throws JsonCommandFormatException {
 		try {
 		NodeEnum ne = NodeEnum.valueOfIgnoreCase(type);
 		TypeNode tn = ne.createInstance();
 		tn.parse(matches);
 		return tn;
 		} catch(IllegalArgumentException e) {
-			throw new JsonCommandFormatException("Type d'argument \"" + type + "\" invalide");
+			throw new JsonCommandFormatException("Type d'argument \"" + type + "\" invalide\n\tat " + c.getSyntaxFile());
 
 		}
 	}

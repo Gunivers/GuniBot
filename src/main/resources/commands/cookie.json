@@ -8,6 +8,7 @@
 		[
 			{
 				"type": "integer",
+				"tag": "count",
 				"matches": "0..150",
 				"execute": "giveCookieAll",
 				"keep_value": true,
@@ -15,12 +16,14 @@
 				[
 					{
 						"type": "string",
+						"tag": "theo",
 						"matches": "theo",
 						"execute": "giveCookie"
 					},
 
 					{
 						"type": "string",
+						"tag": "leirof",
 						"matches": "leirof",
 						"execute": "giveCookieLeirof"
 					}

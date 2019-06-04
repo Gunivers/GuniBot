@@ -15,6 +15,7 @@ public abstract class Node {
 	private List<Node> children = new LinkedList<Node>();
 	private Method run = null;
 	private boolean keepValue = false;
+	private String tag;
 
 	public final Tuple2<Tuple2<List<String>, Method>, CommandSyntaxError> matches(String[] s) {
 
@@ -76,6 +77,14 @@ public abstract class Node {
 	 */
 	protected abstract boolean matchesNode(String s);
 
+	public void setTag(String s) {
+		tag = s;
+	}
+	
+	public String getTag() {
+		return tag;
+	}
+	
 	public void setChild(List<Node> nodes) {
 		children.addAll(nodes);
 	}
