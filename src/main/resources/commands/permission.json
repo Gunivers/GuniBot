@@ -22,7 +22,7 @@
 				"arguments":
 				[{
 					"type": "string",
-					"matches": "custom\\.([a-z_]+\\.)*[a-z_]+",
+					"matches": "custom\\.([a-z_]+\\.)*([a-z_]+|\\*)",
 					"keep_value": true,
 					"arguments":
 					[{

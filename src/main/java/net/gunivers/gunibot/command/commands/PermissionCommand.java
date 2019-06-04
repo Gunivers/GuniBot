@@ -9,7 +9,6 @@ import discord4j.core.event.domain.message.MessageCreateEvent;
 import discord4j.core.object.entity.Member;
 import discord4j.core.object.entity.Role;
 import discord4j.core.object.util.Snowflake;
-import discord4j.core.spec.EmbedCreateSpec;
 
 import net.gunivers.gunibot.command.lib.Command;
 import net.gunivers.gunibot.command.permissions.Permission;
@@ -19,6 +18,11 @@ import reactor.util.function.Tuples;
 
 public class PermissionCommand extends Command
 {
+	static
+	{
+		new Permission("perm.test");
+	}
+	
 	@Override
 	public String getSyntaxFile() { return "permission.json"; }
 	
@@ -26,13 +30,15 @@ public class PermissionCommand extends Command
 	{
 		event.getMessage().getChannel().flatMap(channel -> channel.createEmbed(embed -> 
 		{
-			Util.formatEmbed(event, "**Help: permission**", embed);
+			Util.formatEmbed(event, "Help: permission", embed);
 			
 			embed.addField("Command:", "permission", true);
 			embed.addField("Aliases:", this.getAliases().toString(), true);
 			embed.addField("Description:", this.getDescription(), true);
-			embed.addField("Syntax:", "/perm (list|get|set) ...", true);
-			embed.addField("Required Permissions:", this.getPersmissions().toString(), true);
+			embed.addField("Syntax:", "/perm list"
+					+ "\n/perm get <permission> (true|false) @<user|role>"
+					+ "\n/perm set <permissions> (true|false) @<users|roles> ", true);
+			embed.addField("Required Permissions:", this.getPermissions().toString(), true);
 			
 		})).subscribe();
 	}
@@ -41,7 +47,7 @@ public class PermissionCommand extends Command
 	{
 		event.getMessage().getChannel().flatMap(channel -> channel.createEmbed(embed ->
 		{
-			Util.formatEmbed(event, "**Permissions List**", embed);
+			Util.formatEmbed(event, "Permissions List", embed);
 			
 			StringBuilder sb = new StringBuilder();
 			Permission.discord.keySet().forEach(p -> sb.append(p.getName() + '\n'));
@@ -66,28 +72,24 @@ public class PermissionCommand extends Command
 		
 		ArrayList<Permission> customs = new ArrayList<>();
 		ArrayList<Permission> discord = new ArrayList<>();
+		
 		Permission.custom.entrySet().stream().filter(e -> e.getValue().contains(member)).forEach(e -> customs.add(e.getKey()));
 		Permission.discord.entrySet().stream().filter(e -> member.getBasePermissions().block().contains(e.getValue()))
 			.forEach(e -> discord.add(e.getKey()));
 		
-		event.getMessage().getChannel().flatMap(channel -> channel.createEmbed(embed ->
-			formatGetEmbed(event, args.get(0), discord, customs, embed)
-			.setAuthor(member.getDisplayName(), null, member.getAvatarUrl())))
-		.subscribe();
+		sendGetMessage(event, discord, customs, member.getMention());
 	}
 	
 	public void getRole(MessageCreateEvent event, List<String> args)
 	{
 		Role role = event.getGuild().block().getRoleById(Snowflake.of(args.get(0).replaceAll("<@&|>", ""))).block();
 		
-		ArrayList<Permission> customs = Permission.roles.get(role);
+		ArrayList<Permission> customs = Permission.roles.getOrDefault(role, new ArrayList<>());
 		ArrayList<Permission> discord = new ArrayList<>();
 		Permission.discord.entrySet().stream().filter(e -> role.getPermissions().contains(e.getValue())).forEach(e -> discord.add(e.getKey()));
 		
-		event.getMessage().getChannel().flatMap(channel -> channel.createEmbed(embed ->
-			formatGetEmbed(event, args.get(0), discord, customs, embed).setColor(role.getColor()))).subscribe();
+		sendGetMessage(event, discord, customs, role.getMention());
 	}
-	
 	
 	public void setUsers(MessageCreateEvent event, List<String> args)
 	{
@@ -110,7 +112,7 @@ public class PermissionCommand extends Command
 			});
 		}
 		
-		event.getMessage().getChannel().flatMap(chan -> chan.createMessage("Successfully assigned permissions to users"));
+		event.getMessage().getChannel().flatMap(chan -> chan.createMessage("Successfully assigned permissions to users")).subscribe();
 	}
 
 	public void setRoles(MessageCreateEvent event, List<String> args)
@@ -135,23 +137,23 @@ public class PermissionCommand extends Command
 			});
 		}
 		
-		event.getMessage().getChannel().flatMap(chan -> chan.createMessage("Successfully assigned permissions to roles"));
+		event.getMessage().getChannel().flatMap(chan -> chan.createMessage("Successfully assigned permissions to roles")).subscribe();
 	}
 	
 	
-	private static EmbedCreateSpec formatGetEmbed(MessageCreateEvent event, String owner, ArrayList<Permission> discord,
-			ArrayList<Permission> customs, EmbedCreateSpec embed)
-	{	
-		Util.formatEmbed(event, owner + "'s permissions", embed);
-		StringBuilder sb = new StringBuilder();
+	private static void sendGetMessage(MessageCreateEvent event, ArrayList<Permission> discord, ArrayList<Permission> customs, String mention)
+	{
+		StringBuilder sb = new StringBuilder("\nDiscord Permissions:                   Bot Permissions:");
+		for (int i = 0; i < discord.size() || i < customs.size(); i++)
+		{
+			String line = "\n - " + (i < discord.size() ? discord.get(i).getName() : "");
+			while (line.length() < 40) line += ' ';
+			if (i < customs.size()) line += " - " + customs.get(i).getName();
+			sb.append(line);
+		}
 		
-		discord.forEach(perm -> sb.append(perm.getName() + '\n'));
-		embed.addField("Discord Permissions", sb.toString(), false);
-			
-		customs.forEach(perm -> sb.append(perm.getName() + '\n'));
-		embed.addField("Bot Permissions", sb.toString(), false);
-		
-		return embed;
+		event.getMessage().getChannel().flatMap(channel -> channel.createMessage("**All permissions of " + mention + "**\n"
+				+ "```yaml" + sb.toString() + "```")).subscribe();
 	}
 	
 	private static Tuple4<ArrayList<Permission>, Boolean, ArrayList<Member>, ArrayList<Role>>
