@@ -4,6 +4,7 @@ import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import net.gunivers.gunibot.command.lib.CommandSyntaxError;
 import net.gunivers.gunibot.command.lib.CommandSyntaxError.SyntaxError;
@@ -105,5 +106,25 @@ public abstract class Node {
 		return run;
 	}
 
-
+	@Override
+	public String toString() {
+		if(children.size() == 0)
+			return "<" + tag + ">";
+		return "<" + tag + ">" + childrenToString();
+	}
+	
+	protected String childrenToString() {
+		if (children.size() == 1) {
+			if (run != null)
+				return " [" + children.get(0).toString() + ']';
+			else
+				return " " + children.get(0).toString();
+		} if(children.size() > 1) {
+			if (run != null)
+				return " [" + children.stream().map((n) -> n.toString()).collect(Collectors.joining("|")) + "]";
+			else
+				return " (" + children.stream().map((n) -> n.toString()).collect(Collectors.joining("|")) + ")";
+		} else
+			return "";
+	}
 }

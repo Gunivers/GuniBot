@@ -92,6 +92,7 @@ public abstract class Command {
 					Command c = cmd.newInstance();
 					NodeList<String> n = (NodeList<String>)CommandParser.parseCommand(c);
 					List<String> aliases = n.getElements();
+					System.out.println(c.toString());
 //					Function.functions.put(aliases.get(0), n);
 					commands.put(aliases, c);
 				}
@@ -101,7 +102,8 @@ public abstract class Command {
 		});
 	}
 	
-	public static void main(String... args) {
-		loadCommands();
+	@Override
+	public String toString() {
+		return Command.PREFIX + syntax.toString();
 	}
 }

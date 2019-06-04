@@ -8,6 +8,7 @@
 		"arguments":
 		[{
 			"type": "string",
+			"tag": "command",
 			"matches": ".+",
 			"keep_value": true,
 			"execute": "getHelp"

@@ -23,4 +23,12 @@ public class NodeString extends TypeNode {
 			throw new JsonCommandFormatException(s + " n'est pas une expression régulière valide");
 		}
 	}
+	
+	@Override
+	public String toString() {
+		if(regex.matches("(\\w|\\d)*"))
+			return regex + childrenToString();
+		else 
+			return "<" + getTag() + ">" + childrenToString();
+	}
 }

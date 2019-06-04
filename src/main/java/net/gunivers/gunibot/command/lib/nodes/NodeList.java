@@ -5,6 +5,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.function.BiPredicate;
+import java.util.stream.Collectors;
 
 public class NodeList<T> extends Node {
 
@@ -27,5 +28,12 @@ public class NodeList<T> extends Node {
 	@Override
 	protected boolean matchesNode(String s) {
 		return predicat.test(s, elements);
+	}
+	
+	@Override
+	public String toString() {
+		if(elements.size() > 1)
+			return "(" + elements.stream().map(s -> s.toString()).collect(Collectors.joining("|")) + ")" + childrenToString();
+		return elements.iterator().next().toString() + childrenToString();
 	}
 }
