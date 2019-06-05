@@ -1,20 +1,26 @@
 package net.gunivers.gunibot.command.lib.nodes;
 
-import net.gunivers.gunibot.command.lib.JsonCommandFormatException;
+import net.gunivers.gunibot.command.lib.CommandSyntaxError;
+import net.gunivers.gunibot.command.lib.CommandSyntaxError.SyntaxError;
 
-public class NodeBoolean extends TypeNode {
-
-	private boolean bool;
-
+public class NodeBoolean extends TypeNode<Boolean>
+{
 	@Override
-	protected boolean matchesNode(String s) {
-		return Boolean.parseBoolean(s) == bool;
+	public CommandSyntaxError matchesNode(String s)
+	{
+		try
+		{
+			Boolean.parseBoolean(s);
+			return null;
+		} catch (Exception e) { return new CommandSyntaxError(s + " should be a boolean!", SyntaxError.ARG_INVALID); }
 	}
 
 	@Override
-	public void parse(String s) throws JsonCommandFormatException {
-		if(s.equalsIgnoreCase("true") || s.equalsIgnoreCase("false"))
-			bool = Boolean.parseBoolean(s);
-		throw new JsonCommandFormatException(s + " n'est pas de type boolean");		
+	public void parse(String s) {}
+	
+	@Override
+	public Boolean getFrom(String s)
+	{
+		return Boolean.parseBoolean(s);
 	}
 }

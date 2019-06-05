@@ -17,11 +17,4 @@ public class SayCommand extends Command {
 		String result = String.join(" ", args);
 		e.getMessage().getChannel().block().createMessage(result).subscribe();
 	}
-
-	public void say2(MessageCreateEvent e, List<String> args) {
-		System.out.println("say2 function");
-		String result = String.join(" ", args);
-		e.getMessage().getChannel().block().createMessage(result).subscribe();
-	}
-
 }

@@ -36,15 +36,15 @@ public class HelpCommand extends Command
 		})).subscribe();
 	}
 
-	public void getHelp(MessageCreateEvent event, List<String> args)
+	public void getHelp(MessageCreateEvent event, String command)
 	{
 		Command cmd = null;
-		for (Entry<List<String>, Command> entry : commands.entrySet()) if (entry.getKey().contains(args.get(0))) cmd = entry.getValue();
+		for (Entry<List<String>, Command> entry : commands.entrySet()) if (entry.getKey().contains(command)) cmd = entry.getValue();
 		
 		if (cmd == null)
 		{
 			event.getMessage().getChannel().flatMap(channel ->
-				channel.createMessage("```\n❌ There is no such command as "+ args.get(0) +"```")).subscribe();
+				channel.createMessage("```\n❌ There is no such command as "+ command +"```")).subscribe();
 			return;
 		}
 		
@@ -52,7 +52,7 @@ public class HelpCommand extends Command
 		catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException | SecurityException e)
 		{
 			event.getMessage().getChannel().flatMap(channel ->
-				channel.createMessage("```\n❌ Unable to retrieve help from command "+ args.get(0) +"```")).subscribe();
+				channel.createMessage("```\n❌ Unable to retrieve help from command "+ command +"```")).subscribe();
 		}
 	}
 }

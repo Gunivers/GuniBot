@@ -31,8 +31,8 @@
 					"arguments":
 					[{
 						"tag":"value",
-						"type": "string",
-						"matches": "true|false",
+						"type": "boolean",
+						"matches":"",
 						"keep_value": true,
 						"arguments":
 						[

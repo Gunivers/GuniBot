@@ -2,6 +2,8 @@ package net.gunivers.gunibot.command.lib;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -13,7 +15,8 @@ import org.reflections.Reflections;
 
 import discord4j.core.event.domain.message.MessageCreateEvent;
 import net.gunivers.gunibot.command.lib.nodes.Node;
-import net.gunivers.gunibot.command.lib.nodes.NodeList;
+import net.gunivers.gunibot.command.lib.annotations.Ignore;
+import net.gunivers.gunibot.command.lib.nodes.ListNode;
 import net.gunivers.gunibot.utils.tuple.Tuple2;
 
 public abstract class Command {
@@ -54,20 +57,29 @@ public abstract class Command {
 		syntax = n;
 	}
 	
+	@SuppressWarnings("serial")
 	public void apply(String[] command, MessageCreateEvent event)
 	{
-		Tuple2<Tuple2<List<String>, Method>, CommandSyntaxError> result = syntax.matches(command);
+		Tuple2<Tuple2<List<Object>, Method>, CommandSyntaxError> result = syntax.matches(event.getGuild().block(), command);
 		if(result._1 != null)
 		{
 			try
 			{
-				if(result._1._1.size() > 0)
-				result._1._2.invoke(this, event, result._1._1);
+				if(result._1._1.size() > 0)	
+				{
+					System.out.println(new ArrayList<Object>() {{ addAll(result._1._1); }}.stream().reduce("[", (r,s) -> r += s.getClass().getSimpleName() + ' '));
+					System.out.println(Arrays.asList(result._1._2));
+					result._1._2.invoke(this, new ArrayList<Object>() {{ add(event); addAll(result._1._1); }}.toArray());
+				}
 				else
 					result._1._2.invoke(this, event);
 			} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e)
 			{
 				e.printStackTrace();
+				event.getMessage().getChannel().flatMap(channel -> channel.createMessage(
+						"```❌  An error occured while running the command: " + e.getMessage() + "```"
+						+ "\nIf it persists please contact this bot developpers on Gunivers"
+						+ "\n||<https://discord.gg/EncRXj2>||")).subscribe();
 			}
 		} else
 		{
@@ -90,7 +102,7 @@ public abstract class Command {
 			try {
 				if(!cmd.isAnnotationPresent(Ignore.class)) {
 					Command c = cmd.newInstance();
-					NodeList<String> n = (NodeList<String>)CommandParser.parseCommand(c);
+					ListNode<String> n = (ListNode<String>)CommandParser.parseCommand(c);
 					List<String> aliases = n.getElements();
 					System.out.println(c.toString());
 //					Function.functions.put(aliases.get(0), n);
