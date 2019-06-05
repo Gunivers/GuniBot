@@ -3,6 +3,7 @@
 	{
 		"description": "Shutdown the bot",
 		"permissions": ["dev"],
-		"execute": "shutdown"
+		"execute": "shutdown",
+		"aliases": ["stop"]
 	}
 }

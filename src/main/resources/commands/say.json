@@ -9,8 +9,23 @@
 				"type": "infinity",
 				"matches":"string",
 				"tag": "message1",
+				"matches": ".*",
 				"execute": "say",
+<<<<<<< HEAD
 				"keep_value": true
+=======
+				"keep_value": true,
+				"arguments": 
+				[
+					{
+						"type": "string",
+						"matches": ".*",
+						"tag": "message2",
+						"execute": "say2",
+						"keep_value": true,
+					}
+				]
+>>>>>>> branch 'master' of https://github.com/Gunivers/Gunibot.git
 			}
 		]
 	}
