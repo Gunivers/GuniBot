@@ -9,9 +9,9 @@ import net.gunivers.gunibot.command.lib.CommandSyntaxError;
 import net.gunivers.gunibot.command.lib.JsonCommandFormatException;
 import net.gunivers.gunibot.command.lib.nodes.interfaces.NeedGuild;
 
-public class NodeInfinite extends TypeNode<List<Object>> implements NeedGuild<List<Object>>
+public class NodeInfinity extends TypeNode<List<Object>> implements NeedGuild<List<Object>>
 {
-	private TypeNode<?> type = null;
+	private TypeNode<Object> type = null;
 	
 	@Override
 	public List<Object> getFrom(Guild guild, String list)
@@ -25,6 +25,14 @@ public class NodeInfinite extends TypeNode<List<Object>> implements NeedGuild<Li
 		}
 		
 		return result;
+	}
+	
+	@Override
+	public String getFrom(List<Object> l)
+	{
+		StringBuilder s = new StringBuilder();
+		for (Object o : l) s.append(type.getFrom(o));
+		return s.toString();
 	}
 
 	@Override
@@ -43,14 +51,19 @@ public class NodeInfinite extends TypeNode<List<Object>> implements NeedGuild<Li
 	}
 
 	@Override
+	@SuppressWarnings("unchecked")
 	public void parse(String s) throws JsonCommandFormatException
 	{
 		try
 		{
-			type = EnumNode.valueOfIgnoreCase(s).createInstance();
-			int index = s.indexOf(';'); if (index > -1) type.parse(s.substring(index +1));
+			int index = s.indexOf(';');
+			if (index > -1) 
+			{
+				type = (TypeNode<Object>) EnumNode.valueOfIgnoreCase(s.substring(0, index)).createInstance();
+				type.parse(s.substring(index +1));
+			} else type = (TypeNode<Object>) EnumNode.valueOfIgnoreCase(s).createInstance();
 		}
-		catch (JsonCommandFormatException e) { throw new JsonCommandFormatException("This node cannot be infinite: " + e.getMessage()); }
+		catch (JsonCommandFormatException e) { throw e; }
 		catch (Exception e) { throw new JsonCommandFormatException(s + " is not a valid type"); }
 	}
 }

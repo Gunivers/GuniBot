@@ -10,4 +10,9 @@ public class Tuple1<A> extends Tuple {
 		_1 = value;
 	}
 
+	@Override
+	public String toString()
+	{
+		return "T1[" + _1 + "]";
+	}
 }

@@ -20,4 +20,9 @@ public class Tuple6<A, B, C, D, E, F> extends Tuple {
 		_6 = value6;
 	}
 
+	@Override
+	public String toString()
+	{
+		return "T6[" + _1 +','+ _2 +','+ _3 +','+ _4 +','+ _5 +','+ _6 + "]";
+	}
 }

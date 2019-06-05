@@ -97,5 +97,4 @@ public abstract class Tuple implements Serializable {
 				 throw new ArrayStoreException("Cast could not be done.");
 			}
 	}
-	
 }

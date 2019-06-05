@@ -21,5 +21,10 @@ public class Tuple7<A, B, C, D, E, F, G> extends Tuple {
 		_6 = value6;
 		_7 = value7;
 	}
-	
+
+	@Override
+	public String toString()
+	{
+		return "T7[" + _1 +','+ _2 +','+ _3 +','+ _4 +','+ _5 +','+ _6 +','+ _7 + "]";
+	}
 }

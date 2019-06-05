@@ -12,7 +12,7 @@ public enum EnumNode {
 	
 	TEXT_CHANNEL(NodeTextChannel::new),
 	
-	INFINITY(NodeInfinite::new),
+	INFINITY(NodeInfinity::new),
 	;
 	
 	private Supplier<TypeNode<?>> fun;

@@ -36,9 +36,6 @@ public class NodeInteger extends TypeNode<Integer>
 			throw new JsonCommandFormatException("The condition " + s + " should matches \\d+\\.\\.\\d+");
 	}
 	
-	@Override
-	public Integer getFrom(String s)
-	{
-		return Integer.parseInt(s);
-	}
+	@Override public Integer getFrom(String s) { return Integer.parseInt(s); }
+	@Override public String getFrom(Integer i) { return i.toString(); }
 }
