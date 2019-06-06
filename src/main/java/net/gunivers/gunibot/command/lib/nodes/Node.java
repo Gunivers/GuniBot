@@ -62,7 +62,7 @@ public abstract class Node implements Matchable
 			// Récursivité
 			Tuple2<Tuple2<Map<TypeNode,Object>, Method>, CommandSyntaxError> res = n.matches(guild, Arrays.copyOfRange(s, 1, s.length));
 
-			// Si aucun élément n'a encore été validé et que l'élément fils courant est
+			// Si aucun n'élément n'a encore été validé et que l'élément fils courant est
 			// valide, on le garde de côté
 			if (res._2 == null && valid == null)
 				valid = res;
