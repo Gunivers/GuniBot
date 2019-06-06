@@ -47,7 +47,7 @@ public abstract class Node {
 			Tuple2<Tuple2<List<String>, Method>, CommandSyntaxError> res = n
 					.matches(Arrays.copyOfRange(s, 1, s.length));
 
-			// Si aucun n'élément n'a encore été validé et que l'élément fils courant est
+			// Si aucun élément n'a encore été validé et que l'élément fils courant est
 			// valide, on le garde de côté
 			if (res._2 == null && valid == null)
 				valid = res;
