@@ -34,5 +34,6 @@ public class NodeString extends TypeNode<String>
 			return "<" + getTag() + ">" + childrenToString();
 	}
 	
-	@Override public String getFrom(String s) { return s; }
+	@Override
+	public String getFrom(String s) { return s; }
 }

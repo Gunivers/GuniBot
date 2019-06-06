@@ -13,8 +13,11 @@ public class NodeTextChannel extends TypeNode<TextChannel> implements NeedGuild<
 	@Override
 	public void parse(String s) {}
 
-	@Override public TextChannel getFrom(Guild guild, String s) { return Parser.parseTextChannel(s, guild).blockFirst(); }
-	@Override public String getFrom(TextChannel t) { return t.getMention(); }
+	@Override
+	public TextChannel getFrom(Guild guild, String s)
+	{
+		return Parser.parseTextChannel(s, guild).blockFirst();
+	}
 
 	@Override
 	public CommandSyntaxError matchesNode(Guild guild, String s)

@@ -15,8 +15,12 @@ public class NodeBoolean extends TypeNode<Boolean>
 		} catch (Exception e) { return new CommandSyntaxError(s + " should be a boolean!", SyntaxError.ARG_INVALID); }
 	}
 
-	@Override public void parse(String s) {}
+	@Override
+	public void parse(String s) {}
 	
-	@Override public Boolean getFrom(String s) { return Boolean.parseBoolean(s); }
-	@Override public String getFrom(Boolean b) { return b.toString(); }
+	@Override
+	public Boolean getFrom(String s)
+	{
+		return Boolean.parseBoolean(s);
+	}
 }

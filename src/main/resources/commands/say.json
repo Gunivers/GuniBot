@@ -6,10 +6,9 @@
 		"arguments": 
 		[
 			{
-				"tag": "message",
 				"type": "infinity",
 				"matches":"string",
-				"keep_value": true,
+				"tag": "message1",
 				"execute": "say"
 			}
 		]

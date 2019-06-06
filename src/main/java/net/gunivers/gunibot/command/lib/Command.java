@@ -3,6 +3,7 @@ package net.gunivers.gunibot.command.lib;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -14,9 +15,7 @@ import org.reflections.Reflections;
 
 import discord4j.core.event.domain.message.MessageCreateEvent;
 import net.gunivers.gunibot.command.lib.nodes.Node;
-import net.gunivers.gunibot.command.lib.nodes.TypeNode;
 import net.gunivers.gunibot.command.lib.annotations.Ignore;
-import net.gunivers.gunibot.command.lib.annotations.KeepAsList;
 import net.gunivers.gunibot.command.lib.nodes.ListNode;
 import net.gunivers.gunibot.utils.tuple.Tuple2;
 
@@ -58,24 +57,19 @@ public abstract class Command {
 		syntax = n;
 	}
 	
-	@SuppressWarnings({ "serial", "rawtypes" })
+	@SuppressWarnings("serial")
 	public void apply(String[] command, MessageCreateEvent event)
 	{
-		Tuple2<Tuple2<Map<TypeNode,Object>, Method>, CommandSyntaxError> result = syntax.matches(event.getGuild().block(), command);
-		
+		Tuple2<Tuple2<List<Object>, Method>, CommandSyntaxError> result = syntax.matches(event.getGuild().block(), command);
 		if(result._1 != null)
 		{
 			try
 			{
 				if(result._1._1.size() > 0)	
 				{
-					if (result._1._2.isAnnotationPresent(KeepAsList.class))
-					{
-						result._1._1.replaceAll(TypeNode<Object>::getFrom);
-						result._1._2.invoke(this, event, new ArrayList<>(result._1._1.values()));
-					}
-					else
-						result._1._2.invoke(this, new HashMap<TypeNode,Object>() {{put(null, event); putAll(result._1._1);}}.values().toArray());
+					System.out.println(new ArrayList<Object>() {{ addAll(result._1._1); }}.stream().reduce("[", (r,s) -> r += s.getClass().getSimpleName() + ' '));
+					System.out.println(Arrays.asList(result._1._2));
+					result._1._2.invoke(this, new ArrayList<Object>() {{ add(event); addAll(result._1._1); }}.toArray());
 				}
 				else
 					result._1._2.invoke(this, event);
@@ -83,7 +77,7 @@ public abstract class Command {
 			{
 				e.printStackTrace();
 				event.getMessage().getChannel().flatMap(channel -> channel.createMessage(
-						"```❌  An error occured while running the command: " + e.getClass().getSimpleName() + ": " + e.getMessage() + "```"
+						"```❌  An error occured while running the command: " + e.getMessage() + "```"
 						+ "\nIf it persists please contact this bot developpers on Gunivers"
 						+ "\n||<https://discord.gg/EncRXj2>||")).subscribe();
 			}

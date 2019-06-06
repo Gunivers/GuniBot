@@ -16,9 +16,4 @@ public class Tuple4<A, B, C, D> extends Tuple {
 		_4 = value4;
 	}
 
-	@Override
-	public String toString()
-	{
-		return "T4[" + _1 +','+ _2 +','+ _3 + +','+ _4 + "]";
-	}
 }

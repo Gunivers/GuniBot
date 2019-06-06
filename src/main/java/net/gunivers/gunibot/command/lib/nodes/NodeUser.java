@@ -13,8 +13,11 @@ public class NodeUser extends TypeNode<User> implements NeedGuild<User>
 	@Override
 	public void parse(String s) throws JsonCommandFormatException {}
 
-	@Override public User getFrom(Guild guild, String s) { return Parser.parseUser(s, Main.getDiscordClient()).blockFirst(); }
-	@Override public String getFrom(User u) { return u.getMention(); }
+	@Override
+	public User getFrom(Guild guild, String s)
+	{
+		return Parser.parseUser(s, Main.getDiscordClient()).blockFirst();
+	}
 
 	@Override
 	public CommandSyntaxError matchesNode(Guild guild, String s)

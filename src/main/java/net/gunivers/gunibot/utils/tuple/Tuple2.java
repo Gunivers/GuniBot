@@ -11,10 +11,4 @@ public class Tuple2<A, B> extends Tuple {
 		this._1 = value1;
 		this._2 = value2;
 	}
-
-	@Override
-	public String toString()
-	{
-		return "T2[" + _1 +','+ _2 + "]";
-	}
 }
