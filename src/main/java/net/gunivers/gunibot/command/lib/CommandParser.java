@@ -10,8 +10,8 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import net.gunivers.gunibot.command.lib.nodes.Node;
-import net.gunivers.gunibot.command.lib.nodes.EnumNode;
-import net.gunivers.gunibot.command.lib.nodes.ListNode;
+import net.gunivers.gunibot.command.lib.nodes.NodeEnum;
+import net.gunivers.gunibot.command.lib.nodes.NodeList;
 import net.gunivers.gunibot.command.lib.nodes.TypeNode;
 
 public class CommandParser {
@@ -23,12 +23,11 @@ public class CommandParser {
 	 *            la commande dont la syntaxe doit être parsée
 	 * @return la liste des alias de la commande
 	 */
-	public static ListNode<String> parseCommand(Command c)
-	{
+	public static NodeList<String> parseCommand(Command c) {
 		try {
 			String s = Utils.getResourceFileContent("commands/", c.getSyntaxFile());
 			JSONObject obj = new JSONObject(s);
-			ListNode<String> n = parseRoot(obj, c);
+			NodeList<String> n = parseRoot(obj, c);
 			c.setSyntax(n);
 			return n;
 		} catch (Exception e) {
@@ -37,20 +36,18 @@ public class CommandParser {
 		}
 	}
 
-	private static ListNode<String> parseRoot(JSONObject obj, Command c) throws JSONException, Exception
-	{
+	private static NodeList<String> parseRoot(JSONObject obj, Command c) throws JSONException, Exception {
 		List<String> keys = obj.keySet().stream().filter(x -> !x.equals("comment")).collect(Collectors.toList());
-		if (keys.size() == 1)
-		{
+		if (keys.size() == 1) {
 			String keyRoot = keys.get(0);
 			return parseHead(obj.getJSONObject(keyRoot), keyRoot, c);
 		}
 		throw new JsonCommandFormatException("Racine invalide\n\tat " + c.getSyntaxFile());
 	}
 
-	private static ListNode<String> parseHead(JSONObject obj, String root, Command c) throws Exception {
+	private static NodeList<String> parseHead(JSONObject obj, String root, Command c) throws Exception {
 		if (obj.keySet().stream().distinct().count() == obj.keySet().size()) {
-			ListNode<String> nr = new ListNode<>(root, (s, l) -> l.contains(s));
+			NodeList<String> nr = new NodeList<>(root, (s, l) -> l.contains(s));
 			for (String key : obj.keySet()) {
 				switch (key) {
 				case "description":
@@ -93,8 +90,8 @@ public class CommandParser {
 		return list;
 	}
 
-	private static TypeNode<?> parseArgument(JSONObject obj, Command c) {
-		TypeNode<?> n = null;
+	private static Node parseArgument(JSONObject obj, Command c) {
+		Node n = null;
 		String type = "";
 		String matches = "";
 		String tag = "";
@@ -164,17 +161,15 @@ public class CommandParser {
 		return null;
 	}
 
-	private static TypeNode<?> createNodeByType(String type, String matches, Command c) throws JsonCommandFormatException {
-		try
-		{
-			EnumNode ne = EnumNode.valueOfIgnoreCase(type);
-			TypeNode<?> tn = ne.createInstance();
-			tn.parse(matches);
-			return tn;
-		
-		} catch(IllegalArgumentException e)
-		{
+	private static Node createNodeByType(String type, String matches, Command c) throws JsonCommandFormatException {
+		try {
+		NodeEnum ne = NodeEnum.valueOfIgnoreCase(type);
+		TypeNode tn = ne.createInstance();
+		tn.parse(matches);
+		return tn;
+		} catch(IllegalArgumentException e) {
 			throw new JsonCommandFormatException("Type d'argument \"" + type + "\" invalide\n\tat " + c.getSyntaxFile());
+
 		}
 	}
 }

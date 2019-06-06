@@ -12,7 +12,6 @@ import discord4j.core.object.util.Snowflake;
 
 import net.gunivers.gunibot.command.lib.Command;
 import net.gunivers.gunibot.command.permissions.Permission;
-import net.gunivers.gunibot.syl2010.lib.parser.Parser;
 import net.gunivers.gunibot.utils.Util;
 import reactor.util.function.Tuple4;
 import reactor.util.function.Tuples;
@@ -67,9 +66,9 @@ public class PermissionCommand extends Command
 		})).subscribe();
 	}
 	
-	public void getUser(MessageCreateEvent event, String user)
+	public void getUser(MessageCreateEvent event, List<String> args)
 	{
-		Member member = event.getGuild().block().getMemberById(Snowflake.of(user.replaceAll("<@|!|>", ""))).block();
+		Member member = event.getGuild().block().getMemberById(Snowflake.of(args.get(0).replaceAll("<@|!|>", ""))).block();
 		
 		ArrayList<Permission> customs = new ArrayList<>();
 		ArrayList<Permission> discord = new ArrayList<>();
@@ -81,9 +80,9 @@ public class PermissionCommand extends Command
 		sendGetMessage(event, discord, customs, member.getMention());
 	}
 	
-	public void getRole(MessageCreateEvent event, String name)
+	public void getRole(MessageCreateEvent event, List<String> args)
 	{
-		Role role = Parser.parseRole(name, event.getGuild().block()).blockFirst();
+		Role role = event.getGuild().block().getRoleById(Snowflake.of(args.get(0).replaceAll("<@&|>", ""))).block();
 		
 		ArrayList<Permission> customs = Permission.roles.getOrDefault(role, new ArrayList<>());
 		ArrayList<Permission> discord = new ArrayList<>();
@@ -92,19 +91,19 @@ public class PermissionCommand extends Command
 		sendGetMessage(event, discord, customs, role.getMention());
 	}
 	
-	public void setUsers(MessageCreateEvent event, String perms, Boolean value, String name)
+	public void setUsers(MessageCreateEvent event, List<String> args)
 	{
-		Tuple4<ArrayList<Permission>, Boolean, ArrayList<Member>, ArrayList<Role>> tuple = getSetArguments(event, perms, value, name);
-		ArrayList<Permission> permissions = tuple.getT1();
+		Tuple4<ArrayList<Permission>, Boolean, ArrayList<Member>, ArrayList<Role>> tuple = getSetArguments(event, args);
+		ArrayList<Permission> perms = tuple.getT1();
 		boolean add = tuple.getT2();
 		ArrayList<Member> users = tuple.getT3();
 		
-		if (permissions.isEmpty()) {
-			event.getMessage().getChannel().flatMap(chan -> chan.createMessage("There is no such permission as "+ perms)).subscribe();
+		if (perms.isEmpty()) {
+			event.getMessage().getChannel().flatMap(chan -> chan.createMessage("There is no such permission as "+ args.get(0))).subscribe();
 			return;
 		}
 		
-		for (Permission perm : permissions)
+		for (Permission perm : perms)
 		{
 			users.stream().filter(user -> !Permission.custom.get(perm).contains(user)).forEach(user ->
 			{ 
@@ -116,15 +115,15 @@ public class PermissionCommand extends Command
 		event.getMessage().getChannel().flatMap(chan -> chan.createMessage("Successfully assigned permissions to users")).subscribe();
 	}
 
-	public void setRoles(MessageCreateEvent event, String permissions, Boolean value, String name)
+	public void setRoles(MessageCreateEvent event, List<String> args)
 	{
-		Tuple4<ArrayList<Permission>, Boolean, ArrayList<Member>, ArrayList<Role>> tuple = getSetArguments(event, permissions, value, name);
+		Tuple4<ArrayList<Permission>, Boolean, ArrayList<Member>, ArrayList<Role>> tuple = getSetArguments(event, args);
 		ArrayList<Permission> perms = tuple.getT1();
 		boolean add = tuple.getT2();
 		ArrayList<Role> roles = tuple.getT4();
 		
 		if (perms.isEmpty()) {
-			event.getMessage().getChannel().flatMap(chan -> chan.createMessage("There is no such permission as "+ permissions)).subscribe();
+			event.getMessage().getChannel().flatMap(chan -> chan.createMessage("There is no such permission as "+ args.get(0))).subscribe();
 			return;
 		}
 		
@@ -158,16 +157,17 @@ public class PermissionCommand extends Command
 	}
 	
 	private static Tuple4<ArrayList<Permission>, Boolean, ArrayList<Member>, ArrayList<Role>>
-		getSetArguments(MessageCreateEvent event, String permissions, boolean value, String name)
+		getSetArguments(MessageCreateEvent event, List<String> args)
 	{
-		ArrayList<Permission> perms = Permission.getByName(permissions);
-		boolean add = value;
-
-		ArrayList<Member> users = Arrays.asList(name.split(";")).stream().collect(ArrayList::new, (l,s) ->
-		l.add(Parser.parseMember(s, event.getGuild().block()).blockFirst()), List::addAll);
+		ArrayList<Permission> perms = Permission.getByName(args.get(0));
 		
-		ArrayList<Role> roles = Arrays.asList(name.split(";")).stream().collect(ArrayList::new, (l,s) ->
-		l.add(Parser.parseRole(s, event.getGuild().block()).blockFirst()), List::addAll);
+		boolean add = Boolean.parseBoolean(args.get(1));
+
+		ArrayList<Member> users = Arrays.asList(args.get(2).split(";")).stream().collect(ArrayList::new, (l,s) ->
+		l.add(event.getGuild().block().getMemberById(Snowflake.of(s.replaceAll("<@|!|>", ""))).block()), List::addAll);
+		
+		ArrayList<Role> roles = Arrays.asList(args.get(2).split(";")).stream().collect(ArrayList::new, (l,s) ->
+		l.add(event.getGuild().block().getRoleById(Snowflake.of(s.replaceAll("<@|!|>", ""))).block()), List::addAll);
 		
 		return Tuples.of(perms, add, users, roles);
 	}

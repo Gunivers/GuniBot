@@ -7,15 +7,12 @@ import java.util.Set;
 import java.util.function.BiPredicate;
 import java.util.stream.Collectors;
 
-import net.gunivers.gunibot.command.lib.CommandSyntaxError;
-import net.gunivers.gunibot.command.lib.CommandSyntaxError.SyntaxError;
-
-public class ListNode<T> extends Node {
+public class NodeList<T> extends Node {
 
 	private Set<T> elements = new HashSet<>();
 	private BiPredicate<String, Set<T>> predicat = null;
 
-	public ListNode(T al, BiPredicate<String, Set<T>> predicate) {
+	public NodeList(T al, BiPredicate<String, Set<T>> predicate) {
 		elements.add(al);
 		predicat = predicate;
 	}
@@ -29,8 +26,8 @@ public class ListNode<T> extends Node {
 	}
 
 	@Override
-	public CommandSyntaxError matchesNode(String s) {
-		return predicat.test(s, elements) ? null : new CommandSyntaxError(SyntaxError.ARG_INVALID);
+	protected boolean matchesNode(String s) {
+		return predicat.test(s, elements);
 	}
 	
 	@Override

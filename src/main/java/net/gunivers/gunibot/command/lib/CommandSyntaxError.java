@@ -16,8 +16,6 @@ public class CommandSyntaxError {
 		private SyntaxError(String text) { this.text = text; }
 	}
 
-	private String text = null;
-	
 	private List<String> path = new LinkedList<>();
 	private SyntaxError error = null;
 	private int deep = 0;
@@ -38,23 +36,6 @@ public class CommandSyntaxError {
 	
 	public CommandSyntaxError(SyntaxError error) {
 		this.error = error;
-	}
-
-	public CommandSyntaxError(String message)
-	{
-		this.text = message;
-	}
-	
-	public CommandSyntaxError(String message, SyntaxError error)
-	{
-		this(message);
-		this.error = error;
-	}
-	
-	public CommandSyntaxError(String message, SyntaxError error, String path)
-	{
-		this(error, path);
-		this.text = message;
 	}
 	
 	public void addStringToPathFirst(String s) {
@@ -78,7 +59,7 @@ public class CommandSyntaxError {
 	public List<String> getPath() {
 		return new LinkedList<String>(path);
 	}
-
+	
 	@Override
-	public String toString() { return text == null ? error == null ? "Syntax Error!" : error.text : text; }
+	public String toString() { return error.text; }
 }
