@@ -107,41 +107,29 @@ public class CommandParser {
 			if (nbrKeys != obj.keySet().stream().filter(s -> !s.equals("comment")).distinct().count())
 				throw new JsonCommandFormatException("Multiplicité d'une clé dans un argument\n\tat " + c.getSyntaxFile());
 
-			int nbrKeysCount = 0;
-
-			if (obj.has("type")) {
-				type = obj.getString("type");
-				nbrKeysCount++;
-			} else
+			for(String key : obj.keySet()) {
+			
+				if (key.equals("type")) type = obj.getString(key);
+				else if (key.equals("matches")) matches = obj.getString(key);
+				else if(key.equals("arguments")) args = obj.getJSONArray(key);
+				else if(key.equals("keep_value")) keepValue = obj.getBoolean(key);
+				else if(key.equals("tag")) tag = obj.getString(key);
+				else if(key.equals("execute")) {
+					String methodName = obj.getString("execute");
+					execute = getMethodByName(methodName, c);
+					if (execute == null)
+						throw new JsonCommandFormatException("La fonction " + methodName + " n'existe pas dans la classe "
+								+ c.getClass().getSimpleName());
+				} else if(!key.equals("comment"))
+					throw new JsonCommandFormatException("Argument invalide " + key + "\n\tat " + c.getSyntaxFile());
+			}
+			
+			
+			if(type == "")
 				throw new JsonCommandFormatException("Clé \"type\" obligatoire dans la déclaration d'un argument\n\tat " + c.getSyntaxFile());
-			if (obj.has("matches")) {
-				matches = obj.getString("matches");
-				nbrKeysCount++;
-			}
-			if (obj.has("arguments")) {
-				args = obj.getJSONArray("arguments");
-				nbrKeysCount++;
-			}
-			if (obj.has("keep_value")) {
-				keepValue = obj.getBoolean("keep_value");
-				nbrKeysCount++;
-			}
-			if(obj.has("tag")) {
-				tag = obj.getString("tag");
-				nbrKeysCount++;
-			} else
+			if(tag == "")
 				throw new JsonCommandFormatException("Clé \"tag\" obligatoire dans la déclaration d'un argument\n\tat " + c.getSyntaxFile());
-			if (obj.has("execute")) {
-				String methodName = obj.getString("execute");
-				execute = getMethodByName(methodName, c);
-				if (execute == null)
-					throw new JsonCommandFormatException("La fonction " + methodName + " n'existe pas dans la classe "
-							+ c.getClass().getSimpleName());
-				nbrKeysCount++;
-			}
-			if (nbrKeysCount != nbrKeys)
-				throw new JsonCommandFormatException("Arguments invalides\n\tat " + c.getSyntaxFile());
-
+			
 			n = createNodeByType(type, matches, c);
 			n.setExecute(execute);
 			n.setTag(tag);
@@ -155,7 +143,7 @@ public class CommandParser {
 			return null;
 		}
 	}
-
+	
 	private static Method getMethodByName(String name, Command clazz) {
 		Method[] methods = clazz.getClass().getMethods();
 		for (Method method : methods)
