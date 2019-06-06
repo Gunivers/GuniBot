@@ -35,19 +35,20 @@ public abstract class Command {
 		this.description = description;
 	}
 
-	 public Set<Permission> getPermissions() {
-	        return permissions;
-	    }
+	public Set<Permission> getPermissions()
+	{
+		return permissions;
+	}
 
-	  public void addPermissions(List<String> permissions)
-	    {
-	        for (String perm : permissions)
-	        {
-	            List<Permission> perms = Permission.getByName(perm);
-	            if (perms.isEmpty()) throw new NullPointerException("Permission '" + perm + "' doesn't exist");
-	            this.permissions.addAll(perms);
-	        }
-	    }
+	public void addPermissions(List<String> permissions)
+	{
+		for (String perm : permissions)
+		{
+			List<Permission> perms = Permission.getByName(perm);
+			if (perms.isEmpty()) throw new NullPointerException("Permission '" + perm + "' doesn't exist");
+			this.permissions.addAll(perms);
+		}
+	}
 
 	public Set<String> getAliases() {
 		return aliases;
