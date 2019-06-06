@@ -121,6 +121,7 @@ public class CommandParser {
 					throw new JsonCommandFormatException("Argument invalide " + key + "\n\tat " + c.getSyntaxFile());
 			}
 			
+			
 			if(type == "")
 				throw new JsonCommandFormatException("Clé \"type\" obligatoire dans la déclaration d'un argument\n\tat " + c.getSyntaxFile());
 			if(tag == "")
