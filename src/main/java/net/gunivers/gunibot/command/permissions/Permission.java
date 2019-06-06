@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import javax.naming.InvalidNameException;
 
@@ -43,7 +44,7 @@ public class Permission
 		
 		this.name = name;
 	}
-
+	
 	
 	public boolean hasPermission(Member user)
 	{	
@@ -84,6 +85,13 @@ public class Permission
 		return perms;
 	}
 
+	public static boolean hasPermissions(Member member, Set<Permission> perms)
+	{
+		for (Permission perm : perms)
+			if (!perm.hasPermission(member)) return false;
+			
+		return true;
+	}
 	
 	@Override
 	public boolean equals(Object perm)
