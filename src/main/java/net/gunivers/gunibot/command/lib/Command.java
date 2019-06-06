@@ -14,6 +14,7 @@ import org.reflections.Reflections;
 import discord4j.core.event.domain.message.MessageCreateEvent;
 import net.gunivers.gunibot.command.lib.nodes.Node;
 import net.gunivers.gunibot.command.lib.nodes.NodeList;
+import net.gunivers.gunibot.command.permissions.Permission;
 import net.gunivers.gunibot.utils.tuple.Tuple2;
 
 public abstract class Command {
