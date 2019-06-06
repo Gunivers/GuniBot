@@ -22,37 +22,36 @@ import net.gunivers.gunibot.command.lib.nodes.ListNode;
 import net.gunivers.gunibot.utils.tuple.Tuple2;
 
 public abstract class Command {
-	
-	public static final String PREFIX = "/";
-	public static final Map<List<String>, Command> commands = new HashMap<>();
-	
-	private String description = "";
-	private Node syntax = null;
-	
-	private Set<Permission> permissions = new HashSet<>();
-	private Set<String> aliases = new HashSet<>();
+    
+    public static final String PREFIX = "/";
+    public static final Map<List<String>, Command> commands = new HashMap<>();
+    
+    private String description = "";
+    private Node syntax = null;
+    private Set<Permission> permissions = new HashSet<>();
+    private Set<String> aliases = new HashSet<>();
 
-	public String getDescription() {
-		return description;
-	}
+    public String getDescription() {
+        return description;
+    }
 
-	public void setDescription(String description) {
-		this.description = description;
-	}
+    public void setDescription(String description) {
+        this.description = description;
+    }
 
-	public Set<Permission> getPermissions() {
-		return permissions;
-	}
+    public Set<Permission> getPermissions() {
+        return permissions;
+    }
 
-	public void addPermissions(List<String> permissions)
-	{
-		for (String perm : permissions)
-		{
-			List<Permission> perms = Permission.getByName(perm);
-			if (perms.isEmpty()) throw new NullPointerException("Permission '" + perm + "' doesn't exist");
-			this.permissions.addAll(perms);
-		}
-	}
+    public void addPermissions(List<String> permissions)
+    {
+        for (String perm : permissions)
+        {
+            List<Permission> perms = Permission.getByName(perm);
+            if (perms.isEmpty()) throw new NullPointerException("Permission '" + perm + "' doesn't exist");
+            this.permissions.addAll(perms);
+        }
+    }
 
 	public Set<String> getAliases() {
 		return aliases;
