@@ -2,7 +2,7 @@
 	"perf": 
 	{
 		"description": "Send all informations about the consumed ressources of the bot",
-		"permissions": ["dev"],
+		"permissions": ["bot.dev"],
 		"execute": "getPerf"
 	}
 }

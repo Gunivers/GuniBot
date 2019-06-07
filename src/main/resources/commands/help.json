@@ -2,7 +2,7 @@
 	"help":
 	{
 		"description": "You may access the ultimate knowledge!",
-		"permissions": ["discord.view_channel", "discord.send_messages", "discord.read_messages_history"],
+		"permissions": ["discord.send_messages", "discord.read_message_history"],
 		"aliases": ["h", "?"],
 		"execute": "help",
 		"arguments":

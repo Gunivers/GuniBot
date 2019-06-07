@@ -13,7 +13,7 @@ import discord4j.core.object.entity.Role;
 
 public class Permission
 {
-	public static final HashMap<Permission, ArrayList<Member>> custom = new HashMap<>();
+	public static final HashMap<Permission, ArrayList<Member>> bot = new HashMap<>();
 	public static final HashMap<Permission, discord4j.core.object.util.Permission> discord = new HashMap<>();
 	public static final HashMap<Role, ArrayList<Permission>> roles = new HashMap<>();
 	
@@ -21,23 +21,25 @@ public class Permission
 	{
 		Arrays.asList(discord4j.core.object.util.Permission.values()).forEach(perm ->
 			new Permission(perm.name().toLowerCase(), perm));
+		
+		new Permission("bot.dev");
 	}
 	
 	private final String name;
 	
 	public Permission(String name)
 	{
-		this("custom." + name, true);
-		custom.putIfAbsent(this, new ArrayList<>());
+		this(name, true);
+		bot.putIfAbsent(this, new ArrayList<>());
 	}
 
-	public Permission(String name, discord4j.core.object.util.Permission perm)
+	private Permission(String name, discord4j.core.object.util.Permission perm)
 	{
 		this("discord." + name, false);
 		discord.putIfAbsent(this, perm);
 	}
 	
-	private Permission(String name, boolean custom)
+	private Permission(String name, boolean bot)
 	{
 		if (!name.matches("([a-z_]+\\.)+[a-z_]+"))
 			throw new RuntimeException(new InvalidNameException("Permission name should matche '([a-z_]+\\.)+[a-z_]+'"));
@@ -52,12 +54,12 @@ public class Permission
 			if (entry.getValue().contains(this) && user.getRoles().collectList().block().contains(entry.getKey()))
 				return true;
 		
-		return (this.isCustom() && custom.get(this).contains(user))
+		return (this.isCustom() && bot.get(this).contains(user))
 			|| user.getBasePermissions().block().contains(discord.get(this));
 	}
 	
 	
-	public boolean isCustom() { return custom.keySet().contains(this); }
+	public boolean isCustom() { return bot.keySet().contains(this); }
 	public boolean isDiscord() { return discord.keySet().contains(this); }
 	
 	public String getName() { return this.name; }
@@ -71,7 +73,7 @@ public class Permission
 		if (!name.matches("([a-z_]+\\.)+" + (multiple ? "\\*" : "[a-z_]+"))) return perms;
 		
 		ArrayList<Permission> permissions = new ArrayList<>(discord.keySet());
-		permissions.addAll(custom.keySet());
+		permissions.addAll(bot.keySet());
 		
 		for (Permission p : permissions)
 		{

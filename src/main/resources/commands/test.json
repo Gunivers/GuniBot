@@ -1,0 +1,21 @@
+{
+	"test": {
+		"description": "This command is only here for tests, and is scheduled to be deleted on releases",
+		"permissions": [],
+		"arguments":
+		[
+			{
+				"tag": "A~Z",
+				"type": "string",
+				"matches": "az|Az|AZ|a~z|A~z|A~Z",
+				"arguments":
+				[{
+					"tag": "reactions",
+					"type": "string",
+					"matches": "react|reaction|reacts|reactions",
+					"execute": "azReact"
+				}]
+			}
+		]
+	}
+}

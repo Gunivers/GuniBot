@@ -54,7 +54,7 @@ public class PermissionCommand extends Command
 			embed.addField("*Discord linked permissions*", sb.toString(), false);
 			
 			sb.setLength(0);
-			Permission.custom.keySet().forEach(p -> sb.append(p.getName() + '\n'));
+			Permission.bot.keySet().forEach(p -> sb.append(p.getName() + '\n'));
 			embed.addField("*Custom permissions*", sb.toString(), false);
 			
 			for (Entry<Role, ArrayList<Permission>> role : Permission.roles.entrySet())
@@ -73,7 +73,7 @@ public class PermissionCommand extends Command
 		ArrayList<Permission> customs = new ArrayList<>();
 		ArrayList<Permission> discord = new ArrayList<>();
 		
-		Permission.custom.entrySet().stream().filter(e -> e.getValue().contains(member)).forEach(e -> customs.add(e.getKey()));
+		Permission.bot.entrySet().stream().filter(e -> e.getValue().contains(member)).forEach(e -> customs.add(e.getKey()));
 		Permission.discord.entrySet().stream().filter(e -> member.getBasePermissions().block().contains(e.getValue()))
 			.forEach(e -> discord.add(e.getKey()));
 		
@@ -105,10 +105,10 @@ public class PermissionCommand extends Command
 		
 		for (Permission perm : perms)
 		{
-			users.stream().filter(user -> !Permission.custom.get(perm).contains(user)).forEach(user ->
+			users.stream().filter(user -> !Permission.bot.get(perm).contains(user)).forEach(user ->
 			{ 
-				if(add) Permission.custom.get(perm).add(user);
-				else Permission.custom.get(perm).remove(user);
+				if(add) Permission.bot.get(perm).add(user);
+				else Permission.bot.get(perm).remove(user);
 			});
 		}
 		

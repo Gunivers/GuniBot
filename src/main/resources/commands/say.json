@@ -2,7 +2,7 @@
 	"say": 
 	{
 		"description": "Repeat the message following the command",
-		"permissions": ["dev"],
+		"permissions": ["bot.dev"],
 		"arguments": 
 		[
 			{

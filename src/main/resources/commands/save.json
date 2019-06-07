@@ -2,7 +2,7 @@
 	"save": 
 	{
 		"description": "Save internal data of the guild",
-		"permissions": ["administrator"],
+		"permissions": ["discord.administrator"],
 		"execute": "save"
 	}
 }
