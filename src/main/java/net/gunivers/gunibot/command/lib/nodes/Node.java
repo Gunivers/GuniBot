@@ -130,7 +130,7 @@ public abstract class Node {
 			if (run != null)
 				return " [" + children.stream().map((n) -> n.toString()).collect(Collectors.joining("|")) + "]";
 			else
-				return " (" + children.stream().map((n) -> n.toString()).collect(Collectors.joining("|")) + ")";
+				return " (" + children.stream().map((n) -> { System.out.println(n); return n.toString(); }).collect(Collectors.joining("|")) + ")";
 		} else
 			return "";
 	}

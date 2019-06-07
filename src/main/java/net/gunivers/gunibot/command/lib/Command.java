@@ -95,11 +95,11 @@ public abstract class Command {
 				if (!cmd.isAnnotationPresent(Ignore.class)) {
 					Command c = cmd.newInstance();
 					NodeList<String> n = (NodeList<String>) CommandParser.parseCommand(c);
-					List<String> aliases = n.getElements();
-					System.out.println(c.getClass().getSimpleName());
-					System.out.println(c.toString());
-					// Function.functions.put(aliases.get(0), n);
-					commands.put(aliases, c);
+					if(n != null) {
+						System.out.println(n.getElements().get(0));
+						List<String> aliases = n.getElements();
+						commands.put(aliases, c);
+					}
 				}
 			} catch (InstantiationException | IllegalAccessException e) {
 				e.printStackTrace();

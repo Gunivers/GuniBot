@@ -1,10 +1,9 @@
 package net.gunivers.gunibot.command.lib;
 
-import java.util.Arrays;
-import java.util.HashSet;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Set;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.json.JSONArray;
@@ -39,11 +38,12 @@ public class CommandParser {
 			return n;
 		} catch (Exception e) {
 			e.printStackTrace();
+			command = null;
 			return null;
 		}
 	}
 
-	private static NodeList<String> parseRoot(JSONObject obj) throws JSONException, Exception {
+	private static NodeList<String> parseRoot(JSONObject obj) throws Exception {
 		List<String> keys = obj.keySet().stream().filter(x -> !x.equals("comment")).collect(Collectors.toList());
 		if (keys.size() == 1) {
 			String keyRoot = keys.get(0);
@@ -61,36 +61,36 @@ public class CommandParser {
 		throw new JsonCommandFormatException("En-tête de fichier invalide\n\tat " + command.getSyntaxFile());
 	}
 
-	public static List<Node> parseArguments(JSONArray array) {
+	public static List<Node> parseArguments(JSONArray array) throws JSONException, JsonCommandFormatException {
 		List<Node> list = new LinkedList<>();
 		for (int i = 0; i < array.length(); i++)
 			list.add(parseArgument(array.getJSONObject(i), null, Position.NOT_IN_ROOT, Position.DEFAULT));
 		return list;
 	}
 
-	private static Node parseArgument(JSONObject obj, Node n, Position pos, Position pos2) {
+	private static Node parseArgument(JSONObject obj, Node n, Position pos, Position pos2) throws JsonCommandFormatException {
 
-		try {
 			int nbrKeys = (int) obj.keySet().stream().filter(s -> !s.equals("comment")).count();
 			if (nbrKeys != obj.keySet().stream().filter(s -> !s.equals("comment")).distinct().count())
 				throw new JsonCommandFormatException("Multiplicité d'une clé dans un argument\n\tat " + command.getSyntaxFile());
 			
-			Set<String> keysPresent = new HashSet<>(Arrays.asList("comment")); 
+			Map<String, KeyEnum> keysPresent = new HashMap<>();
+			keysPresent.put("comment", null);
 			for(KeyEnum ke : KeyEnum.getByPos(pos, pos2)) {
 				Tuple2<String, Node> result = ke.getClazz().parseJson(obj, n, command);
-				keysPresent.add(result._1);
+				keysPresent.put(result._1, ke);
 				n = result._2;
 			}
-			String invalidKeys = obj.keySet().stream().filter(s -> !keysPresent.contains(s)).collect(Collectors.joining(", "));
+			List<KeyEnum> list = n.blacklist().stream().filter(ke -> keysPresent.containsValue(ke)).collect(Collectors.toList());
+			if(list.size() > 0)
+				throw new JsonCommandFormatException(n.getTag() + " est incompatible avec les clés " + list.stream().map(ke -> ke.getClazz().getKey()).collect(Collectors.joining(", ")));
+			
+			String invalidKeys = obj.keySet().stream().filter(s -> !keysPresent.containsKey(s)).collect(Collectors.joining(", "));
 			if(!invalidKeys.equals(""))
 				throw new JsonCommandFormatException("Clé(s) invalide(s) " + invalidKeys + "\n\tat " + command.getSyntaxFile());
 
 			return n;
 
-		} catch (JsonCommandFormatException e) {
-			e.printStackTrace();
-			return null;
-		}
 	}
 
 }
