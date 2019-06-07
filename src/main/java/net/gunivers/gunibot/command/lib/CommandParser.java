@@ -1,20 +1,25 @@
 package net.gunivers.gunibot.command.lib;
 
-import java.lang.reflect.Method;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import net.gunivers.gunibot.command.lib.keys.KeyEnum;
+import net.gunivers.gunibot.command.lib.keys.KeyEnum.Position;
 import net.gunivers.gunibot.command.lib.nodes.Node;
-import net.gunivers.gunibot.command.lib.nodes.NodeEnum;
 import net.gunivers.gunibot.command.lib.nodes.NodeList;
-import net.gunivers.gunibot.command.lib.nodes.TypeNode;
+import net.gunivers.gunibot.utils.tuple.Tuple2;
 
 public class CommandParser {
+	
+	private static Command command;
 
 	/**
 	 * Parse la syntaxe d'une commande
@@ -25,10 +30,12 @@ public class CommandParser {
 	 */
 	public static NodeList<String> parseCommand(Command c) {
 		try {
+			command = c;
 			String s = Utils.getResourceFileContent("commands/", c.getSyntaxFile());
 			JSONObject obj = new JSONObject(s);
-			NodeList<String> n = parseRoot(obj, c);
+			NodeList<String> n = parseRoot(obj);
 			c.setSyntax(n);
+			command = null;
 			return n;
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -36,102 +43,48 @@ public class CommandParser {
 		}
 	}
 
-	private static NodeList<String> parseRoot(JSONObject obj, Command c) throws JSONException, Exception {
+	private static NodeList<String> parseRoot(JSONObject obj) throws JSONException, Exception {
 		List<String> keys = obj.keySet().stream().filter(x -> !x.equals("comment")).collect(Collectors.toList());
 		if (keys.size() == 1) {
 			String keyRoot = keys.get(0);
-			return parseHead(obj.getJSONObject(keyRoot), keyRoot, c);
+			return parseHead(obj.getJSONObject(keyRoot), keyRoot);
 		}
-		throw new JsonCommandFormatException("Racine invalide\n\tat " + c.getSyntaxFile());
+		throw new JsonCommandFormatException("Racine invalide\n\tat " + command.getSyntaxFile());
 	}
 
-	private static NodeList<String> parseHead(JSONObject obj, String root, Command c) throws Exception {
+	@SuppressWarnings("unchecked")
+	private static NodeList<String> parseHead(JSONObject obj, String root) throws Exception {
 		if (obj.keySet().stream().distinct().count() == obj.keySet().size()) {
 			NodeList<String> nr = new NodeList<>(root, (s, l) -> l.contains(s));
-			for (String key : obj.keySet()) {
-				switch (key) {
-				case "description":
-					c.setDescription(obj.getString(key));
-					break;
-				case "permissions":
-					c.addPermissions(obj.getJSONArray(key).toList().stream().map(s -> s.toString())
-							.collect(Collectors.toList()));
-					break;
-				case "aliases":
-					nr.addElements(obj.getJSONArray(key).toList().stream().map(s -> s.toString())
-							.collect(Collectors.toList()));
-					break;
-				case "arguments":
-					nr.setChild(parseArguments(obj.getJSONArray(key), c));
-					break;
-				case "execute":
-					Method m = getMethodByName(obj.getString(key), c);
-					nr.setExecute(m);
-					if (m == null)
-						throw new JsonCommandFormatException("La fonction " + obj.getString(key)
-								+ " n'existe pas dans la classe " + c.getClass().getSimpleName());
-					break;
-				case "comment":
-					break;
-				default:
-					throw new JsonCommandFormatException("Clé d'en-tête \"" + key + "\" invalide\n\\at " + c.getSyntaxFile());
-				}
-			}
-			if (c.getDescription() != "")
-				return nr;
+			return (NodeList<String>) parseArgument(obj, nr, Position.ONLY_IN_ROOT, Position.DEFAULT);
 		}
-		throw new JsonCommandFormatException("En-tête de fichier invalide\n\tat " + c.getSyntaxFile());
+		throw new JsonCommandFormatException("En-tête de fichier invalide\n\tat " + command.getSyntaxFile());
 	}
 
-	protected static List<Node> parseArguments(JSONArray array, Command c) {
+	public static List<Node> parseArguments(JSONArray array) {
 		List<Node> list = new LinkedList<>();
 		for (int i = 0; i < array.length(); i++)
-			list.add(parseArgument(array.getJSONObject(i), c));
+			list.add(parseArgument(array.getJSONObject(i), null, Position.NOT_IN_ROOT, Position.DEFAULT));
 		return list;
 	}
 
-	private static Node parseArgument(JSONObject obj, Command c) {
-		Node n = null;
-		String type = "";
-		String matches = "";
-		String tag = "";
-		boolean keepValue = false;
-		Method execute = null;
-		JSONArray args = null;
+	private static Node parseArgument(JSONObject obj, Node n, Position pos, Position pos2) {
 
 		try {
 			int nbrKeys = (int) obj.keySet().stream().filter(s -> !s.equals("comment")).count();
 			if (nbrKeys != obj.keySet().stream().filter(s -> !s.equals("comment")).distinct().count())
-				throw new JsonCommandFormatException("Multiplicité d'une clé dans un argument\n\tat " + c.getSyntaxFile());
-
-			for(String key : obj.keySet()) {
+				throw new JsonCommandFormatException("Multiplicité d'une clé dans un argument\n\tat " + command.getSyntaxFile());
 			
-				if (key.equals("type")) type = obj.getString(key);
-				else if (key.equals("matches")) matches = obj.getString(key);
-				else if(key.equals("arguments")) args = obj.getJSONArray(key);
-				else if(key.equals("keep_value")) keepValue = obj.getBoolean(key);
-				else if(key.equals("tag")) tag = obj.getString(key);
-				else if(key.equals("execute")) {
-					String methodName = obj.getString("execute");
-					execute = getMethodByName(methodName, c);
-					if (execute == null)
-						throw new JsonCommandFormatException("La fonction " + methodName + " n'existe pas dans la classe "
-								+ c.getClass().getSimpleName());
-				} else if(!key.equals("comment"))
-					throw new JsonCommandFormatException("Argument invalide " + key + "\n\tat " + c.getSyntaxFile());
+			Set<String> keysPresent = new HashSet<>(Arrays.asList("comment")); 
+			for(KeyEnum ke : KeyEnum.getByPos(pos, pos2)) {
+				Tuple2<String, Node> result = ke.getClazz().parseJson(obj, n, command);
+				keysPresent.add(result._1);
+				n = result._2;
 			}
-			
-			if(type == "")
-				throw new JsonCommandFormatException("Clé \"type\" obligatoire dans la déclaration d'un argument\n\tat " + c.getSyntaxFile());
-			if(tag == "")
-				throw new JsonCommandFormatException("Clé \"tag\" obligatoire dans la déclaration d'un argument\n\tat " + c.getSyntaxFile());
-			
-			n = createNodeByType(type, matches, c);
-			n.setExecute(execute);
-			n.setTag(tag);
-			n.setKeepValue(keepValue);
-			if (args != null)
-				n.setChild(parseArguments(args, c));
+			String invalidKeys = obj.keySet().stream().filter(s -> !keysPresent.contains(s)).collect(Collectors.joining(", "));
+			if(!invalidKeys.equals(""))
+				throw new JsonCommandFormatException("Clé(s) invalide(s) " + invalidKeys + "\n\tat " + command.getSyntaxFile());
+
 			return n;
 
 		} catch (JsonCommandFormatException e) {
@@ -139,24 +92,5 @@ public class CommandParser {
 			return null;
 		}
 	}
-	
-	private static Method getMethodByName(String name, Command clazz) {
-		Method[] methods = clazz.getClass().getMethods();
-		for (Method method : methods)
-			if (method.getName().equals(name))
-				return method;
-		return null;
-	}
 
-	private static Node createNodeByType(String type, String matches, Command c) throws JsonCommandFormatException {
-		try {
-		NodeEnum ne = NodeEnum.valueOfIgnoreCase(type);
-		TypeNode tn = ne.createInstance();
-		tn.parse(matches);
-		return tn;
-		} catch(IllegalArgumentException e) {
-			throw new JsonCommandFormatException("Type d'argument \"" + type + "\" invalide\n\tat " + c.getSyntaxFile());
-
-		}
-	}
 }

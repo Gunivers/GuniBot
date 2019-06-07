@@ -96,6 +96,7 @@ public abstract class Command {
 					Command c = cmd.newInstance();
 					NodeList<String> n = (NodeList<String>) CommandParser.parseCommand(c);
 					List<String> aliases = n.getElements();
+					System.out.println(c.getClass().getSimpleName());
 					System.out.println(c.toString());
 					// Function.functions.put(aliases.get(0), n);
 					commands.put(aliases, c);

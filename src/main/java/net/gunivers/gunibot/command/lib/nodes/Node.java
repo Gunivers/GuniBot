@@ -2,12 +2,14 @@ package net.gunivers.gunibot.command.lib.nodes;
 
 import java.lang.reflect.Method;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import net.gunivers.gunibot.command.lib.CommandSyntaxError;
 import net.gunivers.gunibot.command.lib.CommandSyntaxError.SyntaxError;
+import net.gunivers.gunibot.command.lib.keys.KeyEnum;
 import net.gunivers.gunibot.utils.tuple.Tuple;
 import net.gunivers.gunibot.utils.tuple.Tuple2;
 
@@ -77,6 +79,11 @@ public abstract class Node {
 	 * @return true si s corresponds au prédicat du noeud, false sinon
 	 */
 	protected abstract boolean matchesNode(String s);
+	
+	/**
+	 * @return une Liste de KeyEnum indiquant les clés qui ne doivent pas apparaître en même temps que ce type
+	 */
+	public List<KeyEnum> blacklist() { return Collections.emptyList(); }
 
 	public void setTag(String s) {
 		tag = s;
@@ -86,7 +93,7 @@ public abstract class Node {
 		return tag;
 	}
 	
-	public void setChild(List<Node> nodes) {
+	public void setChildren(List<Node> nodes) {
 		children.addAll(nodes);
 	}
 
