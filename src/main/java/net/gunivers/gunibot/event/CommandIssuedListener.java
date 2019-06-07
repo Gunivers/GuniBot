@@ -1,7 +1,7 @@
 package net.gunivers.gunibot.event;
 
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.regex.Matcher;
@@ -14,7 +14,7 @@ import net.gunivers.gunibot.command.permissions.Permission;
 
 public class CommandIssuedListener extends Events<MessageCreateEvent>
 {
-	private Command cmd;
+	private final ArrayList<Command> history = new ArrayList<>();
 	
 	protected CommandIssuedListener() { super(MessageCreateEvent.class); }
 
@@ -28,8 +28,8 @@ public class CommandIssuedListener extends Events<MessageCreateEvent>
 		Optional<List<String>> get = Command.commands.keySet().stream().filter(l -> l.contains(name)).findAny();
 		if (!get.isPresent()) return false;
 		
-		cmd = Command.commands.get(get.get());
-		if (!Permission.hasPermissions(event.getMember().get(), cmd.getPermissions())) {
+		history.add(Command.commands.get(get.get()));
+		if (!Permission.hasPermissions(event.getMember().get(), this.getLastCommand().getPermissions())) {
 			event.getMessage().getChannel().flatMap(c -> c.createMessage("Insufficient permissions!"));
 			return false;
 		}
@@ -43,7 +43,8 @@ public class CommandIssuedListener extends Events<MessageCreateEvent>
 		this.onCommand(event.getMessage().getContent().get());
 	}
 	
-	public Command getLastCommand() { return cmd; }
+	public List<Command> getHistory() { return Collections.unmodifiableList(history); }
+	public Command getLastCommand() { return history.get(history.size() -1); }
 	
 	public void onCommand(String command)
 	{
@@ -54,6 +55,6 @@ public class CommandIssuedListener extends Events<MessageCreateEvent>
 			args.add(m.group(i));
 		
 		args = args.stream().map(s -> s.charAt(0) == '"' ? s.substring(1, s.length() -2) : s).collect(Collectors.toList());
-		cmd.apply(args.toArray(new String[0]), last);
+		this.getLastCommand().apply(args.toArray(new String[0]), last);
 	}
 }

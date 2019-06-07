@@ -3,16 +3,20 @@ package net.gunivers.gunibot.command.commands;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map.Entry;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import discord4j.core.event.domain.message.MessageCreateEvent;
 import discord4j.core.object.entity.Member;
 import discord4j.core.object.entity.Role;
 import discord4j.core.object.util.Snowflake;
 
+import net.gunivers.gunibot.Main;
 import net.gunivers.gunibot.command.lib.Command;
 import net.gunivers.gunibot.command.permissions.Permission;
+import net.gunivers.gunibot.datas.DataGuild;
 import net.gunivers.gunibot.utils.Util;
+
 import reactor.util.function.Tuple4;
 import reactor.util.function.Tuples;
 
@@ -54,14 +58,15 @@ public class PermissionCommand extends Command
 			embed.addField("*Discord linked permissions*", sb.toString(), false);
 			
 			sb.setLength(0);
-			Permission.bot.keySet().forEach(p -> sb.append(p.getName() + '\n'));
+			Permission.bot.forEach(p -> sb.append(p.getName() + '\n'));
 			embed.addField("*Custom permissions*", sb.toString(), false);
 			
-			for (Entry<Role, ArrayList<Permission>> role : Permission.roles.entrySet())
+			DataGuild guild = Main.getDataCenter().getDataGuild(event.getGuild().block());
+			for (Role role : event.getGuild().block().getRoles().toStream().collect(Collectors.toList()))
 			{
 				sb.setLength(0);
-				role.getValue().forEach(p -> sb.append(p.getName() + "; "));
-				embed.addField(role.getKey().getMention(), sb.toString(), true);
+				guild.getDataRole(role).getPermissions().forEach(p -> sb.append(p.getName() + "; "));
+				embed.addField(role.getMention(), sb.toString(), true);
 			}
 		})).subscribe();
 	}
@@ -69,26 +74,27 @@ public class PermissionCommand extends Command
 	public void getUser(MessageCreateEvent event, List<String> args)
 	{
 		Member member = event.getGuild().block().getMemberById(Snowflake.of(args.get(0).replaceAll("<@|!|>", ""))).block();
+		DataGuild guild = Main.getDataCenter().getDataGuild(event.getGuild().block());
 		
-		ArrayList<Permission> customs = new ArrayList<>();
+		Set<Permission> bots = guild.getDataMember(member).getPermissions();
 		ArrayList<Permission> discord = new ArrayList<>();
 		
-		Permission.bot.entrySet().stream().filter(e -> e.getValue().contains(member)).forEach(e -> customs.add(e.getKey()));
 		Permission.discord.entrySet().stream().filter(e -> member.getBasePermissions().block().contains(e.getValue()))
 			.forEach(e -> discord.add(e.getKey()));
 		
-		sendGetMessage(event, discord, customs, member.getMention());
+		sendGetMessage(event, discord, new ArrayList<>(bots), member.getMention());
 	}
 	
 	public void getRole(MessageCreateEvent event, List<String> args)
 	{
 		Role role = event.getGuild().block().getRoleById(Snowflake.of(args.get(0).replaceAll("<@&|>", ""))).block();
+		DataGuild guild = Main.getDataCenter().getDataGuild(event.getGuild().block());
 		
-		ArrayList<Permission> customs = Permission.roles.getOrDefault(role, new ArrayList<>());
+		Set<Permission> bots = guild.getDataRole(role).getPermissions();
 		ArrayList<Permission> discord = new ArrayList<>();
 		Permission.discord.entrySet().stream().filter(e -> role.getPermissions().contains(e.getValue())).forEach(e -> discord.add(e.getKey()));
 		
-		sendGetMessage(event, discord, customs, role.getMention());
+		sendGetMessage(event, discord, new ArrayList<>(bots), role.getMention());
 	}
 	
 	public void setUsers(MessageCreateEvent event, List<String> args)
@@ -98,18 +104,17 @@ public class PermissionCommand extends Command
 		boolean add = tuple.getT2();
 		ArrayList<Member> users = tuple.getT3();
 		
-		if (perms.isEmpty()) {
+		if (perms.isEmpty())
+		{
 			event.getMessage().getChannel().flatMap(chan -> chan.createMessage("There is no such permission as "+ args.get(0))).subscribe();
 			return;
 		}
 		
-		for (Permission perm : perms)
+		DataGuild guild = Main.getDataCenter().getDataGuild(event.getGuild().block());
+		for (Member member : users)
 		{
-			users.stream().filter(user -> !Permission.bot.get(perm).contains(user)).forEach(user ->
-			{ 
-				if(add) Permission.bot.get(perm).add(user);
-				else Permission.bot.get(perm).remove(user);
-			});
+			if (add) guild.getDataMember(member).getPermissions().addAll(perms);
+			else guild.getDataMember(member).getPermissions().removeAll(perms);
 		}
 		
 		event.getMessage().getChannel().flatMap(chan -> chan.createMessage("Successfully assigned permissions to users")).subscribe();
@@ -122,33 +127,31 @@ public class PermissionCommand extends Command
 		boolean add = tuple.getT2();
 		ArrayList<Role> roles = tuple.getT4();
 		
-		if (perms.isEmpty()) {
+		if (perms.isEmpty())
+		{
 			event.getMessage().getChannel().flatMap(chan -> chan.createMessage("There is no such permission as "+ args.get(0))).subscribe();
 			return;
 		}
 		
+		DataGuild guild = Main.getDataCenter().getDataGuild(event.getGuild().block());
 		for (Role role : roles)
 		{
-			if (!Permission.roles.keySet().contains(role)) Permission.roles.put(role, new ArrayList<>());
-			perms.stream().filter(perm -> !Permission.roles.get(role).contains(perm)).forEach(perm ->
-			{
-				if (add) Permission.roles.get(role).add(perm);
-				else Permission.roles.get(role).remove(perm);
-			});
+			if (add) guild.getDataRole(role).getPermissions().addAll(perms);
+			else guild.getDataRole(role).getPermissions().removeAll(perms);
 		}
 		
 		event.getMessage().getChannel().flatMap(chan -> chan.createMessage("Successfully assigned permissions to roles")).subscribe();
 	}
 	
 	
-	private static void sendGetMessage(MessageCreateEvent event, ArrayList<Permission> discord, ArrayList<Permission> customs, String mention)
+	private static void sendGetMessage(MessageCreateEvent event, ArrayList<Permission> discord, ArrayList<Permission> bots, String mention)
 	{
 		StringBuilder sb = new StringBuilder("\nDiscord Permissions:                   Bot Permissions:");
-		for (int i = 0; i < discord.size() || i < customs.size(); i++)
+		for (int i = 0; i < discord.size() || i < bots.size(); i++)
 		{
 			String line = "\n - " + (i < discord.size() ? discord.get(i).getName() : "");
 			while (line.length() < 40) line += ' ';
-			if (i < customs.size()) line += " - " + customs.get(i).getName();
+			if (i < bots.size()) line += " - " + bots.get(i).getName();
 			sb.append(line);
 		}
 		
