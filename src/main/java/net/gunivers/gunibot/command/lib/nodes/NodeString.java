@@ -7,7 +7,7 @@ import net.gunivers.gunibot.command.lib.JsonCommandFormatException;
 
 public class NodeString extends TypeNode {
 
-	private String regex;
+	private String regex = ".*";
 
 	@Override
 	protected boolean matchesNode(String s) {
@@ -26,8 +26,10 @@ public class NodeString extends TypeNode {
 	
 	@Override
 	public String toString() {
-		if(regex.matches("(\\w|\\d)*"))
+		if(regex.matches("(\\w|\\d|)*"))
 			return regex + childrenToString();
+		else if (regex.matches("(\\w|\\d|\\|)*"))
+			return getTag() + childrenToString();
 		else 
 			return "<" + getTag() + ">" + childrenToString();
 	}

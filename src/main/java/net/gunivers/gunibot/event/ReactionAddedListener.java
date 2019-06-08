@@ -8,41 +8,47 @@ import java.util.stream.Collectors;
 import discord4j.core.event.domain.message.ReactionAddEvent;
 import discord4j.core.object.entity.Message;
 import discord4j.core.object.reaction.ReactionEmoji;
+import net.gunivers.gunibot.utils.Util;
 import net.gunivers.gunibot.utils.tuple.Tuple;
 import net.gunivers.gunibot.utils.tuple.Tuple3;
 
 public class ReactionAddedListener extends Events<ReactionAddEvent>
 {
-	private List<Tuple3<Message, ReactionEmoji, Consumer<ReactionAddEvent>>> list = new ArrayList<>();
+	//Tuple3<Message, Emoji, Consumer>
+	private List<Tuple3<Long, Long, Consumer<ReactionAddEvent>>> list = new ArrayList<>();
 
 	protected ReactionAddedListener() { super(ReactionAddEvent.class); }
 
 	@Override
 	protected boolean precondition(ReactionAddEvent event)
-	{
-		for (Tuple3<Message, ReactionEmoji, Consumer<ReactionAddEvent>> tuple : list)
+	{	
+		if (event.getUser().block().isBot()) return false;
+		boolean out = false;
+		
+		for (Tuple3<Long, Long, Consumer<ReactionAddEvent>> tuple : list)
 		{
-			if (tuple._1 == event.getMessage().block())
+			if (tuple._1 == event.getMessage().block().getId().asLong())
 			{
 				if (tuple._2 == null) return true;
-				else return tuple._2 == event.getEmoji();
+				else out = tuple._2 == Util.emojiToId(event.getEmoji()) ? true : out;
 			}
 		}
 		
-		return false;
+		return out;
 	}
 
 	@Override
 	protected void apply(ReactionAddEvent event)
 	{
-		list.stream().filter(tuple -> event.getMessage().block().equals(tuple._1)).forEach(tuple -> tuple._3.accept(event));
+		list.stream().filter(t -> event.getMessage().block().getId().asLong() == t._1).filter(t -> t._2 == null || t._2 == Util.emojiToId(event.getEmoji()))
+			.forEach(t -> t._3.accept(event));
 	}
 	
 	public void clear() { list.clear(); }
 	
-	public void on(Message msg, Consumer<ReactionAddEvent> action) { list.add(Tuple.newTuple(msg, null, action)); }
-	public void on(Message msg, ReactionEmoji r, Consumer<ReactionAddEvent> action) { list.add(Tuple.newTuple(msg, r, action)); }
+	public void on(Message msg, Consumer<ReactionAddEvent> action) { list.add(Tuple.newTuple(msg.getId().asLong(), null, action)); }
+	public void on(Message msg, ReactionEmoji r, Consumer<ReactionAddEvent> action) { list.add(Tuple.newTuple(msg.getId().asLong(), Util.emojiToId(r), action)); }
 	
-	public void cancel(Message msg) { list = list.stream().filter(t -> t._1 != msg).collect(Collectors.toList()); }
-	public void cancel(Message msg, ReactionEmoji r) { list = list.stream().filter(t -> t._1 != msg && t._2 != r).collect(Collectors.toList()); }
+	public void cancel(Message msg) { list = list.stream().filter(t -> t._1 != msg.getId().asLong()).collect(Collectors.toList()); }
+	public void cancel(Message msg, ReactionEmoji r) { list = list.stream().filter(t -> t._1 != msg.getId().asLong() && t._2 != Util.emojiToId(r)).collect(Collectors.toList()); }
 }

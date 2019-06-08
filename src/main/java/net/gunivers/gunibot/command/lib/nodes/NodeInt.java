@@ -4,8 +4,8 @@ import net.gunivers.gunibot.command.lib.JsonCommandFormatException;
 
 public class NodeInt extends TypeNode {
 
-	private int min;
-	private int max;
+	private int min = Integer.MIN_VALUE;
+	private int max = Integer.MAX_VALUE;
 
 	@Override
 	protected boolean matchesNode(String s) {
@@ -19,11 +19,8 @@ public class NodeInt extends TypeNode {
 
 	@Override
 	public void parse(String s) throws JsonCommandFormatException {
-		min = Integer.MIN_VALUE;
-		max = Integer.MAX_VALUE;
 		if (s.matches("\\d+..")) {
 			min = Integer.parseInt(s.replaceAll("\\.", ""));
-			max = Integer.MAX_VALUE;
 		} else if (s.matches("..\\d+")) {
 			max = Integer.parseInt(s.replaceAll("\\.", ""));
 		} else if (s.matches("\\d+..\\d+")) {

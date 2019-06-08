@@ -13,7 +13,7 @@ import org.reflections.Reflections;
 
 import discord4j.core.event.domain.message.MessageCreateEvent;
 import net.gunivers.gunibot.command.lib.nodes.Node;
-import net.gunivers.gunibot.command.lib.nodes.NodeList;
+import net.gunivers.gunibot.command.lib.nodes.NodeRoot;
 import net.gunivers.gunibot.command.permissions.Permission;
 import net.gunivers.gunibot.utils.tuple.Tuple2;
 
@@ -94,11 +94,12 @@ public abstract class Command {
 			try {
 				if (!cmd.isAnnotationPresent(Ignore.class)) {
 					Command c = cmd.newInstance();
-					NodeList<String> n = (NodeList<String>) CommandParser.parseCommand(c);
-					List<String> aliases = n.getElements();
-					System.out.println(c.toString());
-					// Function.functions.put(aliases.get(0), n);
-					commands.put(aliases, c);
+					NodeRoot n = (NodeRoot) CommandParser.parseCommand(c);
+					if(n != null) {
+						System.out.println(n.getElements().get(0));
+						List<String> aliases = n.getElements();
+						commands.put(aliases, c);
+					}
 				}
 			} catch (InstantiationException | IllegalAccessException e) {
 				e.printStackTrace();

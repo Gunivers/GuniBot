@@ -2,7 +2,7 @@
 	"shutdown": 
 	{
 		"description": "Shutdown the bot",
-		"permissions": ["dev"],
+		"permissions": ["bot.dev"],
 		"execute": "shutdown"
 	}
 }

@@ -2,7 +2,7 @@
 	"cookie": 
 	{
 		"description": "Allow to give a number of cookies at a user",
-		"permissions": ["write", "read"],
+		"permissions": ["discord.send_messages", "discord.read_message_history"],
 		"aliases": ["🍪"],
 		"arguments": 
 		[

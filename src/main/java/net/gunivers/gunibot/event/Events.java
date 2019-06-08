@@ -8,8 +8,10 @@ public abstract class Events<E extends discord4j.core.event.domain.Event>
 	private static EventDispatcher dispatcher;
 	
 	public static CommandIssuedListener COMMAND_ISSUED;
+	
 	public static ReactionAddedListener REACTION_ADDED;
-	public static ReactionRemovedListener REACTION_REMOVE;
+	public static ReactionRemovedListener REACTION_REMOVED;
+	public static ReactionRemovedAllListener REACTION_REMOVED_ALL;
 	
 	protected E last = null;
 	
@@ -36,7 +38,9 @@ public abstract class Events<E extends discord4j.core.event.domain.Event>
 	public static void registerEvents()
 	{
 		COMMAND_ISSUED = new CommandIssuedListener();
+		
 		REACTION_ADDED = new ReactionAddedListener();
-		REACTION_REMOVE = new ReactionRemovedListener();
+		REACTION_REMOVED = new ReactionRemovedListener();
+		REACTION_REMOVED_ALL = new ReactionRemovedAllListener();
 	}
 }

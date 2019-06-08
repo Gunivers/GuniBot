@@ -2,12 +2,14 @@ package net.gunivers.gunibot.command.lib.nodes;
 
 import java.lang.reflect.Method;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import net.gunivers.gunibot.command.lib.CommandSyntaxError;
 import net.gunivers.gunibot.command.lib.CommandSyntaxError.SyntaxError;
+import net.gunivers.gunibot.command.lib.keys.KeyEnum;
 import net.gunivers.gunibot.utils.tuple.Tuple;
 import net.gunivers.gunibot.utils.tuple.Tuple2;
 
@@ -20,6 +22,8 @@ public abstract class Node {
 
 	public final Tuple2<Tuple2<List<String>, Method>, CommandSyntaxError> matches(String[] s) {
 
+		if(this instanceof NodeList && matchesNode(Arrays.asList(s).stream().collect(Collectors.joining(" "))))
+			return Tuple.newTuple(Tuple.newTuple(keepValue ? new LinkedList<String>(Arrays.asList(Arrays.asList(s).stream().collect(Collectors.joining(" ")))) : new LinkedList<>(), run), null);
 		// L'élément courant n'est pas valide
 		if (!matchesNode(s[0]))
 			return Tuple.newTuple(null, new CommandSyntaxError(SyntaxError.ARG_INVALID, s[0]));
@@ -77,6 +81,11 @@ public abstract class Node {
 	 * @return true si s corresponds au prédicat du noeud, false sinon
 	 */
 	protected abstract boolean matchesNode(String s);
+	
+	/**
+	 * @return une Liste de KeyEnum indiquant les clés qui ne doivent pas apparaître en même temps que ce type
+	 */
+	public List<KeyEnum> blacklist() { return Collections.emptyList(); }
 
 	public void setTag(String s) {
 		tag = s;
@@ -86,7 +95,7 @@ public abstract class Node {
 		return tag;
 	}
 	
-	public void setChild(List<Node> nodes) {
+	public void setChildren(List<Node> nodes) {
 		children.addAll(nodes);
 	}
 
@@ -123,7 +132,7 @@ public abstract class Node {
 			if (run != null)
 				return " [" + children.stream().map((n) -> n.toString()).collect(Collectors.joining("|")) + "]";
 			else
-				return " (" + children.stream().map((n) -> n.toString()).collect(Collectors.joining("|")) + ")";
+				return " (" + children.stream().map((n) -> { System.out.println(n); return n.toString(); }).collect(Collectors.joining("|")) + ")";
 		} else
 			return "";
 	}
