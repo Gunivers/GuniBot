@@ -9,6 +9,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import discord4j.core.event.domain.message.MessageCreateEvent;
+
 import net.gunivers.gunibot.command.lib.Command;
 import net.gunivers.gunibot.command.permissions.Permission;
 
@@ -24,7 +25,7 @@ public class CommandIssuedListener extends Events<MessageCreateEvent>
 		java.util.Optional<String> msg = event.getMessage().getContent();
 		if (!msg.isPresent() || !msg.get().startsWith(Command.PREFIX)) return false;
 		
-		String name = msg.get().split(" ")[0];
+		String name = msg.get().split(" ")[0].substring(1);
 		Optional<List<String>> get = Command.commands.keySet().stream().filter(l -> l.contains(name)).findAny();
 		if (!get.isPresent()) return false;
 		
@@ -44,17 +45,19 @@ public class CommandIssuedListener extends Events<MessageCreateEvent>
 	}
 	
 	public List<Command> getHistory() { return Collections.unmodifiableList(history); }
+	public void clearHistory() { history.clear(); }
+	
 	public Command getLastCommand() { return history.get(history.size() -1); }
 	
 	public void onCommand(String command)
 	{
-		Matcher m = Pattern.compile(" (\"?(.[^\"]|\\\")*\")|.[^ ]+").matcher(command);
+		Matcher m = Pattern.compile(" (\"(.[^\"]|\\\")*\")|.[^ ]+").matcher(command.substring(Command.PREFIX.length()));
 		
 		List<String> args = new ArrayList<>();
-		for (int i = 1; i <= m.groupCount(); i++)
-			args.add(m.group(i));
+		while (m.find())
+			args.add(m.group());
 		
-		args = args.stream().map(s -> s.charAt(0) == '"' ? s.substring(1, s.length() -2) : s).collect(Collectors.toList());
+		args = args.stream().map(String::trim).map(s -> s.charAt(0) == '"' ? s.substring(1, s.length() -1) : s).collect(Collectors.toList());
 		this.getLastCommand().apply(args.toArray(new String[0]), last);
 	}
 }

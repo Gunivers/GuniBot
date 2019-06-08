@@ -23,11 +23,11 @@ import discord4j.core.object.util.Snowflake;
  */
 public class DataGuild extends DataObject<Guild> {
 
-	private ConcurrentHashMap<Snowflake, DataMember> dataMembers;
-	private ConcurrentHashMap<Snowflake, DataTextChannel> dataTextChannels;
-	private ConcurrentHashMap<Snowflake, DataRole> dataRoles;
-	private ConcurrentHashMap<Snowflake, DataVoiceChannel> dataVoiceChannels;
-	private ConcurrentHashMap<Snowflake, DataCategory> dataCategories;
+	private ConcurrentHashMap<Snowflake, DataMember> dataMembers = new ConcurrentHashMap<>();
+	private ConcurrentHashMap<Snowflake, DataTextChannel> dataTextChannels = new ConcurrentHashMap<>();
+	private ConcurrentHashMap<Snowflake, DataRole> dataRoles = new ConcurrentHashMap<>();
+	private ConcurrentHashMap<Snowflake, DataVoiceChannel> dataVoiceChannels = new ConcurrentHashMap<>();
+	private ConcurrentHashMap<Snowflake, DataCategory> dataCategories = new ConcurrentHashMap<>();
 
 	/**
 	 * Créer cet objet lié à ce guild.
