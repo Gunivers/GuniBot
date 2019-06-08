@@ -77,12 +77,13 @@ public class CommandParser {
 			keysPresent.put("comment", null);
 			for(KeyEnum ke : KeyEnum.getByPos(pos, pos2)) {
 				Tuple2<String, Node> result = ke.getClazz().parseJson(obj, n, command);
-				keysPresent.put(result._1, ke);
+				if(result._1 != null)
+					keysPresent.put(result._1, ke);
 				n = result._2;
 			}
 			List<KeyEnum> list = n.blacklist().stream().filter(ke -> keysPresent.containsValue(ke)).collect(Collectors.toList());
 			if(list.size() > 0)
-				throw new JsonCommandFormatException(n.getTag() + " est incompatible avec les clés " + list.stream().map(ke -> ke.getClazz().getKey()).collect(Collectors.joining(", ")));
+				throw new JsonCommandFormatException(n.getTag() + " est incompatible avec les clés " + list.stream().map(ke -> ke.getClazz().getKey()).collect(Collectors.joining(", ")) + "\n\tat " + command.getSyntaxFile());
 			
 			String invalidKeys = obj.keySet().stream().filter(s -> !keysPresent.containsKey(s)).collect(Collectors.joining(", "));
 			if(!invalidKeys.equals(""))

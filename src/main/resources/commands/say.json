@@ -6,18 +6,10 @@
 		"arguments": 
 		[
 			{
-				"type": "string",
+				"type": "string...",
 				"tag": "message1",
 				"execute": "say",
-				"keep_value": true,
-				"arguments": 
-				[
-					{
-						"type": "string",
-						"tag": "message2",
-						"execute": "say2"
-					}
-				]
+				"keep_value": true
 			}
 		]
 	}
