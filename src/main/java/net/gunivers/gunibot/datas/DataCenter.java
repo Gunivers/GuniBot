@@ -4,6 +4,8 @@ import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.json.JSONObject;
+
 import discord4j.core.DiscordClient;
 import discord4j.core.event.EventDispatcher;
 import discord4j.core.event.domain.lifecycle.ReadyEvent;
@@ -13,6 +15,7 @@ import discord4j.core.object.presence.Activity;
 import discord4j.core.object.presence.Presence;
 import discord4j.core.object.util.Snowflake;
 import net.gunivers.gunibot.command.lib.Command;
+import net.gunivers.gunibot.sql.SQLClient;
 
 /**
  * Centre de contrôle des données du bot.
@@ -28,7 +31,7 @@ public class DataCenter {
 	 */
 	private ConcurrentHashMap<Snowflake, DataGuild> dataGuilds;
 
-	//TODO disable:private SQLClient sql;
+	private SQLClient sql;
 
 	public DataCenter(ReadyEvent event) {
 		botClient = event.getClient();
@@ -36,7 +39,7 @@ public class DataCenter {
 
 		dataGuilds = new ConcurrentHashMap<>();
 
-		//TODO disable:sql = new SQLClient();
+		sql = new SQLClient();
 		loadGuilds();
 
 		registerEvents();
@@ -65,7 +68,7 @@ public class DataCenter {
 	 */
 	public void addGuild(Guild guild) {
 		if(hasRegisteredData(guild)) {
-			//TODO disable:dataGuilds.put(guild.getId(), new DataGuild(guild, sql.loadGuildData(guild.getId().asLong())));
+			dataGuilds.put(guild.getId(), new DataGuild(guild, sql.loadGuildData(guild.getId().asLong())));
 		}
 	}
 
@@ -118,8 +121,7 @@ public class DataCenter {
 	 * @return {@code true} si le serveur possède des données dans la base de donnée, {@code false} sinon.
 	 */
 	private boolean hasRegisteredData(Guild guild) {
-		//TODO disable:return sql.hasGuildData(guild.getId().asLong());
-		return false;
+		return sql.hasGuildData(guild.getId().asLong());
 	}
 
 	/**
@@ -127,7 +129,7 @@ public class DataCenter {
 	 * @param guild le serveur a supprimmé de la base de donnée.
 	 */
 	private void removeRegisteredData(Guild guild) {
-		//TODO disable:sql.removeGuildData(guild.getId().asLong());
+		sql.removeGuildData(guild.getId().asLong());
 	}
 
 	/**
@@ -138,7 +140,7 @@ public class DataCenter {
 	public void saveGuild(Guild guild) {
 		DataGuild dataGuild = dataGuilds.get(guild.getId());
 		if(dataGuild != null) {
-			//TODO disable:sql.saveGuildData(guild.getId().asLong(), dataGuild.save());
+			sql.saveGuildData(guild.getId().asLong(), dataGuild.save());
 			//dataGuild.clearAllCache();
 		} else {
 			System.err.println(String.format("The guild '%s' (%s) has no data object to save!", guild.getName(), guild.getId().asString()));
@@ -150,7 +152,6 @@ public class DataCenter {
 	 * @param guild le serveur à charger.
 	 */
 	public void loadGuild(Guild guild) {
-		/* TODO disable
 		if (hasRegisteredData(guild)) {
 			Snowflake id = guild.getId();
 			JSONObject json = sql.loadGuildData(id.asLong());
@@ -162,7 +163,6 @@ public class DataCenter {
 		} else {
 			System.err.println(String.format("The guild '%s' (%s) ha no data to load!", guild.getName(), guild.getId().asString()));
 		}
-		 */
 	}
 
 	/**
@@ -171,7 +171,7 @@ public class DataCenter {
 	 */
 	public void saveGuilds() {
 		for(Entry<Snowflake, DataGuild> guild_entry:dataGuilds.entrySet()) {
-			//TODO disable:sql.saveGuildData(guild_entry.getKey().asLong(), guild_entry.getValue().save());
+			sql.saveGuildData(guild_entry.getKey().asLong(), guild_entry.getValue().save());
 		}
 		clearDataGuildsCache();
 	}
@@ -180,12 +180,11 @@ public class DataCenter {
 	 * Charge les données de tout les serveurs enregistrés dans la base de donnée.
 	 */
 	public void loadGuilds() {
-		/* TODO disable
-		for(Entry<Long, JSONObject> entry:sql.getAllDataGuilds().entreySet()) {
+		for(Entry<Long, JSONObject> entry:sql.getAllDataGuilds().entrySet()) {
 			Snowflake id = Snowflake.of(entry.getKey());
 			Optional<Guild> opt_guild = botClient.getGuildById(id).blockOptional();
 
-			if(guild_opt.isPresent()) {
+			if(opt_guild.isPresent()) {
 				if (dataGuilds.containsKey(id)) {
 					dataGuilds.get(id).load(entry.getValue());
 				} else {
@@ -195,7 +194,6 @@ public class DataCenter {
 				System.err.println(String.format("The guild id '%s' is not reachable! Skipping loading of this guild!", id.asString()));
 			}
 		}
-		 */
 	}
 
 	public void shutdown() {
