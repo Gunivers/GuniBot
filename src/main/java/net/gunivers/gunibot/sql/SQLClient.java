@@ -30,8 +30,8 @@ public class SQLClient {
 			checkAndInitTables();
 		} catch(Exception e) {
 			if(optional) {
-				e.printStackTrace();
-				System.err.println("Optional option activated, database disable !");
+				System.err.println("[SQLClient] Connection failed : " + e.getMessage());
+				System.err.println("[SQLClient] Optional option activated, database disable !");
 				isDisable = true;
 			}
 		}
