@@ -5,8 +5,8 @@ import java.util.List;
 import java.util.Map.Entry;
 
 import discord4j.core.event.domain.message.MessageCreateEvent;
+import net.gunivers.gunibot.az.lib.EmbedBuilder;
 import net.gunivers.gunibot.command.lib.Command;
-import net.gunivers.gunibot.utils.Util;
 
 public class HelpCommand extends Command
 {
@@ -14,26 +14,8 @@ public class HelpCommand extends Command
 
 	public void help(MessageCreateEvent event)
 	{
-		event.getMessage().getChannel().flatMap(channel -> channel.createEmbed(embed -> 
-		{
-			Util.formatEmbed(event, "Help Menu", embed);
-
-			//Field: command list
-			StringBuilder sb = new StringBuilder();
-			for (List<String> aliases : Command.commands.keySet())
-			{
-				for (String alias : aliases)
-				{
-					if (alias == aliases.get(0)) sb.append(" - " + alias + (aliases.size() > 1 ? " [" : ""));
-					else sb.append(alias);
-					
-					if (aliases.size() > 1 && alias == aliases.get(aliases.size() -1)) sb.append("]\n");
-					else if (alias != aliases.get(0)) sb.append(", ");
-				}
-			}
-
-			embed.addField("Commands List", sb.toString(), false);
-		})).subscribe();
+		EmbedBuilder builder = new EmbedBuilder(event, "Help Menu", null);
+		builder.setAuthor(event.getMember().get());
 	}
 
 	public void getHelp(MessageCreateEvent event, List<String> args)
@@ -44,7 +26,7 @@ public class HelpCommand extends Command
 		if (cmd == null)
 		{
 			event.getMessage().getChannel().flatMap(channel ->
-				channel.createMessage("```\n❌ There is no such command as "+ args.get(0) +"```")).subscribe();
+				channel.createMessage("```\n❌ There is no such command as "+ args.get(0) +"!```")).subscribe();
 			return;
 		}
 		

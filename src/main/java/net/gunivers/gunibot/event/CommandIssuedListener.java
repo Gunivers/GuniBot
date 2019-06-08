@@ -22,6 +22,8 @@ public class CommandIssuedListener extends Events<MessageCreateEvent>
 	@Override
 	protected boolean precondition(MessageCreateEvent event)
 	{
+		System.out.println(event.getMember().get().getDisplayName() + " issued command: " + event.getMessage().getContent().get());
+		
 		java.util.Optional<String> msg = event.getMessage().getContent();
 		if (!msg.isPresent() || !msg.get().startsWith(Command.PREFIX)) return false;
 		
@@ -41,8 +43,7 @@ public class CommandIssuedListener extends Events<MessageCreateEvent>
 	@Override
 	protected void apply(MessageCreateEvent event)
 	{
-		System.out.println(event.getMember().get() + " issued command: " + event.getMessage().getContent().get());
-		this.onCommand(event.getMessage().getContent().get());
+		this.onCommand(event.getMessage().getContent().get(), this.getLastCommand());
 	}
 	
 	public List<Command> getHistory() { return Collections.unmodifiableList(history); }
@@ -50,15 +51,15 @@ public class CommandIssuedListener extends Events<MessageCreateEvent>
 	
 	public Command getLastCommand() { return history.get(history.size() -1); }
 	
-	public void onCommand(String command)
+	public void onCommand(String arguments, Command cmd)
 	{
-		Matcher m = Pattern.compile(" (\"(.[^\"]|\\\")*\")|.[^ ]+").matcher(command.substring(Command.PREFIX.length()));
+		Matcher m = Pattern.compile(" (\"(.[^\"]|\\\")*\")|.[^ ]+").matcher(arguments.substring(Command.PREFIX.length()));
 		
 		List<String> args = new ArrayList<>();
 		while (m.find())
 			args.add(m.group());
 		
 		args = args.stream().map(String::trim).map(s -> s.charAt(0) == '"' ? s.substring(1, s.length() -1) : s).collect(Collectors.toList());
-		this.getLastCommand().apply(args.toArray(new String[0]), last);
+		cmd.apply(args.toArray(new String[0]), last);
 	}
 }

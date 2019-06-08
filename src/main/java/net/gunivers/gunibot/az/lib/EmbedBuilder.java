@@ -104,7 +104,8 @@ public class EmbedBuilder
 			if (displayImage && image != null) embed.setImage(image);
 			
 			if (description != null) embed.setDescription(description);
-			if (displayFooter && footer != null) embed.setFooter(footer, footerURL);
+			if (displayFooter && (footer != null || author != null)) embed.setFooter(footer == null ? "Request by " + author.getDisplayName()
+			: footer, footer == null ? author.getAvatarUrl() : footerURL);
 			if (thumbnail != null) embed.setThumbnail(thumbnail);
 			
 			fields.stream().forEachOrdered(field -> embed.addField(field.name, field.value, field.inline));
@@ -164,7 +165,16 @@ public class EmbedBuilder
 	public void setTitle(String title) { this.title = title; }
 	public void setTitleURL(String url) { this.url = url; }
 	
-	public void setAuthor(Member author) { this.author = author; }
+	public void setAuthor(Member author)
+	{
+		this.author = author;
+		if (author != null && footer == null)	
+		{
+			footer = "Request by " + author;
+			if (footerURL == null) footerURL = author.getAvatarUrl();
+		}
+	}
+		
 	public void setAuthorURL(String url) { this.authorURL = url; }
 	public void setColor(Color color) { this.color = color; }
 	public void setImage(String url) { this.image = url; this.displayImage = image != null;}

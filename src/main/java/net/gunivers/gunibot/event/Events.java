@@ -8,7 +8,6 @@ public abstract class Events<E extends discord4j.core.event.domain.Event>
 	private static EventDispatcher dispatcher;
 	
 	public static CommandIssuedListener COMMAND_ISSUED;
-	public static GuildCreatedListener GUILD_CREATED;
 	
 	public static ReactionAddedListener REACTION_ADDED;
 	public static ReactionRemovedListener REACTION_REMOVED;
@@ -40,11 +39,13 @@ public abstract class Events<E extends discord4j.core.event.domain.Event>
 	public static void registerEvents()
 	{
 		System.out.println("Registering Events...");
+		
 		COMMAND_ISSUED = new CommandIssuedListener();
-		GUILD_CREATED = new GuildCreatedListener();
 		
 		REACTION_ADDED = new ReactionAddedListener();
 		REACTION_REMOVED = new ReactionRemovedListener();
 		REACTION_REMOVED_ALL = new ReactionRemovedAllListener();
+		
+		System.out.println("Events registered!");
 	}
 }
