@@ -7,14 +7,11 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.json.JSONObject;
 
 import discord4j.core.DiscordClient;
-import discord4j.core.event.EventDispatcher;
 import discord4j.core.event.domain.lifecycle.ReadyEvent;
-import discord4j.core.event.domain.message.MessageCreateEvent;
 import discord4j.core.object.entity.Guild;
 import discord4j.core.object.presence.Activity;
 import discord4j.core.object.presence.Presence;
 import discord4j.core.object.util.Snowflake;
-import net.gunivers.gunibot.command.lib.Command;
 import net.gunivers.gunibot.sql.SQLClient;
 
 /**
