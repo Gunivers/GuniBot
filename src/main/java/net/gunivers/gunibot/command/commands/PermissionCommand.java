@@ -16,7 +16,6 @@ import net.gunivers.gunibot.az.lib.EmbedBuilder.Field;
 import net.gunivers.gunibot.command.lib.Command;
 import net.gunivers.gunibot.command.permissions.Permission;
 import net.gunivers.gunibot.datas.DataGuild;
-import net.gunivers.gunibot.utils.Util;
 
 import reactor.util.function.Tuple4;
 import reactor.util.function.Tuples;
@@ -25,23 +24,6 @@ public class PermissionCommand extends Command
 {
 	@Override
 	public String getSyntaxFile() { return "permission.json"; }
-	
-	public void help(MessageCreateEvent event)
-	{	
-		event.getMessage().getChannel().flatMap(channel -> channel.createEmbed(embed -> 
-		{
-			Util.formatEmbed(event, "Help: permission", embed);
-			
-			embed.addField("Command:", "permission", true);
-			embed.addField("Aliases:", this.getAliases().toString(), true);
-			embed.addField("Description:", this.getDescription(), true);
-			embed.addField("Syntax:", "/perm list"
-					+ "\n/perm get <permission> (true|false) @<user|role>"
-					+ "\n/perm set <permissions> (true|false) @<users|roles> ", true);
-			embed.addField("Required Permissions:", this.getPermissions().toString(), true);
-			
-		})).subscribe();
-	}
 
 	public void list(MessageCreateEvent event)
 	{

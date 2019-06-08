@@ -13,12 +13,6 @@
 				"execute": "list"
 			},
 			{
-				"tag":"help",
-				"type": "string",
-				"matches": "help|h|\\?",
-				"execute": "help"
-			},
-			{
 				"tag":"set",
 				"type": "string",
 				"matches": "set",

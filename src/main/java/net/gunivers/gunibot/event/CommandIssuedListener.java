@@ -22,14 +22,14 @@ public class CommandIssuedListener extends Events<MessageCreateEvent>
 	@Override
 	protected boolean precondition(MessageCreateEvent event)
 	{
-		System.out.println(event.getMember().get().getDisplayName() + " issued command: " + event.getMessage().getContent().get());
-		
 		java.util.Optional<String> msg = event.getMessage().getContent();
 		if (!msg.isPresent() || !msg.get().startsWith(Command.PREFIX)) return false;
 		
 		String name = msg.get().split(" ")[0].substring(Command.PREFIX.length());
 		Optional<List<String>> get = Command.commands.keySet().stream().filter(l -> l.contains(name)).findAny();
 		if (!get.isPresent()) return false;
+
+		System.out.println(event.getMember().get().getDisplayName() + " issued command: " + event.getMessage().getContent().get());
 		
 		history.add(Command.commands.get(get.get()));
 		if (!Permission.hasPermissions(event.getMember().get(), this.getLastCommand().getPermissions())) {

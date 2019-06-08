@@ -1,12 +1,14 @@
 package net.gunivers.gunibot.command.commands;
 
-import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map.Entry;
+import java.util.stream.Collectors;
 
 import discord4j.core.event.domain.message.MessageCreateEvent;
 import net.gunivers.gunibot.az.lib.EmbedBuilder;
+import net.gunivers.gunibot.az.lib.EmbedBuilder.Field;
 import net.gunivers.gunibot.command.lib.Command;
+import net.gunivers.gunibot.command.permissions.Permission;
 
 public class HelpCommand extends Command
 {
@@ -14,27 +16,35 @@ public class HelpCommand extends Command
 
 	public void help(MessageCreateEvent event)
 	{
-		EmbedBuilder builder = new EmbedBuilder(event, "Help Menu", null);
+		EmbedBuilder builder = new EmbedBuilder(event, event.getClient().getSelf().block().getUsername() + "'s Command List", null);
 		builder.setAuthor(event.getMember().get());
+		builder.setAuthor(event.getClient().getSelf().block().asMember(event.getGuildId().get()).block());
+		
+		builder.setDescription(" - " + commands.keySet().stream().map(l -> l.get(0)).collect(Collectors.joining("\n - ")));
+		builder.buildAndSend();
 	}
 
 	public void getHelp(MessageCreateEvent event, List<String> args)
 	{
-		Command cmd = null;
-		for (Entry<List<String>, Command> entry : commands.entrySet()) if (entry.getKey().contains(args.get(0))) cmd = entry.getValue();
-		
-		if (cmd == null)
-		{
-			event.getMessage().getChannel().flatMap(channel ->
-				channel.createMessage("```\n❌ There is no such command as "+ args.get(0) +"!```")).subscribe();
+		Command cmd = commands.get(commands.keySet().stream().filter(l -> l.contains(args.get(0))).findAny().orElse(new ArrayList<>()));
+		if (cmd == null) {
+			event.getMessage().getChannel().flatMap(channel -> channel.createMessage("```\n❌ There is no such command as "+ args.get(0) +"!```")).subscribe();
 			return;
 		}
 		
-		try { cmd.getClass().getMethod("help", MessageCreateEvent.class).invoke(cmd, event); }
-		catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException | SecurityException e)
-		{
-			event.getMessage().getChannel().flatMap(channel ->
-				channel.createMessage("```\n❌ Unable to retrieve help from command "+ args.get(0) +"```")).subscribe();
-		}
+		final EmbedBuilder builder = new EmbedBuilder(event, "Command: " + args.get(0), null);
+		builder.setAuthor(event.getMember().get());
+		builder.setAuthor(event.getClient().getSelf().block().asMember(event.getGuildId().get()).block());
+		
+		final Field info = new Field("General Informations:", "", false);
+		info.getValue().append("Aliases: " + cmd.getAliases().stream().collect(Collectors.joining(", ")));
+		info.getValue().append("\nSyntax: " + cmd);
+		info.getValue().append("\nPermissions: " + cmd.getPermissions().stream().map(Permission::getName).collect(Collectors.joining(", ")));
+		
+		builder.addField(info);
+		builder.addField("Description:", cmd.getDescription(), false);
+		builder.addField("Syntax File:", cmd.getSyntaxFile(), false);
+		
+		builder.buildAndSend();
 	}
 }
