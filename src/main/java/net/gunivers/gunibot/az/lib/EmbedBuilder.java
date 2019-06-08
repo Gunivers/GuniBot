@@ -22,15 +22,16 @@ public class EmbedBuilder
 	private String url = null;
 	
 	private Member author = null;
-	private String authorUrl = null;
+	private String authorURL = null;
 	private Color color = null;
 	private String image = null;
 	
 	private String description = null;
 	private String footer = null;
-	private String footerUrl = null;
+	private String footerURL = null;
 	private String thumbnail = null;
-	
+
+	private boolean displayImage = true;
 	private boolean displayFooter = true;
 	private List<Field> fields = new ArrayList<>();
 	
@@ -74,16 +75,17 @@ public class EmbedBuilder
 		this.url = titleURL;
 		
 		this.author = author;
-		this.authorUrl = authorURL;
+		this.authorURL = authorURL;
 		this.color = color;
 		this.image = imageURL;
 		
 		this.description = description;
 		this.footer = footer;
-		this.footerUrl = footerURL;
+		this.footerURL = footerURL;
 		this.thumbnail = thumbnail;
 		
 		this.displayFooter = footer != null;
+		this.displayImage = image != null;
 	}
 	
 	public void buildAndSend()
@@ -97,12 +99,12 @@ public class EmbedBuilder
 			if (title != null) embed.setTitle(title);
 			if (url != null) embed.setUrl(url);
 			
-			if (author != null) embed.setAuthor(author.getDisplayName(), authorUrl, author.getAvatarUrl());
+			if (author != null) embed.setAuthor(author.getDisplayName(), authorURL, author.getAvatarUrl());
 			if (author != null || color != null) embed.setColor(color == null ? author.getColor().block() : color);
-			if (image != null) embed.setImage(image);
+			if (displayImage && image != null) embed.setImage(image);
 			
 			if (description != null) embed.setDescription(description);
-			if (displayFooter && footer != null) embed.setFooter(footer, footerUrl);
+			if (displayFooter && footer != null) embed.setFooter(footer, footerURL);
 			if (thumbnail != null) embed.setThumbnail(thumbnail);
 			
 			fields.stream().forEachOrdered(field -> embed.addField(field.name, field.value, field.inline));
@@ -120,10 +122,13 @@ public class EmbedBuilder
 		fields.forEach(Field::normalize);
 		if (fields.size() > FIELDS_LIMIT)
 		{
-			child = new EmbedBuilder(event, null, footer, footerUrl, null);
+			child = new EmbedBuilder(event, null, null, color == null ? author == null ? null : author.getColor().block() : color, image, null,
+					footer, footerURL, null);
+			
 			child.fields = fields.subList(FIELDS_LIMIT, fields.size());
 			child.normalize();
-			
+
+			this.displayImage = false;
 			this.displayFooter = false;
 			this.fields = fields.subList(0, FIELDS_LIMIT);
 		}
@@ -147,26 +152,26 @@ public class EmbedBuilder
 	public String getTitleURL() { return url; }
 	
 	public Member getAuthor() { return author; }
-	public String getAuthorURL() { return authorUrl; }
+	public String getAuthorURL() { return authorURL; }
 	public Color getColor() { return color; }
 	public String getImageURL() { return image; }
 	
 	public String getDescription() { return description; }
 	public String getFooter() { return footer; }
-	public String getFooterImageURL() { return footerUrl; }
+	public String getFooterImageURL() { return footerURL; }
 	public String getThumbnail() { return thumbnail; }
 	
 	public void setTitle(String title) { this.title = title; }
 	public void setTitleURL(String url) { this.url = url; }
 	
 	public void setAuthor(Member author) { this.author = author; }
-	public void setAuthorURL(String url) { this.authorUrl = url; }
+	public void setAuthorURL(String url) { this.authorURL = url; }
 	public void setColor(Color color) { this.color = color; }
-	public void setImageURL(String url) { this.image = url; }
+	public void setImage(String url) { this.image = url; this.displayImage = image != null;}
 	
 	public void setDescription(String desc) { this.description = desc; }
 	public void setFooter(String footer) { this.footer = footer; this.displayFooter = footer != null; }
-	public void setFooterImageURL(String url) { this.footerUrl = url; }
+	public void setFooterImageURL(String url) { this.footerURL = url; }
 	public void setThumbnail(String thumbnail) { this.thumbnail = thumbnail; }
 	
 

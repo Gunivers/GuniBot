@@ -25,13 +25,13 @@ public class CommandIssuedListener extends Events<MessageCreateEvent>
 		java.util.Optional<String> msg = event.getMessage().getContent();
 		if (!msg.isPresent() || !msg.get().startsWith(Command.PREFIX)) return false;
 		
-		String name = msg.get().split(" ")[0].substring(1);
+		String name = msg.get().split(" ")[0].substring(Command.PREFIX.length());
 		Optional<List<String>> get = Command.commands.keySet().stream().filter(l -> l.contains(name)).findAny();
 		if (!get.isPresent()) return false;
 		
 		history.add(Command.commands.get(get.get()));
 		if (!Permission.hasPermissions(event.getMember().get(), this.getLastCommand().getPermissions())) {
-			event.getMessage().getChannel().flatMap(c -> c.createMessage("Insufficient permissions!"));
+			event.getMessage().getChannel().flatMap(c -> c.createMessage("Insufficient permissions!")).subscribe();
 			return false;
 		}
 		
@@ -41,6 +41,7 @@ public class CommandIssuedListener extends Events<MessageCreateEvent>
 	@Override
 	protected void apply(MessageCreateEvent event)
 	{
+		System.out.println("APPLY");
 		this.onCommand(event.getMessage().getContent().get());
 	}
 	

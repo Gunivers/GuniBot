@@ -12,16 +12,6 @@ public abstract class Events<E extends discord4j.core.event.domain.Event>
 	public static ReactionAddedListener REACTION_ADDED;
 	public static ReactionRemovedListener REACTION_REMOVED;
 	public static ReactionRemovedAllListener REACTION_REMOVED_ALL;
-
-	
-	public static void registerEvents()
-	{
-		COMMAND_ISSUED = new CommandIssuedListener();
-		
-		REACTION_ADDED = new ReactionAddedListener();
-		REACTION_REMOVED = new ReactionRemovedListener();
-		REACTION_REMOVED_ALL = new ReactionRemovedAllListener();
-	}
 	
 	
 	protected E last = null;
@@ -44,5 +34,15 @@ public abstract class Events<E extends discord4j.core.event.domain.Event>
 	{
 		Events.dispatcher = event.getClient().getEventDispatcher();
 		Events.registerEvents();
+	}
+	
+	public static void registerEvents()
+	{
+		System.out.println("REGISTERING EVENTS");
+		COMMAND_ISSUED = new CommandIssuedListener();
+		
+		REACTION_ADDED = new ReactionAddedListener();
+		REACTION_REMOVED = new ReactionRemovedListener();
+		REACTION_REMOVED_ALL = new ReactionRemovedAllListener();
 	}
 }
