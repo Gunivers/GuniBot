@@ -7,7 +7,7 @@ import org.json.JSONObject;
 import net.gunivers.gunibot.command.lib.Command;
 import net.gunivers.gunibot.command.lib.JsonCommandFormatException;
 import net.gunivers.gunibot.command.lib.nodes.Node;
-import net.gunivers.gunibot.command.lib.nodes.NodeList;
+import net.gunivers.gunibot.command.lib.nodes.NodeRoot;
 
 public class KeyAliases extends Key {
 
@@ -24,10 +24,9 @@ public class KeyAliases extends Key {
 		return "aliases";
 	}
 
-	@SuppressWarnings("unchecked")
 	@Override
 	protected Node parse(JSONObject obj, Node n, Command c) throws JsonCommandFormatException {
-		((NodeList<String>)n).addElements(obj.getJSONArray(getKey()).toList().stream().map(s -> s.toString()).collect(Collectors.toList()));
+		((NodeRoot)n).addAliases(obj.getJSONArray(getKey()).toList().stream().map(s -> s.toString()).collect(Collectors.toList()));
 		return n;
 	}
 }

@@ -13,7 +13,7 @@ import org.json.JSONObject;
 import net.gunivers.gunibot.command.lib.keys.KeyEnum;
 import net.gunivers.gunibot.command.lib.keys.KeyEnum.Position;
 import net.gunivers.gunibot.command.lib.nodes.Node;
-import net.gunivers.gunibot.command.lib.nodes.NodeList;
+import net.gunivers.gunibot.command.lib.nodes.NodeRoot;
 import net.gunivers.gunibot.utils.tuple.Tuple2;
 
 public class CommandParser {
@@ -27,12 +27,12 @@ public class CommandParser {
 	 *            la commande dont la syntaxe doit être parsée
 	 * @return la liste des alias de la commande
 	 */
-	public static NodeList<String> parseCommand(Command c) {
+	public static NodeRoot parseCommand(Command c) {
 		try {
 			command = c;
 			String s = Utils.getResourceFileContent("commands/", c.getSyntaxFile());
 			JSONObject obj = new JSONObject(s);
-			NodeList<String> n = parseRoot(obj);
+			NodeRoot n = parseRoot(obj);
 			c.setSyntax(n);
 			command = null;
 			return n;
@@ -43,7 +43,7 @@ public class CommandParser {
 		}
 	}
 
-	private static NodeList<String> parseRoot(JSONObject obj) throws Exception {
+	private static NodeRoot parseRoot(JSONObject obj) throws Exception {
 		List<String> keys = obj.keySet().stream().filter(x -> !x.equals("comment")).collect(Collectors.toList());
 		if (keys.size() == 1) {
 			String keyRoot = keys.get(0);
@@ -52,11 +52,10 @@ public class CommandParser {
 		throw new JsonCommandFormatException("Racine invalide\n\tat " + command.getSyntaxFile());
 	}
 
-	@SuppressWarnings("unchecked")
-	private static NodeList<String> parseHead(JSONObject obj, String root) throws Exception {
+	private static NodeRoot parseHead(JSONObject obj, String root) throws Exception {
 		if (obj.keySet().stream().distinct().count() == obj.keySet().size()) {
-			NodeList<String> nr = new NodeList<>(root, (s, l) -> l.contains(s));
-			return (NodeList<String>) parseArgument(obj, nr, Position.ONLY_IN_ROOT, Position.DEFAULT);
+			NodeRoot nr = new NodeRoot(root);
+			return (NodeRoot) parseArgument(obj, nr, Position.ONLY_IN_ROOT, Position.DEFAULT);
 		}
 		throw new JsonCommandFormatException("En-tête de fichier invalide\n\tat " + command.getSyntaxFile());
 	}
@@ -92,5 +91,4 @@ public class CommandParser {
 			return n;
 
 	}
-
 }

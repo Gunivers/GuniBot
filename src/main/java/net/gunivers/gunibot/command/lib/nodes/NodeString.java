@@ -11,6 +11,8 @@ public class NodeString extends TypeNode {
 
 	@Override
 	protected boolean matchesNode(String s) {
+		System.out.println(regex);
+		System.out.println(s.matches(regex));
 		return s.matches(regex);
 	}
 

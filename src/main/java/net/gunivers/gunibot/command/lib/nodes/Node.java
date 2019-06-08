@@ -22,6 +22,8 @@ public abstract class Node {
 
 	public final Tuple2<Tuple2<List<String>, Method>, CommandSyntaxError> matches(String[] s) {
 
+		if(this instanceof NodeList && matchesNode(Arrays.asList(s).stream().collect(Collectors.joining(" "))))
+			return Tuple.newTuple(Tuple.newTuple(keepValue ? new LinkedList<String>(Arrays.asList(Arrays.asList(s).stream().collect(Collectors.joining(" ")))) : new LinkedList<>(), run), null);
 		// L'élément courant n'est pas valide
 		if (!matchesNode(s[0]))
 			return Tuple.newTuple(null, new CommandSyntaxError(SyntaxError.ARG_INVALID, s[0]));

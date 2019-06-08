@@ -58,7 +58,7 @@ public class DataCenter {
 			}
 		});
 	}
-
+	
 	/**
 	 * Charge les données du serveur, si existant.
 	 * @param guild le serveur à chargé.
