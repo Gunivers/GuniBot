@@ -61,7 +61,7 @@ public class DataCenter {
 			}
 		});
 	}
-	
+
 	/**
 	 * Charge les données du serveur, si existant.
 	 * @param guild le serveur à chargé.
@@ -91,10 +91,15 @@ public class DataCenter {
 	 * @return l'objet de donnée du serveur.
 	 */
 	public DataGuild getDataGuild(Guild guild) {
-		if(hasRegisteredData(guild)) {
+		if(dataGuilds.containsKey(guild.getId())) {
 			return dataGuilds.get(guild.getId());
 		} else {
-			DataGuild data_guild = new DataGuild(guild);
+			DataGuild data_guild;
+			if(hasRegisteredData(guild)) {
+				data_guild = new DataGuild(guild, sql.loadGuildData(guild.getId().asLong()));
+			} else {
+				data_guild = new DataGuild(guild);
+			}
 			dataGuilds.put(guild.getId(), data_guild);
 			return data_guild;
 		}
