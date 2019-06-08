@@ -4,36 +4,33 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
-import java.util.function.BiPredicate;
 import java.util.stream.Collectors;
 
-public class NodeList<T> extends Node {
+public class NodeRoot extends Node {
 
-	private Set<T> elements = new HashSet<>();
-	private BiPredicate<String, Set<T>> predicat = null;
+	private Set<String> aliases = new HashSet<>();
 
-	public NodeList(T al, BiPredicate<String, Set<T>> predicate) {
-		elements.add(al);
-		predicat = predicate;
+	public NodeRoot(String al) {
+		aliases.add(al);
 	}
 
-	public void addElements(List<T> args) {
-		elements.addAll(args);
+	public void addAliases(List<String> args) {
+		aliases.addAll(args);
 	}
 
-	public List<T> getElements() {
-		return new LinkedList<T>(elements);
+	public List<String> getElements() {
+		return new LinkedList<>(aliases);
 	}
 
 	@Override
 	protected boolean matchesNode(String s) {
-		return predicat.test(s, elements);
+		return aliases.contains(s);
 	}
 	
 	@Override
 	public String toString() {
-		if(elements.size() > 1)
-			return "(" + elements.stream().map(s -> s.toString()).collect(Collectors.joining("|")) + ")" + childrenToString();
-		return elements.iterator().next().toString() + childrenToString();
+		if(aliases.size() > 1)
+			return "(" + aliases.stream().map(s -> s).collect(Collectors.joining("|")) + ")" + childrenToString();
+		return aliases.iterator().next().toString() + childrenToString();
 	}
 }
