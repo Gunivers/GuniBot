@@ -41,7 +41,7 @@ public class CommandIssuedListener extends Events<MessageCreateEvent>
 	@Override
 	protected void apply(MessageCreateEvent event)
 	{
-		System.out.println("APPLY");
+		System.out.println(event.getMember().get() + " issued command: " + event.getMessage().getContent().get());
 		this.onCommand(event.getMessage().getContent().get());
 	}
 	

@@ -41,25 +41,6 @@ public class DataCenter {
 
 		sql = new SQLClient(true);
 		loadGuilds();
-
-		registerEvents();
-	}
-
-	/**
-	 * Enregistre tout les évènements nécessaire après l'initialisation du DataCenter.
-	 */
-	private void registerEvents() {
-		EventDispatcher dispatcher = botClient.getEventDispatcher();
-
-		dispatcher.on(MessageCreateEvent.class).subscribe(event -> {
-			Optional<String> msg = event.getMessage().getContent();
-			if(msg.isPresent() && msg.get().startsWith(Command.PREFIX)) {
-				String[] cmd = msg.get().substring(Command.PREFIX.length()).split(" ");
-				Command command = Command.commands.get(Command.commands.keySet().stream().filter(x -> x.contains(cmd[0])).findFirst().orElse(null));
-				if(command != null)
-					command.apply(cmd, event);
-			}
-		});
 	}
 
 	/**
