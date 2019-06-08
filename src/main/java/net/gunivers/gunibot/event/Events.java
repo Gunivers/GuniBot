@@ -1,7 +1,7 @@
 package net.gunivers.gunibot.event;
 
-import discord4j.core.DiscordClient;
 import discord4j.core.event.EventDispatcher;
+import discord4j.core.event.domain.lifecycle.ReadyEvent;
 
 public abstract class Events<E extends discord4j.core.event.domain.Event>
 {
@@ -12,6 +12,17 @@ public abstract class Events<E extends discord4j.core.event.domain.Event>
 	public static ReactionAddedListener REACTION_ADDED;
 	public static ReactionRemovedListener REACTION_REMOVED;
 	public static ReactionRemovedAllListener REACTION_REMOVED_ALL;
+
+	
+	public static void registerEvents()
+	{
+		COMMAND_ISSUED = new CommandIssuedListener();
+		
+		REACTION_ADDED = new ReactionAddedListener();
+		REACTION_REMOVED = new ReactionRemovedListener();
+		REACTION_REMOVED_ALL = new ReactionRemovedAllListener();
+	}
+	
 	
 	protected E last = null;
 	
@@ -29,18 +40,9 @@ public abstract class Events<E extends discord4j.core.event.domain.Event>
 	
 	public E getLastEvent() { return this.last; }
 	
-	public static void initialize(DiscordClient bot)
+	public static void initialize(ReadyEvent event)
 	{
-		Events.dispatcher = bot.getEventDispatcher();
+		Events.dispatcher = event.getClient().getEventDispatcher();
 		Events.registerEvents();
-	}
-	
-	public static void registerEvents()
-	{
-		COMMAND_ISSUED = new CommandIssuedListener();
-		
-		REACTION_ADDED = new ReactionAddedListener();
-		REACTION_REMOVED = new ReactionRemovedListener();
-		REACTION_REMOVED_ALL = new ReactionRemovedAllListener();
 	}
 }

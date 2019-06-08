@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import discord4j.core.event.domain.message.MessageCreateEvent;
 import discord4j.core.object.entity.Member;
@@ -12,6 +11,8 @@ import discord4j.core.object.entity.Role;
 import discord4j.core.object.util.Snowflake;
 
 import net.gunivers.gunibot.Main;
+import net.gunivers.gunibot.az.lib.EmbedBuilder;
+import net.gunivers.gunibot.az.lib.EmbedBuilder.Field;
 import net.gunivers.gunibot.command.lib.Command;
 import net.gunivers.gunibot.command.permissions.Permission;
 import net.gunivers.gunibot.datas.DataGuild;
@@ -22,16 +23,11 @@ import reactor.util.function.Tuples;
 
 public class PermissionCommand extends Command
 {
-	static
-	{
-		new Permission("perm.test");
-	}
-	
 	@Override
 	public String getSyntaxFile() { return "permission.json"; }
 	
 	public void help(MessageCreateEvent event)
-	{
+	{	
 		event.getMessage().getChannel().flatMap(channel -> channel.createEmbed(embed -> 
 		{
 			Util.formatEmbed(event, "Help: permission", embed);
@@ -49,26 +45,26 @@ public class PermissionCommand extends Command
 
 	public void list(MessageCreateEvent event)
 	{
-		event.getMessage().getChannel().flatMap(channel -> channel.createEmbed(embed ->
+		EmbedBuilder builder = new EmbedBuilder(event, "Permission List", null, null, null, event.getMember().get().getColor().block(), null);
+		
+		Field discord = new Field("Discord Built-ins");
+		discord.setValue(Permission.discord.keySet().stream().map(Permission::getName).reduce("", (r,s) -> r += s + '\n'));
+		builder.addField(discord);
+		
+		Field bot = new Field("Bot Customized");
+		bot.setValue(Permission.bot.values().stream().sorted((a,b) -> a.higherThan(b) ? 1 : 0).map(Permission::getName).reduce("", (r,s) -> r += s + '\n'));
+		builder.addField(bot);
+		
+		DataGuild guild = Main.getDataCenter().getDataGuild(event.getGuild().block());
+		for (Role role : event.getGuild().block().getRoles().toIterable())
 		{
-			Util.formatEmbed(event, "Permissions List", embed);
-			
-			StringBuilder sb = new StringBuilder();
-			Permission.discord.keySet().forEach(p -> sb.append(p.getName() + '\n'));
-			embed.addField("*Discord linked permissions*", sb.toString(), false);
-			
-			sb.setLength(0);
-			Permission.bot.forEach(p -> sb.append(p.getName() + '\n'));
-			embed.addField("*Custom permissions*", sb.toString(), false);
-			
-			DataGuild guild = Main.getDataCenter().getDataGuild(event.getGuild().block());
-			for (Role role : event.getGuild().block().getRoles().toStream().collect(Collectors.toList()))
-			{
-				sb.setLength(0);
-				guild.getDataRole(role).getPermissions().forEach(p -> sb.append(p.getName() + "; "));
-				embed.addField(role.getMention(), sb.toString(), true);
-			}
-		})).subscribe();
+			Field f = new Field(role.getName());
+			f.setValue(guild.getDataRole(role).getPermissions().stream().map(Permission::getName).reduce("", (r,s) -> r += s + '\n'));
+			builder.addField(f);
+		}
+		
+		builder.setFooter("Generated with EmbedBuilder");
+		builder.buildAndSend();
 	}
 	
 	public void getUser(MessageCreateEvent event, List<String> args)

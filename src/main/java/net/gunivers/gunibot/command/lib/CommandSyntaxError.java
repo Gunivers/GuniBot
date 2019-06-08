@@ -61,5 +61,5 @@ public class CommandSyntaxError {
 	}
 	
 	@Override
-	public String toString() { return error.text; }
+	public String toString() { return error == null ? "" : error.text; }
 }
