@@ -60,6 +60,6 @@ public class CommandIssuedListener extends Events<MessageCreateEvent>
 			args.add(m.group());
 		
 		args = args.stream().map(String::trim).map(s -> s.charAt(0) == '"' ? s.substring(1, s.length() -1) : s).collect(Collectors.toList());
-		cmd.apply(args.toArray(new String[0]), last);
+		this.getLastCommand().apply(args.stream().collect(Collectors.joining(" ")), last);
 	}
 }

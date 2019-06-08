@@ -60,7 +60,7 @@ public abstract class Command {
 		syntax = n;
 	}
 
-	public void apply(String[] command, MessageCreateEvent event) {
+	public void apply(String command, MessageCreateEvent event) {
 		Tuple2<Tuple2<List<String>, Method>, CommandSyntaxError> result = syntax.matches(command);
 		if (result._1 != null) {
 			try {

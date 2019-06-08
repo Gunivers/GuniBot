@@ -20,25 +20,25 @@ public abstract class Node {
 	private boolean keepValue = false;
 	private String tag;
 
-	public final Tuple2<Tuple2<List<String>, Method>, CommandSyntaxError> matches(String[] s) {
+	public final Tuple2<Tuple2<List<String>, Method>, CommandSyntaxError> matches(String s) {
 
-		if(this instanceof NodeList && matchesNode(Arrays.asList(s).stream().collect(Collectors.joining(" "))))
-			return Tuple.newTuple(Tuple.newTuple(keepValue ? new LinkedList<String>(Arrays.asList(Arrays.asList(s).stream().collect(Collectors.joining(" ")))) : new LinkedList<>(), run), null);
+		Tuple2<String, String> splited = split(s);
+		
 		// L'élément courant n'est pas valide
-		if (!matchesNode(s[0]))
-			return Tuple.newTuple(null, new CommandSyntaxError(SyntaxError.ARG_INVALID, s[0]));
+		if (!matchesNode(splited._1))
+			return Tuple.newTuple(null, new CommandSyntaxError(SyntaxError.ARG_INVALID, splited._1));
 		// S'il n'y a plus qu'un argument en paramètre alors que la syntaxe est plus
 		// longue
-		if (s.length == 1 && run == null && children.size() > 0)
-			return Tuple.newTuple(null, new CommandSyntaxError(SyntaxError.SYNTAX_LONGER, s[0]));
+		if (splited._2.equals("") && run == null && children.size() > 0)
+			return Tuple.newTuple(null, new CommandSyntaxError(SyntaxError.SYNTAX_LONGER, splited._1));
 		// S'il y a plus d'arguments que d'éléments dans la syntaxe
-		if (s.length > 1 && children.size() == 0) {
+		if (!splited._2.equals("") && children.size() == 0) {
 			return Tuple.newTuple(null, new CommandSyntaxError(SyntaxError.SYNTAX_SHORTER, s));
 		}
 		// Cas terminal
-		if (s.length == 1 && run != null)
+		if (splited._2.equals("") && run != null)
 			return Tuple.newTuple(
-					Tuple.newTuple(keepValue ? new LinkedList<>(Arrays.asList(s[0])) : new LinkedList<>(), run), null);
+					Tuple.newTuple(keepValue ? new LinkedList<>(Arrays.asList(splited._1)) : new LinkedList<>(), run), null);
 
 		// Cas intermédiaires
 
@@ -49,7 +49,7 @@ public abstract class Node {
 		for (Node n : children) {
 			// Récursivité
 			Tuple2<Tuple2<List<String>, Method>, CommandSyntaxError> res = n
-					.matches(Arrays.copyOfRange(s, 1, s.length));
+					.matches(splited._2);
 
 			// Si aucun élément n'a encore été validé et que l'élément fils courant est
 			// valide, on le garde de côté
@@ -64,7 +64,7 @@ public abstract class Node {
 		if (valid != null) {
 			// Si la valeur doit être gardée, on l'ajoute au retour
 			if (keepValue) {
-				List<String> l = new LinkedList<String>(Arrays.asList(s[0]));
+				List<String> l = new LinkedList<String>(Arrays.asList(splited._1));
 				l.addAll(valid._1._1);
 				return Tuple.newTuple(Tuple.newTuple(l, valid._1._2), null);
 			}
@@ -72,7 +72,7 @@ public abstract class Node {
 		}
 
 		// Sinon, on retourne un tuple composé de l'erreur augmentée
-		farthest._2.addStringToPathFirst(s[0]);
+		farthest._2.addStringToPathFirst(splited._1);
 		return Tuple.newTuple(null, farthest._2);
 	}
 
@@ -113,6 +113,11 @@ public abstract class Node {
 
 	public Method getMethod() {
 		return run;
+	}
+	
+	public Tuple2<String, String> split(String s) {
+		String[] splited = s.split(" ", 2);
+		return Tuple.newTuple(splited[0], splited.length > 1 ? splited[1] : "");
 	}
 
 	@Override
