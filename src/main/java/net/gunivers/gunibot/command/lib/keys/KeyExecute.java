@@ -30,6 +30,7 @@ public class KeyExecute extends Key {
 		if (execute == null)
 			throw new JsonCommandFormatException("La fonction " + methodName + " n'existe pas dans la classe "
 					+ c.getClass().getSimpleName());
+		n.setExecute(execute);
 		return n;
 	}
 	
