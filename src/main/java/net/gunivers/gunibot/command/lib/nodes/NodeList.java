@@ -22,7 +22,7 @@ public class NodeList extends TypeNode {
 	}
 
 	@Override
-	public boolean matchesNode(String s) {
+	protected boolean matchesNode(String s) {
 		List<String> l = new LinkedList<>();
 		int i = 2;
 		int start = 1;
