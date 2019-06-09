@@ -25,7 +25,7 @@ public abstract class Node {
 		Tuple2<String, String> splited = split(s);
 		
 		// L'élément courant n'est pas valide
-		if (!matchesNode(splited._1))
+		if ((splited._1 == null && splited._2 == null) || !matchesNode(splited._1))
 			return Tuple.newTuple(null, new CommandSyntaxError(SyntaxError.ARG_INVALID, splited._1));
 		// S'il n'y a plus qu'un argument en paramètre alors que la syntaxe est plus
 		// longue

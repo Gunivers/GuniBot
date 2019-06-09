@@ -6,6 +6,7 @@ import net.gunivers.gunibot.command.lib.Command;
 import net.gunivers.gunibot.command.lib.JsonCommandFormatException;
 import net.gunivers.gunibot.command.lib.nodes.Node;
 import net.gunivers.gunibot.command.lib.nodes.NodeEnum;
+import net.gunivers.gunibot.command.lib.nodes.NodeList;
 import net.gunivers.gunibot.command.lib.nodes.NodeVarargs;
 import net.gunivers.gunibot.command.lib.nodes.TypeNode;
 
@@ -40,6 +41,9 @@ public class KeyType extends Key {
 		if(type.endsWith("...")) {
 			type = type.substring(0, type.length() - 3);
 			return new NodeVarargs(NodeEnum.valueOfIgnoreCase(type)); 
+		} else if(type.startsWith("list<") && type.endsWith(">")) {
+			type = type.substring(5, type.length() - 1);
+			return new NodeList((TypeNode)createNodeByType(type, pathCommand));
 		}
 		NodeEnum ne = NodeEnum.valueOfIgnoreCase(type);
 		TypeNode tn = ne.createInstance();
