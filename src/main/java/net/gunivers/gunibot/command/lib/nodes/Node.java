@@ -58,7 +58,7 @@ public abstract class Node {
 			// Sinon, si l'élément fils courant a pu aller plus loin dans la récursive que
 			// les autres, on le garde de côté
 			else if(res._2 != null){
-				System.out.println(res._2);
+//				System.out.println(res._2);
 				farthest = res._2.isDeeperThan(farthest._2) ? res : farthest;
 			}
 		}
@@ -139,7 +139,7 @@ public abstract class Node {
 			if (run != null)
 				return " [" + children.stream().map((n) -> n.toString()).collect(Collectors.joining("|")) + "]";
 			else
-				return " (" + children.stream().map((n) -> { System.out.println(n); return n.toString(); }).collect(Collectors.joining("|")) + ")";
+				return " (" + children.stream().map((n) -> { /*System.out.println(n);*/ return n.toString(); }).collect(Collectors.joining("|")) + ")";
 		} else
 			return "";
 	}

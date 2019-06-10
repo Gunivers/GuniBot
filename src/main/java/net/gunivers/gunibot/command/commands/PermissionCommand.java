@@ -1,24 +1,23 @@
 package net.gunivers.gunibot.command.commands;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import java.util.Set;
+import java.util.stream.Collectors;
 
 import discord4j.core.event.domain.message.MessageCreateEvent;
 import discord4j.core.object.entity.Member;
 import discord4j.core.object.entity.Role;
-import discord4j.core.object.util.Snowflake;
 
 import net.gunivers.gunibot.Main;
 import net.gunivers.gunibot.az.lib.EmbedBuilder;
 import net.gunivers.gunibot.az.lib.EmbedBuilder.Field;
+import net.gunivers.gunibot.az.lib.SimpleParser;
 import net.gunivers.gunibot.command.lib.Command;
 import net.gunivers.gunibot.command.permissions.Permission;
 import net.gunivers.gunibot.datas.DataGuild;
-
-import reactor.util.function.Tuple4;
-import reactor.util.function.Tuples;
+import net.gunivers.gunibot.datas.DataMember;
+import net.gunivers.gunibot.datas.DataRole;
+import net.gunivers.gunibot.syl2010.lib.parser.Parser;
 
 public class PermissionCommand extends Command
 {
@@ -51,105 +50,95 @@ public class PermissionCommand extends Command
 	
 	public void getUser(MessageCreateEvent event, List<String> args)
 	{
-		Member member = event.getGuild().block().getMemberById(Snowflake.of(args.get(0).replaceAll("<@|!|>", ""))).block();
-		DataGuild guild = Main.getDataCenter().getDataGuild(event.getGuild().block());
+		DataGuild g = Main.getDataCenter().getDataGuild(event.getGuild().block());
+		DataMember m = g.getDataMember(Parser.parseMember(args.get(0), g.getEntity()).blockFirst());
 		
-		Set<Permission> bots = guild.getDataMember(member).getPermissions();
-		ArrayList<Permission> discord = new ArrayList<>();
+		EmbedBuilder builder = new EmbedBuilder(event, "Permissions of " + m.getEntity().getDisplayName(), null);
+		builder.setAuthor(m.getEntity()); builder.setAuthor(null);
 		
-		Permission.discord.entrySet().stream().filter(e -> member.getBasePermissions().block().contains(e.getValue()))
-			.forEach(e -> discord.add(e.getKey()));
+		Field discord = new Field("Discord Permissions"); 
+		discord.setValue(Permission.discord.keySet().stream().filter(p -> p.hasPermission(m.getEntity())).map(Permission::getName)
+				.reduce(" - ", (r,s) -> r += "\n - " + s));
 		
-		sendGetMessage(event, discord, new ArrayList<>(bots), member.getMention());
+		builder.addField(discord);
+		builder.addField("Bot Permissions", m.getPermissions().stream().map(Permission::getName).reduce("", (r,s) -> r += " - "+ s +'\n'), true);
+		
+		builder.buildAndSend();
 	}
 	
 	public void getRole(MessageCreateEvent event, List<String> args)
 	{
-		Role role = event.getGuild().block().getRoleById(Snowflake.of(args.get(0).replaceAll("<@&|>", ""))).block();
-		DataGuild guild = Main.getDataCenter().getDataGuild(event.getGuild().block());
+		DataGuild g = Main.getDataCenter().getDataGuild(event.getGuild().block());
+		DataRole r = g.getDataRole(Parser.parseRole(args.get(0), g.getEntity()).blockFirst());
 		
-		Set<Permission> bots = guild.getDataRole(role).getPermissions();
-		ArrayList<Permission> discord = new ArrayList<>();
-		Permission.discord.entrySet().stream().filter(e -> role.getPermissions().contains(e.getValue())).forEach(e -> discord.add(e.getKey()));
+		EmbedBuilder builder = new EmbedBuilder(event, "Permissions of " + r.getEntity().getName(), null);
+		builder.setAuthor(event.getMember().get()); builder.setAuthor(null);
 		
-		sendGetMessage(event, discord, new ArrayList<>(bots), role.getMention());
+		Field discord = new Field("Discord Permissions"); 
+		discord.setValue(Permission.discord.keySet().stream().filter(p -> r.getEntity().getPermissions().contains(Permission.discord.get(p)))
+				.map(Permission::getName).reduce(" - ", (a,b) -> a += "\n - " + b));
+		
+		builder.addField(discord);
+		builder.addField("Bot Permissions", r.getPermissions().stream().map(Permission::getName).reduce(" - ", (a,b) -> a += "\n - " + b), true);
+	
+		builder.buildAndSend();
 	}
 	
 	public void setUsers(MessageCreateEvent event, List<String> args)
 	{
-		Tuple4<ArrayList<Permission>, Boolean, ArrayList<Member>, ArrayList<Role>> tuple = getSetArguments(event, args);
-		ArrayList<Permission> perms = tuple.getT1();
-		boolean add = tuple.getT2();
-		ArrayList<Member> users = tuple.getT3();
+		DataGuild g =  Main.getDataCenter().getDataGuild(event.getGuild().block());
+		boolean add = Boolean.parseBoolean(args.get(1));
 		
-		if (perms.isEmpty())
+		List<Permission> perms = SimpleParser.parseList(args.get(0)).stream().map(Permission::getByName)
+				.reduce(new ArrayList<Permission>(), (l,s) -> {l.addAll(s); return l;});
+		
+		int level = Permission.getHighestPermission(event.getMember().get()).getLevel();
+		for (Permission p : perms) if (p.getLevel() > level)
 		{
-			event.getMessage().getChannel().flatMap(chan -> chan.createMessage("There is no such permission as "+ args.get(0))).subscribe();
+			event.getMessage().getChannel().flatMap(c -> c.createMessage("The permission '"+ p.getName() +"' is of level "+ p.getLevel()
+					+ "\nYou may not access permissions of higher level than "+ level)).subscribe();
 			return;
 		}
 		
-		DataGuild guild = Main.getDataCenter().getDataGuild(event.getGuild().block());
-		for (Member member : users)
+		List<Member> users = SimpleParser.parseList(args.get(2)).stream().map(s -> Parser.parseMember(s, g.getEntity()).toStream()
+				.collect(Collectors.toList())).reduce(new ArrayList<>(), (l,s) -> { l.addAll(s); return l; });
+		
+		for (Member user : users)
 		{
-			if (add) guild.getDataMember(member).getPermissions().addAll(perms);
-			else guild.getDataMember(member).getPermissions().removeAll(perms);
+			if (add) g.getDataMember(user).getPermissions().addAll(perms);
+			else g.getDataMember(user).getPermissions().removeAll(perms);
 		}
 		
-		event.getMessage().getChannel().flatMap(chan -> chan.createMessage("Successfully assigned permissions to users")).subscribe();
+		event.getMessage().getChannel().flatMap(chan -> chan.createMessage(
+				"Successfully assigned permissions "+ args.get(0) +" to members " + args.get(2))).subscribe();
 	}
 
 	public void setRoles(MessageCreateEvent event, List<String> args)
 	{
-		Tuple4<ArrayList<Permission>, Boolean, ArrayList<Member>, ArrayList<Role>> tuple = getSetArguments(event, args);
-		ArrayList<Permission> perms = tuple.getT1();
-		boolean add = tuple.getT2();
-		ArrayList<Role> roles = tuple.getT4();
+		DataGuild g =  Main.getDataCenter().getDataGuild(event.getGuild().block());
+		boolean add = Boolean.parseBoolean(args.get(1));
 		
-		if (perms.isEmpty())
+		List<Permission> perms = SimpleParser.parseList(args.get(0)).stream().map(Permission::getByName)
+				.reduce(new ArrayList<Permission>(), (l,s) -> {l.addAll(s); return l;});
+		
+		int level = Permission.getHighestPermission(event.getMember().get()).getLevel();
+		for (Permission p : perms) if (p.getLevel() > level)
 		{
-			event.getMessage().getChannel().flatMap(chan -> chan.createMessage("There is no such permission as "+ args.get(0))).subscribe();
+			event.getMessage().getChannel().flatMap(c -> c.createMessage("The permission '"+ p.getName() +"' is of level "+ p.getLevel()
+					+ "\nYou may not access permissions of higher level than "+ level)).subscribe();
 			return;
 		}
 		
-		DataGuild guild = Main.getDataCenter().getDataGuild(event.getGuild().block());
+		List<Role> roles = SimpleParser.parseList(args.get(2)).stream().map(s -> Parser.parseRole(s, g.getEntity()).blockFirst())
+				.collect(Collectors.toList());
+		
 		for (Role role : roles)
 		{
-			if (add) guild.getDataRole(role).getPermissions().addAll(perms);
-			else guild.getDataRole(role).getPermissions().removeAll(perms);
+			if (add) g.getDataRole(role).getPermissions().addAll(perms);
+			else g.getDataRole(role).getPermissions().removeAll(perms);
 		}
 		
-		event.getMessage().getChannel().flatMap(chan -> chan.createMessage("Successfully assigned permissions to roles")).subscribe();
-	}
-	
-	
-	private static void sendGetMessage(MessageCreateEvent event, ArrayList<Permission> discord, ArrayList<Permission> bots, String mention)
-	{
-		StringBuilder sb = new StringBuilder("\nDiscord Permissions:                   Bot Permissions:");
-		for (int i = 0; i < discord.size() || i < bots.size(); i++)
-		{
-			String line = "\n - " + (i < discord.size() ? discord.get(i).getName() : "");
-			while (line.length() < 40) line += ' ';
-			if (i < bots.size()) line += " - " + bots.get(i).getName();
-			sb.append(line);
-		}
-		
-		event.getMessage().getChannel().flatMap(channel -> channel.createMessage("**All permissions of " + mention + "**\n"
-				+ "```yaml" + sb.toString() + "```")).subscribe();
-	}
-	
-	private static Tuple4<ArrayList<Permission>, Boolean, ArrayList<Member>, ArrayList<Role>>
-		getSetArguments(MessageCreateEvent event, List<String> args)
-	{
-		ArrayList<Permission> perms = Permission.getByName(args.get(0));
-		
-		boolean add = Boolean.parseBoolean(args.get(1));
-
-		ArrayList<Member> users = Arrays.asList(args.get(2).split(";")).stream().collect(ArrayList::new, (l,s) ->
-		l.add(event.getGuild().block().getMemberById(Snowflake.of(s.replaceAll("<@|!|>", ""))).block()), List::addAll);
-		
-		ArrayList<Role> roles = Arrays.asList(args.get(2).split(";")).stream().collect(ArrayList::new, (l,s) ->
-		l.add(event.getGuild().block().getRoleById(Snowflake.of(s.replaceAll("<@|!|>", ""))).block()), List::addAll);
-		
-		return Tuples.of(perms, add, users, roles);
+		event.getMessage().getChannel().flatMap(chan -> chan.createMessage(
+				"Successfully assigned permissions "+ args.get(0) +" to roles " + args.get(2))).subscribe();
 	}
 }
