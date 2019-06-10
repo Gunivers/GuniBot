@@ -25,7 +25,7 @@ public abstract class Node {
 		Tuple2<String, String> splited = split(s);
 		
 		// L'élément courant n'est pas valide
-		if ((splited._1 == null && splited._2 == null) || !matchesNode(splited._1))
+		if ((splited._1 == null || splited._2 == null) || !matchesNode(splited._1))
 			return Tuple.newTuple(null, new CommandSyntaxError(SyntaxError.ARG_INVALID, splited._1));
 		// S'il n'y a plus qu'un argument en paramètre alors que la syntaxe est plus
 		// longue
@@ -57,8 +57,10 @@ public abstract class Node {
 				valid = res;
 			// Sinon, si l'élément fils courant a pu aller plus loin dans la récursive que
 			// les autres, on le garde de côté
-			else
+			else if(res._2 != null){
+				System.out.println(res._2);
 				farthest = res._2.isDeeperThan(farthest._2) ? res : farthest;
+			}
 		}
 		// Si un élément valide a été trouvé, on le retourne
 		if (valid != null) {
