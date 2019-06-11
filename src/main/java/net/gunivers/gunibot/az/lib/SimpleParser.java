@@ -6,6 +6,8 @@ import java.util.regex.Pattern;
 
 public final class SimpleParser
 {
+	public static final Pattern LIST_GROUP = Pattern.compile("\\[.+\\]|\\{.+\\}|\"([^\"]|\\\")+\"|[^,]+");
+	
 	private SimpleParser() {}
 	
 	public static LinkedList<String> parseList(String s)
@@ -15,7 +17,7 @@ public final class SimpleParser
 		if (s.charAt(0) == '[' && s.charAt(s.length() -1) == ']')
 		{
 			s  = s.substring(1, s.length() -1).replaceAll(" ,|, ", ",");
-			Matcher m = Pattern.compile("\\[.+\\]|\\{.+\\}|\"([^\"]|\\\")+\"|[^,]+").matcher(s);
+			Matcher m = LIST_GROUP.matcher(s);
 			
 			while (m.find())
 				l.add(m.group());
