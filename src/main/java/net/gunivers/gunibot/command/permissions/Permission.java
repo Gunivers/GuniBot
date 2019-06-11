@@ -1,9 +1,10 @@
 package net.gunivers.gunibot.command.permissions;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.naming.InvalidNameException;
 
@@ -15,6 +16,7 @@ import net.gunivers.gunibot.datas.DataMember;
 
 public class Permission
 {
+	public static final Set<Permission> all = new HashSet<>();
 	public static final HashMap<String, Permission> bot = new HashMap<>();
 	public static final HashMap<discord4j.core.object.util.Permission, Permission> discord = new HashMap<>();
 	
@@ -36,6 +38,10 @@ public class Permission
 		discord.get(discord4j.core.object.util.Permission.ADMINISTRATOR).level = 5;
 	}
 
+	{
+		all.add(this);
+	}
+	
 	private final String name;
 	private int level;
 
@@ -103,28 +109,21 @@ public class Permission
 		DataGuild guild = Main.getDataCenter().getDataGuild(member.getGuild().block());
 		Permission p = Permission.bot.get("other.everyone");
 		
-		for (Permission perm : bot.values()) if (guild.getDataMember(member).getPermissions().contains(p) && perm.higherThan(p)) p = perm;
+		for (Permission perm : guild.getDataMember(member).getPermissions()) if (perm.higherThan(p)) p = perm;
 		
 		for (Role role : member.getRoles().toIterable())
 			for (Permission perm : guild.getDataRole(role).getPermissions()) if (perm.higherThan(p)) p = perm;
 
 		return p;
 	}
-	
-	public static ArrayList<Permission> getByName(String name)
-	{
-		ArrayList<Permission> perms = new ArrayList<>();
-		
+
+	public static Set<Permission> getByName(String name)
+	{	
 		boolean multiple = '*' == name.charAt(name.length() -1);
-		if (!name.matches("([a-z_]+\\.)+" + (multiple ? "\\*" : "[a-z_]+"))) return perms;
+		if (!name.matches("([a-z_]+\\.)+" + (multiple ? "\\*" : "[a-z_]+"))) return new HashSet<>();
 		
-		ArrayList<Permission> permissions = new ArrayList<>(discord.values());
-		permissions.addAll(bot.values());
-		
-		permissions.stream().filter(p -> (multiple && p.getName().matches(name.substring(0, name.length() -2) + "(\\.[a-z_]+)+"))
-				|| p.getName().equals(name)).forEach(perms::add);
-		
-		return perms;
+		return all.stream().filter(p -> (multiple && p.getName().matches(name.substring(0, name.length() -2) + "(\\.[a-z_]+)+"))
+				|| p.getName().equals(name)).collect(Collectors.toSet());
 	}
 	
 	public static discord4j.core.object.util.Permission get(Permission perm)
@@ -134,9 +133,7 @@ public class Permission
 
 	public static boolean hasPermissions(Member member, Set<Permission> perms)
 	{
-		for (Permission perm : perms)
-			if (!perm.hasPermission(member)) return false;
-			
+		for (Permission perm : perms) if (!perm.hasPermission(member)) return false;
 		return true;
 	}
 	
@@ -144,7 +141,7 @@ public class Permission
 	public boolean equals(Object perm)
 	{
 		if (perm instanceof Permission)
-			return ((Permission) perm).getName().equals(this.name);
+			return ((Permission) perm).name.equals(this.name) && ((Permission) perm).level == this.level;
 		
 		return false;
 	}

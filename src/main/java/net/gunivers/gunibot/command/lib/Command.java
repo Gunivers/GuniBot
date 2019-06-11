@@ -41,7 +41,7 @@ public abstract class Command {
 
 	public void addPermissions(List<String> permissions) {
 		for (String perm : permissions) {
-			List<Permission> perms = Permission.getByName(perm);
+			Set<Permission> perms = Permission.getByName(perm);
 			if (perms.isEmpty())
 				throw new NullPointerException("Permission '" + perm + "' doesn't exist");
 			this.permissions.addAll(perms);

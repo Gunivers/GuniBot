@@ -1,7 +1,8 @@
 package net.gunivers.gunibot.command.commands;
 
-import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import discord4j.core.event.domain.message.MessageCreateEvent;
@@ -85,8 +86,7 @@ public class PermissionCommand extends Command
 		boolean add = Boolean.parseBoolean(args.get(1));
 		DataGuild g =  Main.getDataCenter().getDataGuild(event.getGuild().block());
 		
-		List<Permission> perms = SimpleParser.parseList(args.get(0)).stream().map(Permission::getByName)
-				.reduce(new ArrayList<Permission>(), (l,s) -> {l.addAll(s); return l;});
+		Set<Permission> perms = SimpleParser.parseList(args.get(0)).stream().map(Permission::getByName).reduce(new HashSet<>(), (l,s) -> {l.addAll(s); return l;});
 		
 		//If the level of any permission is higher than the highest level of the user
 		int level = Permission.getHighestPermission(event.getMember().get()).getLevel();
