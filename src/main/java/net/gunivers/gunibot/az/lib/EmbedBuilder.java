@@ -81,7 +81,7 @@ public class EmbedBuilder
 		this.footerURL = footerURL;
 		this.thumbnail = thumbnail;
 		
-		this.setAuthor(author);
+		this.author = author;
 		this.authorURL = authorURL;
 		this.color = color;
 		this.image = imageURL;
@@ -118,6 +118,18 @@ public class EmbedBuilder
 	
 	public void normalize()
 	{
+		if (title != null && title.trim().equals("")) title = null;
+		if (url != null && url.trim().equals("")) url = null;
+		
+		if (authorURL != null && authorURL.trim().equals("")) authorURL = null;
+		if (image != null && image.trim().equals("")) image = null;
+		
+		if (description != null && description.trim().equals("")) description = null;
+		if (footer != null && footer.trim().equals("")) footer = null;
+		if (footerURL != null && footerURL.trim().equals("")) footerURL = null;
+		if (thumbnail != null && thumbnail.trim().equals("")) thumbnail = null;
+		
+		
 		if (title != null && title.length() > TITLE_LIMIT) title = title.substring(0, TITLE_LIMIT);
 		if (description != null && description.length() > DESCRIPTION_LIMIT) description = description.substring(0, DESCRIPTION_LIMIT);
 		if (footer != null && footer.length() > FOOTER_LIMIT) footer = footer.substring(0, FOOTER_LIMIT);
@@ -148,6 +160,17 @@ public class EmbedBuilder
 	public boolean removeField(Field field) { return fields.remove(field); }
 	public void clear() { fields.clear(); }
 	
+	public void setRequestedBy(Member member)
+	{
+		if (color == null) color = member.getColor().block();
+		if (footer == null)
+		{
+			footer = "Request by " + member.getDisplayName();
+			displayFooter = true;
+			
+			if (footerURL == null) footerURL = member.getAvatarUrl();
+		}
+	}
 	
 	public List<Field> getFields() { return Collections.unmodifiableList(fields); }
 	public MessageCreateEvent getEvent() { return event; }
@@ -168,20 +191,7 @@ public class EmbedBuilder
 	public void setTitle(String title) { this.title = title; }
 	public void setTitleURL(String url) { this.url = url; }
 	
-	public void setAuthor(Member author)
-	{
-		this.author = author;
-		if (author != null)
-		{
-			if (color == null) color = author.getColor().block();
-			if (footer == null)	{
-				footer = "Request by " + author.getDisplayName();
-				displayFooter = true;
-				if (footerURL == null) footerURL = author.getAvatarUrl();
-			}
-		}
-	}
-		
+	public void setAuthor(Member author) { this.author = author; }
 	public void setAuthorURL(String url) { this.authorURL = url; }
 	public void setColor(Color color) { this.color = color; }
 	public void setImage(String url) { this.image = url; this.displayImage = image != null;}
@@ -231,8 +241,8 @@ public class EmbedBuilder
 		{
 			value = new StringBuilder(value.toString().trim());
 			
-			if (name == null || name.trim() == "") name = NO_NAME;
-			if (value.toString() == "") value = new StringBuilder(NO_VALUE);
+			if (name == null || name.trim().equals("")) name = NO_NAME;
+			if (value.toString().equals("")) value = new StringBuilder(NO_VALUE);
 			
 			if (name.length() > NAME_LIMIT) name = name.substring(0, NAME_LIMIT);
 			if (value.length() > VALUE_LIMIT)

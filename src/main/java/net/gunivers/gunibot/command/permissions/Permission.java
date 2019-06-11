@@ -16,7 +16,7 @@ import net.gunivers.gunibot.datas.DataMember;
 public class Permission
 {
 	public static final HashMap<String, Permission> bot = new HashMap<>();
-	public static final HashMap<Permission, discord4j.core.object.util.Permission> discord = new HashMap<>();
+	public static final HashMap<discord4j.core.object.util.Permission, Permission> discord = new HashMap<>();
 	
 	static
 	{
@@ -33,7 +33,7 @@ public class Permission
 		new Permission("bot.trainee", 8);
 		new Permission("bot.dev", 9);
 		
-		Permission.getPermission(discord4j.core.object.util.Permission.ADMINISTRATOR).level = 5;
+		discord.get(discord4j.core.object.util.Permission.ADMINISTRATOR).level = 5;
 	}
 
 	private final String name;
@@ -62,7 +62,7 @@ public class Permission
 	private Permission(String name, discord4j.core.object.util.Permission perm)
 	{
 		this(10, "discord." + name);
-		discord.putIfAbsent(this, perm);
+		discord.putIfAbsent(perm, this);
 	}
 	
 	private Permission(int level, String name)
@@ -81,18 +81,18 @@ public class Permission
 		if (user.getRoles().toStream().anyMatch(role -> data.getDataRole(role).getPermissions().contains(this))) return true;
 
 		DataMember member = data.getDataMember(user);
-		return member.getPermissions().contains(this) || user.getBasePermissions().block().contains(discord.get(this));
+		return member.getPermissions().contains(this) || user.getBasePermissions().block().contains(Permission.get(this));
 	}
 	
 	public boolean higherThan(Permission perm)
 	{
-		if (this.isFromDiscord() && this != Permission.getPermission(discord4j.core.object.util.Permission.ADMINISTRATOR)) return false;
+		if (this.isFromDiscord() && this != discord.get(discord4j.core.object.util.Permission.ADMINISTRATOR)) return false;
 		return this.level > perm.level;
 	}
 	
 	
 	public boolean isFromBot() { return bot.values().contains(this); }
-	public boolean isFromDiscord() { return discord.keySet().contains(this); }
+	public boolean isFromDiscord() { return discord.values().contains(this); }
 	
 	public String getName() { return this.name; }
 	public int getLevel() { return level; }
@@ -118,7 +118,7 @@ public class Permission
 		boolean multiple = '*' == name.charAt(name.length() -1);
 		if (!name.matches("([a-z_]+\\.)+" + (multiple ? "\\*" : "[a-z_]+"))) return perms;
 		
-		ArrayList<Permission> permissions = new ArrayList<>(discord.keySet());
+		ArrayList<Permission> permissions = new ArrayList<>(discord.values());
 		permissions.addAll(bot.values());
 		
 		permissions.stream().filter(p -> (multiple && p.getName().matches(name.substring(0, name.length() -2) + "(\\.[a-z_]+)+"))
@@ -127,7 +127,7 @@ public class Permission
 		return perms;
 	}
 	
-	public static Permission getPermission(discord4j.core.object.util.Permission perm)
+	public static discord4j.core.object.util.Permission get(Permission perm)
 	{
 		return discord.entrySet().stream().filter(e -> e.getValue() == perm).findFirst().get().getKey();
 	}

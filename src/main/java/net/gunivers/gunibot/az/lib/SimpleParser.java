@@ -19,8 +19,10 @@ public final class SimpleParser
 			s  = s.substring(1, s.length() -1).replaceAll(" ,|, ", ",");
 			Matcher m = LIST_GROUP.matcher(s);
 			
-			while (m.find())
-				l.add(m.group());
+			while (m.find()) {
+				String group = m.group();
+				l.add(group.matches("\"([^\"]|\\\")+\"") ? group.substring(1, group.length() -1) : group);
+			}
 		}
 		else
 			l.add(s);

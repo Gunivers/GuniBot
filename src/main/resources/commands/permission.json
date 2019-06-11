@@ -17,20 +17,12 @@
 				"type": "string",
 				"matches": "get",
 				"arguments":
-				[
-					{
-						"tag":"user",
-						"type": "string",
-						"keep_value": true,
-						"execute": "getUser"
-					},
-					{
-						"tag":"role",
-						"type": "string",
-						"keep_value": true,
-						"execute": "getRole"
-					}
-				]
+				[{
+					"tag":"user|role",
+					"type": "string",
+					"keep_value": true,
+					"execute": "get"
+				}]
 			},
 			{
 				"tag":"set",
@@ -48,20 +40,12 @@
 						"type": "boolean",
 						"keep_value": true,
 						"arguments":
-						[
-							{
-								"tag":"users",
-								"type": "list<string>",
-								"keep_value": true,
-								"execute": "setUsers"
-							},
-							{
-								"tag":"roles",
-								"type": "list<string>",
-								"keep_value": true,
-								"execute": "setRoles"
-							}
-						]
+						[{
+							"tag":"users|roles",
+							"type": "list<string>",
+							"keep_value": true,
+							"execute": "set"
+						}]
 					}]
 				}]
 			}
