@@ -1,4 +1,4 @@
-package net.gunivers.gunibot.command.lib.keys;
+package net.gunivers.gunibot.core.command.keys;
 
 import java.util.LinkedList;
 import java.util.List;

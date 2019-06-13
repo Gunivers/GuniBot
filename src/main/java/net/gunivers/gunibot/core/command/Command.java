@@ -1,4 +1,4 @@
-package net.gunivers.gunibot.command.lib;
+package net.gunivers.gunibot.core.command;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -12,9 +12,9 @@ import java.util.stream.Collectors;
 import org.reflections.Reflections;
 
 import discord4j.core.event.domain.message.MessageCreateEvent;
-import net.gunivers.gunibot.command.lib.nodes.Node;
-import net.gunivers.gunibot.command.lib.nodes.NodeRoot;
 import net.gunivers.gunibot.command.permissions.Permission;
+import net.gunivers.gunibot.core.command.nodes.Node;
+import net.gunivers.gunibot.core.command.nodes.NodeRoot;
 import net.gunivers.gunibot.utils.tuple.Tuple2;
 
 public abstract class Command {

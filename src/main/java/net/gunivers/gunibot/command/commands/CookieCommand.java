@@ -3,7 +3,7 @@ package net.gunivers.gunibot.command.commands;
 import java.util.List;
 
 import discord4j.core.event.domain.message.MessageCreateEvent;
-import net.gunivers.gunibot.command.lib.Command;
+import net.gunivers.gunibot.core.command.Command;
 
 public class CookieCommand extends Command {
 

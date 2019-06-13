@@ -1,10 +1,10 @@
-package net.gunivers.gunibot.command.lib.nodes;
+package net.gunivers.gunibot.core.command.nodes;
 
 import java.util.Arrays;
 import java.util.List;
 
-import net.gunivers.gunibot.command.lib.JsonCommandFormatException;
-import net.gunivers.gunibot.command.lib.keys.KeyEnum;
+import net.gunivers.gunibot.core.command.JsonCommandFormatException;
+import net.gunivers.gunibot.core.command.keys.KeyEnum;
 
 public class NodeBoolean extends TypeNode {
 

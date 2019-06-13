@@ -1,4 +1,4 @@
-package net.gunivers.gunibot.command.lib;
+package net.gunivers.gunibot.core.command;
 
 public class JsonCommandFormatException extends Exception {
 

@@ -1,12 +1,12 @@
-package net.gunivers.gunibot.command.lib.keys;
+package net.gunivers.gunibot.core.command.keys;
 
 import java.lang.reflect.Method;
 
 import org.json.JSONObject;
 
-import net.gunivers.gunibot.command.lib.Command;
-import net.gunivers.gunibot.command.lib.JsonCommandFormatException;
-import net.gunivers.gunibot.command.lib.nodes.Node;
+import net.gunivers.gunibot.core.command.Command;
+import net.gunivers.gunibot.core.command.JsonCommandFormatException;
+import net.gunivers.gunibot.core.command.nodes.Node;
 
 public class KeyExecute extends Key {
 

@@ -1,4 +1,4 @@
-package net.gunivers.gunibot.command.lib.nodes;
+package net.gunivers.gunibot.core.command.nodes;
 
 import java.util.HashSet;
 import java.util.LinkedList;
