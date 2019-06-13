@@ -1,6 +1,6 @@
-package net.gunivers.gunibot.command.lib.nodes;
+package net.gunivers.gunibot.core.command.nodes;
 
-import net.gunivers.gunibot.command.lib.JsonCommandFormatException;
+import net.gunivers.gunibot.core.command.JsonCommandFormatException;
 
 public class NodeInt extends TypeNode {
 

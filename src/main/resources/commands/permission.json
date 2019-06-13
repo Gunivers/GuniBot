@@ -13,10 +13,16 @@
 				"execute": "list"
 			},
 			{
-				"tag":"help",
+				"tag":"get",
 				"type": "string",
-				"matches": "help|h|\\?",
-				"execute": "help"
+				"matches": "get",
+				"arguments":
+				[{
+					"tag":"user|role",
+					"type": "string",
+					"keep_value": true,
+					"execute": "get"
+				}]
 			},
 			{
 				"tag":"set",
@@ -25,57 +31,23 @@
 				"arguments":
 				[{
 					"tag":"permission",
-					"type": "string",
+					"type": "list<string>",
 					"matches": "([a-z_]+\\.)+([a-z_]+|\\*)",
 					"keep_value": true,
 					"arguments":
 					[{
 						"tag":"value",
-						"type": "string",
-						"matches": "true|false",
+						"type": "boolean",
 						"keep_value": true,
 						"arguments":
-						[
-							{
-								"tag":"users",
-								"type": "string",
-								"matches": "(<@!?[0-9]+>;)*<@!?[0-9]+>",
-								"keep_value": true,
-								"execute": "setUsers"
-							},
-							{
-								"tag":"roles",
-								"comment": "(Un)grant specified permission to specified roles",
-								"type": "string",
-								"matches": "(<@\\&[0-9]+>;)*<@\\&[0-9]+>",
-								"keep_value": true,
-								"execute": "setRoles"
-							}
-						]
+						[{
+							"tag":"users|roles",
+							"type": "list<string>",
+							"keep_value": true,
+							"execute": "set"
+						}]
 					}]
 				}]
-			},
-			{
-				"tag":"get",
-				"type": "string",
-				"matches": "get",
-				"arguments":
-				[
-					{
-						"tag":"user",
-						"type": "string",
-						"matches": "<@!?[0-9]+>",
-						"keep_value": true,
-						"execute": "getUser"
-					},
-					{
-						"tag":"role",
-						"type": "string",
-						"matches": "<@\\&[0-9]+>",
-						"keep_value": true,
-						"execute": "getRole"
-					}
-				]
 			}
 		]
 	}

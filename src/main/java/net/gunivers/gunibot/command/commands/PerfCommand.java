@@ -7,7 +7,7 @@ import discord4j.core.event.domain.message.MessageCreateEvent;
 import discord4j.core.object.entity.Member;
 import discord4j.core.object.entity.Message;
 import discord4j.core.object.entity.User;
-import net.gunivers.gunibot.command.lib.Command;
+import net.gunivers.gunibot.core.command.Command;
 
 public class PerfCommand extends Command {
 

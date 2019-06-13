@@ -1,13 +1,14 @@
-package net.gunivers.gunibot.command.lib.keys;
+package net.gunivers.gunibot.core.command.keys;
 
 import org.json.JSONObject;
 
-import net.gunivers.gunibot.command.lib.Command;
-import net.gunivers.gunibot.command.lib.JsonCommandFormatException;
-import net.gunivers.gunibot.command.lib.nodes.Node;
-import net.gunivers.gunibot.command.lib.nodes.NodeEnum;
-import net.gunivers.gunibot.command.lib.nodes.NodeList;
-import net.gunivers.gunibot.command.lib.nodes.TypeNode;
+import net.gunivers.gunibot.core.command.Command;
+import net.gunivers.gunibot.core.command.JsonCommandFormatException;
+import net.gunivers.gunibot.core.command.nodes.Node;
+import net.gunivers.gunibot.core.command.nodes.NodeEnum;
+import net.gunivers.gunibot.core.command.nodes.NodeList;
+import net.gunivers.gunibot.core.command.nodes.NodeVarargs;
+import net.gunivers.gunibot.core.command.nodes.TypeNode;
 
 public class KeyType extends Key {
 	
@@ -39,7 +40,10 @@ public class KeyType extends Key {
 		try {
 		if(type.endsWith("...")) {
 			type = type.substring(0, type.length() - 3);
-			return new NodeList(NodeEnum.valueOfIgnoreCase(type)); 
+			return new NodeVarargs(NodeEnum.valueOfIgnoreCase(type)); 
+		} else if(type.startsWith("list<") && type.endsWith(">")) {
+			type = type.substring(5, type.length() - 1);
+			return new NodeList((TypeNode)createNodeByType(type, pathCommand));
 		}
 		NodeEnum ne = NodeEnum.valueOfIgnoreCase(type);
 		TypeNode tn = ne.createInstance();

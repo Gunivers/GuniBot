@@ -37,6 +37,7 @@ public class EmbedBuilder
 	
 	private EmbedBuilder child = null;
 	
+	
 	public EmbedBuilder(MessageCreateEvent event) {
 		this.event = event;
 	}
@@ -53,7 +54,8 @@ public class EmbedBuilder
 		this(event, null, null, description, footer, footerURL, thumbnail);
 	}
 	
-	public EmbedBuilder(MessageCreateEvent event, String title, String titleURL, Member author, String authorURL, Color color, String imageURL) {
+	public EmbedBuilder(MessageCreateEvent event, String title, String titleURL, Member author, String authorURL, Color color, String imageURL)
+	{
 		this(event, title, titleURL, author, authorURL, color, imageURL, null, null, null, null);
 	}
 	
@@ -74,19 +76,20 @@ public class EmbedBuilder
 		this.title = title;
 		this.url = titleURL;
 		
-		this.author = author;
-		this.authorURL = authorURL;
-		this.color = color;
-		this.image = imageURL;
-		
 		this.description = description;
 		this.footer = footer;
 		this.footerURL = footerURL;
 		this.thumbnail = thumbnail;
 		
+		this.author = author;
+		this.authorURL = authorURL;
+		this.color = color;
+		this.image = imageURL;
+		
 		this.displayFooter = footer != null;
 		this.displayImage = image != null;
 	}
+	
 	
 	public void buildAndSend()
 	{
@@ -104,11 +107,10 @@ public class EmbedBuilder
 			if (displayImage && image != null) embed.setImage(image);
 			
 			if (description != null) embed.setDescription(description);
-			if (displayFooter && (footer != null || author != null)) embed.setFooter(footer == null ? "Request by " + author.getDisplayName()
-			: footer, footer == null ? author.getAvatarUrl() : footerURL);
+			if (displayFooter && footer != null) embed.setFooter(footer, footerURL);
 			if (thumbnail != null) embed.setThumbnail(thumbnail);
 			
-			fields.stream().forEachOrdered(field -> embed.addField(field.name, field.value, field.inline));
+			fields.stream().forEachOrdered(field -> embed.addField(field.name, field.value.toString(), field.inline));
 		})).subscribe();
 		
 		if (child != null) child.buildAndSend();
@@ -116,6 +118,18 @@ public class EmbedBuilder
 	
 	public void normalize()
 	{
+		if (title != null && title.trim().equals("")) title = null;
+		if (url != null && url.trim().equals("")) url = null;
+		
+		if (authorURL != null && authorURL.trim().equals("")) authorURL = null;
+		if (image != null && image.trim().equals("")) image = null;
+		
+		if (description != null && description.trim().equals("")) description = null;
+		if (footer != null && footer.trim().equals("")) footer = null;
+		if (footerURL != null && footerURL.trim().equals("")) footerURL = null;
+		if (thumbnail != null && thumbnail.trim().equals("")) thumbnail = null;
+		
+		
 		if (title != null && title.length() > TITLE_LIMIT) title = title.substring(0, TITLE_LIMIT);
 		if (description != null && description.length() > DESCRIPTION_LIMIT) description = description.substring(0, DESCRIPTION_LIMIT);
 		if (footer != null && footer.length() > FOOTER_LIMIT) footer = footer.substring(0, FOOTER_LIMIT);
@@ -138,13 +152,25 @@ public class EmbedBuilder
 	public void addField(String name, String value, boolean inline) { this.addField(new Field(name, value)); }
 	public void addField(Field field)
 	{
-		if (field.father != null) field = new Field(field.name, field.value);
+		if (field.father != null) field = new Field(field.name, field.value.toString());
 		field.father = this;
 		this.fields.add(field);
 	}
 	
 	public boolean removeField(Field field) { return fields.remove(field); }
 	public void clear() { fields.clear(); }
+	
+	public void setRequestedBy(Member member)
+	{
+		if (color == null) color = member.getColor().block();
+		if (footer == null)
+		{
+			footer = "Request by " + member.getDisplayName();
+			displayFooter = true;
+			
+			if (footerURL == null) footerURL = member.getAvatarUrl();
+		}
+	}
 	
 	public List<Field> getFields() { return Collections.unmodifiableList(fields); }
 	public MessageCreateEvent getEvent() { return event; }
@@ -165,16 +191,7 @@ public class EmbedBuilder
 	public void setTitle(String title) { this.title = title; }
 	public void setTitleURL(String url) { this.url = url; }
 	
-	public void setAuthor(Member author)
-	{
-		this.author = author;
-		if (author != null && footer == null)	
-		{
-			footer = "Request by " + author;
-			if (footerURL == null) footerURL = author.getAvatarUrl();
-		}
-	}
-		
+	public void setAuthor(Member author) { this.author = author; }
 	public void setAuthorURL(String url) { this.authorURL = url; }
 	public void setColor(Color color) { this.color = color; }
 	public void setImage(String url) { this.image = url; this.displayImage = image != null;}
@@ -196,7 +213,7 @@ public class EmbedBuilder
 		private EmbedBuilder father = null;
 		
 		private String name;
-		private String value;
+		private StringBuilder value;
 		private boolean inline;
 		
 		public Field(String name) { this(name, "", true); }
@@ -206,34 +223,36 @@ public class EmbedBuilder
 		public Field(String name, String value, boolean inline)
 		{
 			this.name = name;
-			this.value = value;
+			this.value = new StringBuilder(value);
 			this.inline = inline;
 		}
 		
 		public EmbedBuilder getEmbed() { return father; }
 		
 		public String getName() { return name; }
-		public String getValue() { return value; }
+		public StringBuilder getValue() { return value; }
 		public boolean isInline() { return inline; }
 		
 		public void setName(String name) { this.name = name; }
-		public void setValue(String value) { this.value = value; }
+		public void setValue(String value) { this.value = new StringBuilder(value); }
 		public void setInline(boolean inline) { this.inline = inline; }
 		
 		public void normalize()
 		{
-			if (name == null || name.trim() == "") name = NO_NAME;
-			if (value == null || value.trim() == "") value = NO_VALUE;
+			value = new StringBuilder(value.toString().trim());
+			
+			if (name == null || name.trim().equals("")) name = NO_NAME;
+			if (value.toString().equals("")) value = new StringBuilder(NO_VALUE);
 			
 			if (name.length() > NAME_LIMIT) name = name.substring(0, NAME_LIMIT);
 			if (value.length() > VALUE_LIMIT)
 			{
-				int index = value.contains("\n") ? value.substring(0, VALUE_LIMIT).lastIndexOf('\n') : VALUE_LIMIT;
+				int index = value.toString().contains("\n") ? value.substring(0, VALUE_LIMIT).lastIndexOf('\n') : VALUE_LIMIT;
 				
 				Field child = new Field(name, value.substring(index));
 				father.fields.add(father.fields.indexOf(this), child);
 			
-				value = value.substring(0, index);
+				value = new StringBuilder(value.substring(0, index));
 				child.father = father;
 				child.normalize();
 			}

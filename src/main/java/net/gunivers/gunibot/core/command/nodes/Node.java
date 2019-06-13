@@ -1,4 +1,4 @@
-package net.gunivers.gunibot.command.lib.nodes;
+package net.gunivers.gunibot.core.command.nodes;
 
 import java.lang.reflect.Method;
 import java.util.Arrays;
@@ -7,9 +7,9 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import net.gunivers.gunibot.command.lib.CommandSyntaxError;
-import net.gunivers.gunibot.command.lib.CommandSyntaxError.SyntaxError;
-import net.gunivers.gunibot.command.lib.keys.KeyEnum;
+import net.gunivers.gunibot.core.command.CommandSyntaxError;
+import net.gunivers.gunibot.core.command.CommandSyntaxError.SyntaxError;
+import net.gunivers.gunibot.core.command.keys.KeyEnum;
 import net.gunivers.gunibot.utils.tuple.Tuple;
 import net.gunivers.gunibot.utils.tuple.Tuple2;
 
@@ -20,25 +20,25 @@ public abstract class Node {
 	private boolean keepValue = false;
 	private String tag;
 
-	public final Tuple2<Tuple2<List<String>, Method>, CommandSyntaxError> matches(String[] s) {
+	public final Tuple2<Tuple2<List<String>, Method>, CommandSyntaxError> matches(String s) {
 
-		if(this instanceof NodeList && matchesNode(Arrays.asList(s).stream().collect(Collectors.joining(" "))))
-			return Tuple.newTuple(Tuple.newTuple(keepValue ? new LinkedList<String>(Arrays.asList(Arrays.asList(s).stream().collect(Collectors.joining(" ")))) : new LinkedList<>(), run), null);
+		Tuple2<String, String> splited = split(s);
+		
 		// L'élément courant n'est pas valide
-		if (!matchesNode(s[0]))
-			return Tuple.newTuple(null, new CommandSyntaxError(SyntaxError.ARG_INVALID, s[0]));
+		if ((splited._1 == null && splited._2 == null) || !matchesNode(splited._1))
+			return Tuple.newTuple(null, new CommandSyntaxError(SyntaxError.ARG_INVALID, splited._1));
 		// S'il n'y a plus qu'un argument en paramètre alors que la syntaxe est plus
 		// longue
-		if (s.length == 1 && run == null && children.size() > 0)
-			return Tuple.newTuple(null, new CommandSyntaxError(SyntaxError.SYNTAX_LONGER, s[0]));
+		if (splited._2.equals("") && run == null && children.size() > 0)
+			return Tuple.newTuple(null, new CommandSyntaxError(SyntaxError.SYNTAX_LONGER, splited._1));
 		// S'il y a plus d'arguments que d'éléments dans la syntaxe
-		if (s.length > 1 && children.size() == 0) {
+		if (!splited._2.equals("") && children.size() == 0) {
 			return Tuple.newTuple(null, new CommandSyntaxError(SyntaxError.SYNTAX_SHORTER, s));
 		}
 		// Cas terminal
-		if (s.length == 1 && run != null)
+		if (splited._2.equals("") && run != null)
 			return Tuple.newTuple(
-					Tuple.newTuple(keepValue ? new LinkedList<>(Arrays.asList(s[0])) : new LinkedList<>(), run), null);
+					Tuple.newTuple(keepValue ? new LinkedList<>(Arrays.asList(splited._1)) : new LinkedList<>(), run), null);
 
 		// Cas intermédiaires
 
@@ -49,7 +49,7 @@ public abstract class Node {
 		for (Node n : children) {
 			// Récursivité
 			Tuple2<Tuple2<List<String>, Method>, CommandSyntaxError> res = n
-					.matches(Arrays.copyOfRange(s, 1, s.length));
+					.matches(splited._2);
 
 			// Si aucun élément n'a encore été validé et que l'élément fils courant est
 			// valide, on le garde de côté
@@ -57,14 +57,16 @@ public abstract class Node {
 				valid = res;
 			// Sinon, si l'élément fils courant a pu aller plus loin dans la récursive que
 			// les autres, on le garde de côté
-			else
+			else if(res._2 != null){
+//				System.out.println(res._2);
 				farthest = res._2.isDeeperThan(farthest._2) ? res : farthest;
+			}
 		}
 		// Si un élément valide a été trouvé, on le retourne
 		if (valid != null) {
 			// Si la valeur doit être gardée, on l'ajoute au retour
 			if (keepValue) {
-				List<String> l = new LinkedList<String>(Arrays.asList(s[0]));
+				List<String> l = new LinkedList<String>(Arrays.asList(splited._1));
 				l.addAll(valid._1._1);
 				return Tuple.newTuple(Tuple.newTuple(l, valid._1._2), null);
 			}
@@ -72,7 +74,7 @@ public abstract class Node {
 		}
 
 		// Sinon, on retourne un tuple composé de l'erreur augmentée
-		farthest._2.addStringToPathFirst(s[0]);
+		farthest._2.addStringToPathFirst(splited._1);
 		return Tuple.newTuple(null, farthest._2);
 	}
 
@@ -114,6 +116,11 @@ public abstract class Node {
 	public Method getMethod() {
 		return run;
 	}
+	
+	public Tuple2<String, String> split(String s) {
+		String[] splited = s.split(" ", 2);
+		return Tuple.newTuple(splited[0], splited.length > 1 ? splited[1] : "");
+	}
 
 	@Override
 	public String toString() {
@@ -132,7 +139,7 @@ public abstract class Node {
 			if (run != null)
 				return " [" + children.stream().map((n) -> n.toString()).collect(Collectors.joining("|")) + "]";
 			else
-				return " (" + children.stream().map((n) -> { System.out.println(n); return n.toString(); }).collect(Collectors.joining("|")) + ")";
+				return " (" + children.stream().map((n) -> { /*System.out.println(n);*/ return n.toString(); }).collect(Collectors.joining("|")) + ")";
 		} else
 			return "";
 	}

@@ -1,17 +1,19 @@
-package net.gunivers.gunibot.command.lib.nodes;
+package net.gunivers.gunibot.core.command.nodes;
 
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 
-import net.gunivers.gunibot.command.lib.JsonCommandFormatException;
-import net.gunivers.gunibot.command.lib.keys.KeyEnum;
+import net.gunivers.gunibot.core.command.JsonCommandFormatException;
+import net.gunivers.gunibot.core.command.keys.KeyEnum;
+import net.gunivers.gunibot.utils.tuple.Tuple;
+import net.gunivers.gunibot.utils.tuple.Tuple2;
 
-public class NodeList extends TypeNode {
+public class NodeVarargs extends TypeNode {
 
 	private TypeNode node;
 	
-	public NodeList(NodeEnum ke) {
+	public NodeVarargs(NodeEnum ke) {
 		node = ke.createInstance();
 	}
 
@@ -33,6 +35,11 @@ public class NodeList extends TypeNode {
 	@Override
 	public void parse(String s) throws JsonCommandFormatException {
 		node.parse(s);
+	}
+	
+	@Override
+	public Tuple2<String, String> split(String s) {
+		return Tuple.newTuple(s, "");
 	}
 
 }

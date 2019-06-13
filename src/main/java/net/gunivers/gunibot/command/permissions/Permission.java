@@ -1,9 +1,10 @@
 package net.gunivers.gunibot.command.permissions;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.naming.InvalidNameException;
 
@@ -15,8 +16,9 @@ import net.gunivers.gunibot.datas.DataMember;
 
 public class Permission
 {
+	public static final Set<Permission> all = new HashSet<>();
 	public static final HashMap<String, Permission> bot = new HashMap<>();
-	public static final HashMap<Permission, discord4j.core.object.util.Permission> discord = new HashMap<>();
+	public static final HashMap<discord4j.core.object.util.Permission, Permission> discord = new HashMap<>();
 	
 	static
 	{
@@ -33,9 +35,13 @@ public class Permission
 		new Permission("bot.trainee", 8);
 		new Permission("bot.dev", 9);
 		
-		Permission.getPermission(discord4j.core.object.util.Permission.ADMINISTRATOR).level = 5;
+		discord.get(discord4j.core.object.util.Permission.ADMINISTRATOR).level = 5;
 	}
 
+	{
+		all.add(this);
+	}
+	
 	private final String name;
 	private int level;
 
@@ -62,7 +68,7 @@ public class Permission
 	private Permission(String name, discord4j.core.object.util.Permission perm)
 	{
 		this(10, "discord." + name);
-		discord.putIfAbsent(this, perm);
+		discord.putIfAbsent(perm, this);
 	}
 	
 	private Permission(int level, String name)
@@ -81,18 +87,18 @@ public class Permission
 		if (user.getRoles().toStream().anyMatch(role -> data.getDataRole(role).getPermissions().contains(this))) return true;
 
 		DataMember member = data.getDataMember(user);
-		return member.getPermissions().contains(this) || user.getBasePermissions().block().contains(discord.get(this));
+		return member.getPermissions().contains(this) || user.getBasePermissions().block().contains(Permission.get(this));
 	}
 	
 	public boolean higherThan(Permission perm)
 	{
-		if (this.isFromDiscord() && this != Permission.getPermission(discord4j.core.object.util.Permission.ADMINISTRATOR)) return false;
+		if (this.isFromDiscord() && this != discord.get(discord4j.core.object.util.Permission.ADMINISTRATOR)) return false;
 		return this.level > perm.level;
 	}
 	
 	
 	public boolean isFromBot() { return bot.values().contains(this); }
-	public boolean isFromDiscord() { return discord.keySet().contains(this); }
+	public boolean isFromDiscord() { return discord.values().contains(this); }
 	
 	public String getName() { return this.name; }
 	public int getLevel() { return level; }
@@ -103,40 +109,31 @@ public class Permission
 		DataGuild guild = Main.getDataCenter().getDataGuild(member.getGuild().block());
 		Permission p = Permission.bot.get("other.everyone");
 		
-		for (Permission perm : bot.values()) if (guild.getDataMember(member).getPermissions().contains(p) && perm.higherThan(p)) p = perm;
+		for (Permission perm : guild.getDataMember(member).getPermissions()) if (perm.higherThan(p)) p = perm;
 		
 		for (Role role : member.getRoles().toIterable())
 			for (Permission perm : guild.getDataRole(role).getPermissions()) if (perm.higherThan(p)) p = perm;
 
 		return p;
 	}
-	
-	public static ArrayList<Permission> getByName(String name)
-	{
-		ArrayList<Permission> perms = new ArrayList<>();
-		
+
+	public static Set<Permission> getByName(String name)
+	{	
 		boolean multiple = '*' == name.charAt(name.length() -1);
-		if (!name.matches("([a-z_]+\\.)+" + (multiple ? "\\*" : "[a-z_]+"))) return perms;
+		if (!name.matches("([a-z_]+\\.)+" + (multiple ? "\\*" : "[a-z_]+"))) return new HashSet<>();
 		
-		ArrayList<Permission> permissions = new ArrayList<>(discord.keySet());
-		permissions.addAll(bot.values());
-		
-		permissions.stream().filter(p -> (multiple && p.getName().matches(name.substring(0, name.length() -2) + "(\\.[a-z_]+)+"))
-				|| p.getName().equals(name)).forEach(perms::add);
-		
-		return perms;
+		return all.stream().filter(p -> (multiple && p.getName().matches(name.substring(0, name.length() -2) + "(\\.[a-z_]+)+"))
+				|| p.getName().equals(name)).collect(Collectors.toSet());
 	}
 	
-	public static Permission getPermission(discord4j.core.object.util.Permission perm)
+	public static discord4j.core.object.util.Permission get(Permission perm)
 	{
 		return discord.entrySet().stream().filter(e -> e.getValue() == perm).findFirst().get().getKey();
 	}
 
 	public static boolean hasPermissions(Member member, Set<Permission> perms)
 	{
-		for (Permission perm : perms)
-			if (!perm.hasPermission(member)) return false;
-			
+		for (Permission perm : perms) if (!perm.hasPermission(member)) return false;
 		return true;
 	}
 	
@@ -144,7 +141,7 @@ public class Permission
 	public boolean equals(Object perm)
 	{
 		if (perm instanceof Permission)
-			return ((Permission) perm).getName().equals(this.name);
+			return ((Permission) perm).name.equals(this.name) && ((Permission) perm).level == this.level;
 		
 		return false;
 	}

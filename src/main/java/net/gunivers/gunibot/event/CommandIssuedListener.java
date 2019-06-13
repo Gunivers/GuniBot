@@ -9,9 +9,8 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import discord4j.core.event.domain.message.MessageCreateEvent;
-
-import net.gunivers.gunibot.command.lib.Command;
 import net.gunivers.gunibot.command.permissions.Permission;
+import net.gunivers.gunibot.core.command.Command;
 
 public class CommandIssuedListener extends Events<MessageCreateEvent>
 {
@@ -22,14 +21,14 @@ public class CommandIssuedListener extends Events<MessageCreateEvent>
 	@Override
 	protected boolean precondition(MessageCreateEvent event)
 	{
-		System.out.println(event.getMember().get().getDisplayName() + " issued command: " + event.getMessage().getContent().get());
-		
 		java.util.Optional<String> msg = event.getMessage().getContent();
 		if (!msg.isPresent() || !msg.get().startsWith(Command.PREFIX)) return false;
 		
 		String name = msg.get().split(" ")[0].substring(Command.PREFIX.length());
 		Optional<List<String>> get = Command.commands.keySet().stream().filter(l -> l.contains(name)).findAny();
 		if (!get.isPresent()) return false;
+
+		System.out.println(event.getMember().get().getDisplayName() + " issued command: " + event.getMessage().getContent().get());
 		
 		history.add(Command.commands.get(get.get()));
 		if (!Permission.hasPermissions(event.getMember().get(), this.getLastCommand().getPermissions())) {
@@ -60,6 +59,6 @@ public class CommandIssuedListener extends Events<MessageCreateEvent>
 			args.add(m.group());
 		
 		args = args.stream().map(String::trim).map(s -> s.charAt(0) == '"' ? s.substring(1, s.length() -1) : s).collect(Collectors.toList());
-		cmd.apply(args.toArray(new String[0]), last);
+		this.getLastCommand().apply(args.stream().collect(Collectors.joining(" ")), last);
 	}
 }

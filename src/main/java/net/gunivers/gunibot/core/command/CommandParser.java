@@ -1,4 +1,4 @@
-package net.gunivers.gunibot.command.lib;
+package net.gunivers.gunibot.core.command;
 
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -10,10 +10,10 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import net.gunivers.gunibot.command.lib.keys.KeyEnum;
-import net.gunivers.gunibot.command.lib.keys.KeyEnum.Position;
-import net.gunivers.gunibot.command.lib.nodes.Node;
-import net.gunivers.gunibot.command.lib.nodes.NodeRoot;
+import net.gunivers.gunibot.core.command.keys.KeyEnum;
+import net.gunivers.gunibot.core.command.keys.KeyEnum.Position;
+import net.gunivers.gunibot.core.command.nodes.Node;
+import net.gunivers.gunibot.core.command.nodes.NodeRoot;
 import net.gunivers.gunibot.utils.tuple.Tuple2;
 
 public class CommandParser {

@@ -1,4 +1,4 @@
-package net.gunivers.gunibot.command.lib;
+package net.gunivers.gunibot.core.command;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -12,9 +12,9 @@ import java.util.stream.Collectors;
 import org.reflections.Reflections;
 
 import discord4j.core.event.domain.message.MessageCreateEvent;
-import net.gunivers.gunibot.command.lib.nodes.Node;
-import net.gunivers.gunibot.command.lib.nodes.NodeRoot;
 import net.gunivers.gunibot.command.permissions.Permission;
+import net.gunivers.gunibot.core.command.nodes.Node;
+import net.gunivers.gunibot.core.command.nodes.NodeRoot;
 import net.gunivers.gunibot.utils.tuple.Tuple2;
 
 public abstract class Command {
@@ -41,7 +41,7 @@ public abstract class Command {
 
 	public void addPermissions(List<String> permissions) {
 		for (String perm : permissions) {
-			List<Permission> perms = Permission.getByName(perm);
+			Set<Permission> perms = Permission.getByName(perm);
 			if (perms.isEmpty())
 				throw new NullPointerException("Permission '" + perm + "' doesn't exist");
 			this.permissions.addAll(perms);
@@ -60,7 +60,7 @@ public abstract class Command {
 		syntax = n;
 	}
 
-	public void apply(String[] command, MessageCreateEvent event) {
+	public void apply(String command, MessageCreateEvent event) {
 		Tuple2<Tuple2<List<String>, Method>, CommandSyntaxError> result = syntax.matches(command);
 		if (result._1 != null) {
 			try {
