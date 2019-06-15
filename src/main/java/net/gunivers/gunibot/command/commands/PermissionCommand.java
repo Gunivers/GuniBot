@@ -13,10 +13,10 @@ import net.gunivers.gunibot.az.lib.EmbedBuilder.Field;
 import net.gunivers.gunibot.az.lib.SimpleParser;
 import net.gunivers.gunibot.command.permissions.Permission;
 import net.gunivers.gunibot.core.command.Command;
+import net.gunivers.gunibot.core.command.parser.Parser;
 import net.gunivers.gunibot.datas.DataGuild;
 import net.gunivers.gunibot.datas.DataMember;
 import net.gunivers.gunibot.datas.DataRole;
-import net.gunivers.gunibot.syl2010.lib.parser.Parser;
 import reactor.core.publisher.Flux;
 
 public class PermissionCommand extends Command

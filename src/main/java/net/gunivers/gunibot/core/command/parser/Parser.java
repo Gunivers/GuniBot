@@ -1,4 +1,4 @@
-package net.gunivers.gunibot.syl2010.lib.parser;
+package net.gunivers.gunibot.core.command.parser;
 
 import static java.time.temporal.ChronoField.DAY_OF_MONTH;
 import static java.time.temporal.ChronoField.MONTH_OF_YEAR;

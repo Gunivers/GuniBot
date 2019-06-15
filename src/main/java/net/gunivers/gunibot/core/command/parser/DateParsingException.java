@@ -1,4 +1,4 @@
-package net.gunivers.gunibot.syl2010.lib.parser;
+package net.gunivers.gunibot.core.command.parser;
 
 public class DateParsingException extends ObjectParsingException {
 
