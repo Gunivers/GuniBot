@@ -12,7 +12,7 @@ import org.json.JSONObject;
 
 public class SQLClient {
 
-	private static final String SQL_URL = "172.17.200.187"; //IP VM Interne, ne marche pas ailleurs que sur mon PC (Syl2010)
+	private static final String SQL_URL = "jdbc:mysql://172.18.85.253?serverTimezone=Europe/Paris"; //IP VM Interne, ne marche pas ailleurs que sur mon PC (Syl2010)
 	private static final String SQL_USER = "gunibot";
 	private static final String SQL_PASSWORD = "gunibot"; //mot de passe DB VM Interne
 
@@ -27,18 +27,21 @@ public class SQLClient {
 		isDisable = false;
 		try {
 			sqlConnection = connect();
-			checkAndInitTables();
+			initTables();
 		} catch(Exception e) {
 			if(optional) {
 				System.err.println("[SQLClient] Connection failed : " + e.getMessage());
 				System.err.println("[SQLClient] Optional option activated, database disable !");
 				isDisable = true;
+			} else {
+				throw new RuntimeException("Error on database initialization !", e);
 			}
 		}
 	}
 
 	private static Connection connect() {
 		try {
+
 			return DriverManager.getConnection(SQL_URL, SQL_USER, SQL_PASSWORD);
 		} catch (SQLException e) {
 			throw new RuntimeException("Error on database access !", e);
@@ -55,30 +58,17 @@ public class SQLClient {
 		}
 	}
 
-	private void checkAndInitTables() {
+	private void initTables() {
 		try {
 			sqlConnection.prepareStatement(SQLDataTemplate.useDatabase()).execute();
-			if(!sqlConnection.prepareStatement(SQLDataTemplate.checkGuildsTable()).execute()) {
-				sqlConnection.prepareStatement(SQLDataTemplate.createGuildsTable()).execute();
-			}
-			if(!sqlConnection.prepareStatement(SQLDataTemplate.checkMembersTable()).execute()) {
-				sqlConnection.prepareStatement(SQLDataTemplate.createMembersTable()).execute();
-			}
-			if(!sqlConnection.prepareStatement(SQLDataTemplate.checkTextChannelsTable()).execute()) {
-				sqlConnection.prepareStatement(SQLDataTemplate.createTextChannelsTable()).execute();
-			}
-			if(!sqlConnection.prepareStatement(SQLDataTemplate.checkRolesTable()).execute()) {
-				sqlConnection.prepareStatement(SQLDataTemplate.createRolesTable()).execute();
-			}
-			if(!sqlConnection.prepareStatement(SQLDataTemplate.checkVoiceChannelsTable()).execute()) {
-				sqlConnection.prepareStatement(SQLDataTemplate.createVoiceChannelsTable()).execute();
-			}
-			if(!sqlConnection.prepareStatement(SQLDataTemplate.checkCategoriesTable()).execute()) {
-				sqlConnection.prepareStatement(SQLDataTemplate.createCategoriesTable()).execute();
-			}
-			if(!sqlConnection.prepareStatement(SQLDataTemplate.checkUsersTable()).execute()) {
-				sqlConnection.prepareStatement(SQLDataTemplate.createUsersTable()).execute();
-			}
+			sqlConnection.prepareStatement(SQLDataTemplate.createGuildsTable()).execute();
+			sqlConnection.prepareStatement(SQLDataTemplate.createMembersTable()).execute();
+			sqlConnection.prepareStatement(SQLDataTemplate.createTextChannelsTable()).execute();
+			sqlConnection.prepareStatement(SQLDataTemplate.createRolesTable()).execute();
+			sqlConnection.prepareStatement(SQLDataTemplate.createVoiceChannelsTable()).execute();
+			sqlConnection.prepareStatement(SQLDataTemplate.createCategoriesTable()).execute();
+			sqlConnection.prepareStatement(SQLDataTemplate.createUsersTable()).execute();
+
 		} catch (SQLException e) {
 			throw new RuntimeException(e);
 		}

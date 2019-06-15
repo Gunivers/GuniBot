@@ -63,41 +63,41 @@ public final class SQLDataTemplate {
 	// Check Tables
 
 	public static String checkGuildsTable() {
-		return "SELECT id FROM guilds LIMIT 1;";
+		return "SHOW TABLES LIKE 'guilds';";
 	}
 
 	public static String checkMembersTable() {
-		return "SELECT id FROM members LIMIT 1;";
+		return "SHOW TABLES LIKE 'members';";
 	}
 
 	public static String checkTextChannelsTable() {
-		return "SELECT id FROM text_channels LIMIT 1;";
+		return "SHOW TABLES LIKE 'text_channels';";
 	}
 
 	public static String checkRolesTable() {
-		return "SELECT id FROM roles LIMIT 1;";
+		return "SHOW TABLES LIKE 'roles';";
 	}
 
 	public static String checkVoiceChannelsTable() {
-		return "SELECT id FROM voice_channels LIMIT 1;";
+		return "SHOW TABLES LIKE 'voice_channels';";
 	}
 
 	public static String checkCategoriesTable() {
-		return "SELECT id FROM categories LIMIT 1;";
+		return "SHOW TABLES LIKE 'categories';";
 	}
 
 	public static String checkUsersTable() {
-		return "SELECT id FROM users LIMIT 1;";
+		return "SHOW TABLES LIKE 'users';";
 	}
 
 	// has Datas
 
 	public static String hasGuildData(long id) {
-		return "SELECT id FROM guilds LIMIT 1 WHERE id="+id+";";
+		return "SELECT id FROM guilds WHERE id="+id+" LIMIT 1;";
 	}
 
 	public static String hasUserData(long id) {
-		return "SELECT id FROM users LIMIT 1 WHERE id="+id+";";
+		return "SELECT id FROM users WHERE id="+id+" LIMIT 1;";
 	}
 
 	// get Datas
