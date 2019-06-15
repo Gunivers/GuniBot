@@ -14,6 +14,8 @@ import discord4j.core.object.entity.TextChannel;
 import discord4j.core.object.entity.VoiceChannel;
 import discord4j.core.object.util.Snowflake;
 
+import net.gunivers.gunibot.command.permissions.Permission;
+
 /**
  * Classe de donnée pour les objets Guild.
  * S'occupe également du chargement et de la sauvegarde de la plupart des objets discord contenu dans ce guild.
@@ -29,6 +31,10 @@ public class DataGuild extends DataObject<Guild> {
 	private ConcurrentHashMap<Snowflake, DataVoiceChannel> dataVoiceChannels = new ConcurrentHashMap<>();
 	private ConcurrentHashMap<Snowflake, DataCategory> dataCategories = new ConcurrentHashMap<>();
 
+	{
+		this.getDataMember(this.getEntity().getOwner().block()).getPermissions().add(Permission.bot.get("server.owner"));
+	}
+	
 	/**
 	 * Créer cet objet lié à ce guild.
 	 * @param guild le guild lié à cet objet.
