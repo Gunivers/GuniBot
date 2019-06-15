@@ -16,7 +16,9 @@ public class HelpCommand extends Command
 
 	public void help(MessageCreateEvent event)
 	{
-		EmbedBuilder builder = new EmbedBuilder(event, event.getClient().getSelf().block().getUsername() + "'s Command List", null);
+		EmbedBuilder builder = new EmbedBuilder(event.getMessage().getChannel(),
+				event.getClient().getSelf().block().getUsername() + "'s Command List", null);
+		
 		builder.setAuthor(event.getMember().get());
 		builder.setAuthor(event.getClient().getSelf().block().asMember(event.getGuildId().get()).block());
 		
@@ -32,7 +34,7 @@ public class HelpCommand extends Command
 			return;
 		}
 		
-		final EmbedBuilder builder = new EmbedBuilder(event, "Command: " + args.get(0), null);
+		final EmbedBuilder builder = new EmbedBuilder(event.getMessage().getChannel(), "Command: " + args.get(0), null);
 		builder.setAuthor(event.getMember().get());
 		builder.setAuthor(event.getClient().getSelf().block().asMember(event.getGuildId().get()).block());
 		

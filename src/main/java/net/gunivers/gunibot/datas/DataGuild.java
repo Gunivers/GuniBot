@@ -23,13 +23,15 @@ import net.gunivers.gunibot.command.permissions.Permission;
  * @author Syl2010
  *
  */
-public class DataGuild extends DataObject<Guild> {
-
+public class DataGuild extends DataObject<Guild>
+{
 	private ConcurrentHashMap<Snowflake, DataMember> dataMembers = new ConcurrentHashMap<>();
 	private ConcurrentHashMap<Snowflake, DataTextChannel> dataTextChannels = new ConcurrentHashMap<>();
 	private ConcurrentHashMap<Snowflake, DataRole> dataRoles = new ConcurrentHashMap<>();
 	private ConcurrentHashMap<Snowflake, DataVoiceChannel> dataVoiceChannels = new ConcurrentHashMap<>();
 	private ConcurrentHashMap<Snowflake, DataCategory> dataCategories = new ConcurrentHashMap<>();
+
+	public String welcome = "Welcome to {server}";
 
 	{
 		this.getDataMember(this.getEntity().getOwner().block()).getPermissions().add(Permission.bot.get("server.owner"));
@@ -200,6 +202,8 @@ public class DataGuild extends DataObject<Guild> {
 		}
 		json.putOpt("categories", json_categories);
 
+		json.putOpt("welcome", welcome);
+		
 		return json;
 	}
 
@@ -216,6 +220,8 @@ public class DataGuild extends DataObject<Guild> {
 		JSONObject json_voice_channels = json.optJSONObject("voice_channels");
 		JSONObject json_categories = json.optJSONObject("categories");
 
+		welcome = json.getString("welcome");
+		
 		if(json_members != null) {
 			for(String s_member_id:json_members.keySet()) {
 				Snowflake member_id = Snowflake.of(s_member_id);
@@ -306,6 +312,4 @@ public class DataGuild extends DataObject<Guild> {
 			System.out.println(String.format("No categories datas in the guild '%s' (%s)! Skipping loading of the categories!", getEntity().getName(), getEntity().getId().asString()));
 		}
 	}
-
-
 }

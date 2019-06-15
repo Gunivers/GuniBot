@@ -30,14 +30,13 @@ public class Permission
 		new Permission("other.everyone", 1);
 		new Permission("other.average", 2);
 		new Permission("server.moderator", 3);
-		new Permission("server.administrator", 4);
 		new Permission("server.trusted", 5);
 		new Permission("server.owner", 6);
 		new Permission("bot.trusted", 7);
 		new Permission("bot.trainee", 8);
 		new Permission("bot.dev", 9);
 		
-		discord.get(discord4j.core.object.util.Permission.ADMINISTRATOR).level = 5;
+		discord.get(discord4j.core.object.util.Permission.ADMINISTRATOR).level = 4;
 	}
 
 	{

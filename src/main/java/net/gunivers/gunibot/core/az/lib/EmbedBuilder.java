@@ -1,12 +1,14 @@
 package net.gunivers.gunibot.core.az.lib;
 
 import java.awt.Color;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import discord4j.core.event.domain.message.MessageCreateEvent;
 import discord4j.core.object.entity.Member;
+import discord4j.core.object.entity.MessageChannel;
+import reactor.core.publisher.Mono;
 
 public class EmbedBuilder
 {
@@ -16,7 +18,7 @@ public class EmbedBuilder
 	public static final short FOOTER_LIMIT = discord4j.core.object.Embed.Footer.MAX_TEXT_LENGTH;
 	public static final short AUTHOR_NAME_LIMIT = discord4j.core.object.Embed.Author.MAX_NAME_LENGTH;
 	
-	private final MessageCreateEvent event;
+	private final Mono<? extends MessageChannel> channel;
 	
 	private String title = null;
 	private String url = null;
@@ -38,41 +40,41 @@ public class EmbedBuilder
 	private EmbedBuilder child = null;
 	
 	
-	public EmbedBuilder(MessageCreateEvent event) {
-		this.event = event;
+	public EmbedBuilder(Mono<? extends MessageChannel> channel) {
+		this.channel = channel;
 	}
 	
-	public EmbedBuilder(MessageCreateEvent event, String title, String titleURL) {
-		this(event, title, titleURL, null, null, null, null, null, null, null, null);
+	public EmbedBuilder(Mono<? extends MessageChannel> channel, String title, String titleURL) {
+		this(channel, title, titleURL, null, null, null, null, null, null, null, null);
 	}
 	
-	public EmbedBuilder(MessageCreateEvent event, Member author, String authorURL, Color color, String imageURL) {
-		this(event, null, null, author, authorURL, color, imageURL);
+	public EmbedBuilder(Mono<? extends MessageChannel> channel, Member author, String authorURL, Color color, String imageURL) {
+		this(channel, null, null, author, authorURL, color, imageURL);
 	}
 	
-	public EmbedBuilder(MessageCreateEvent event, String description, String footer, String footerURL, String thumbnail) {
-		this(event, null, null, description, footer, footerURL, thumbnail);
+	public EmbedBuilder(Mono<? extends MessageChannel> channel, String description, String footer, String footerURL, String thumbnail) {
+		this(channel, null, null, description, footer, footerURL, thumbnail);
 	}
 	
-	public EmbedBuilder(MessageCreateEvent event, String title, String titleURL, Member author, String authorURL, Color color, String imageURL)
+	public EmbedBuilder(Mono<? extends MessageChannel> channel, String title, String titleURL, Member author, String authorURL, Color color, String imageURL)
 	{
-		this(event, title, titleURL, author, authorURL, color, imageURL, null, null, null, null);
+		this(channel, title, titleURL, author, authorURL, color, imageURL, null, null, null, null);
 	}
 	
-	public EmbedBuilder(MessageCreateEvent event, String title, String titleURL, String description, String footer, String footerURL,
+	public EmbedBuilder(Mono<? extends MessageChannel> channel, String title, String titleURL, String description, String footer, String footerURL,
 			String thumbnail) {
-		this(event, title, titleURL, null, null, null, null, description, footer, footerURL, thumbnail);
+		this(channel, title, titleURL, null, null, null, null, description, footer, footerURL, thumbnail);
 	}
 	
-	public EmbedBuilder(MessageCreateEvent event, Member author, String authorURL, Color color, String imageURL, String desc, String footer,
+	public EmbedBuilder(Mono<? extends MessageChannel> channel, Member author, String authorURL, Color color, String imageURL, String desc, String footer,
 			String footerURL, String thumbnail) {
-		this(event, null, null, author, authorURL, color, imageURL, desc, footer, footerURL, thumbnail);
+		this(channel, null, null, author, authorURL, color, imageURL, desc, footer, footerURL, thumbnail);
 	}
 	
-	public EmbedBuilder(MessageCreateEvent event, String title, String titleURL, Member author, String authorURL, Color color, String imageURL,
+	public EmbedBuilder(Mono<? extends MessageChannel> channel, String title, String titleURL, Member author, String authorURL, Color color, String imageURL,
 			String description, String footer, String footerURL, String thumbnail)
 	{
-		this.event = event;
+		this.channel = channel;
 		this.title = title;
 		this.url = titleURL;
 		
@@ -95,9 +97,9 @@ public class EmbedBuilder
 	{
 		this.normalize();
 		
-		event.getMessage().getChannel().flatMap(c -> c.createEmbed(embed ->
+		channel.flatMap(c -> c.createEmbed(embed ->
 		{
-			embed.setTimestamp(event.getMessage().getTimestamp());
+			embed.setTimestamp(Instant.now());
 			
 			if (title != null) embed.setTitle(title);
 			if (url != null) embed.setUrl(url);
@@ -137,7 +139,7 @@ public class EmbedBuilder
 		fields.forEach(Field::normalize);
 		if (fields.size() > FIELDS_LIMIT)
 		{
-			child = new EmbedBuilder(event, null, null, color == null ? author == null ? null : author.getColor().block() : color, image, null,
+			child = new EmbedBuilder(channel, null, null, color == null ? author == null ? null : author.getColor().block() : color, image, null,
 					footer, footerURL, null);
 			
 			child.fields = fields.subList(FIELDS_LIMIT, fields.size());
@@ -173,7 +175,7 @@ public class EmbedBuilder
 	}
 	
 	public List<Field> getFields() { return Collections.unmodifiableList(fields); }
-	public MessageCreateEvent getEvent() { return event; }
+	public Mono<? extends MessageChannel> getChannel() { return channel; }
 	
 	public String getTitle() { return title; }
 	public String getTitleURL() { return url; }
