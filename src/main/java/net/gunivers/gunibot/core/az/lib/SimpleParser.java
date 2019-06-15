@@ -1,4 +1,4 @@
-package net.gunivers.gunibot.az.lib;
+package net.gunivers.gunibot.core.az.lib;
 
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
@@ -9,15 +9,18 @@ import net.gunivers.gunibot.utils.tuple.Tuple;
 import net.gunivers.gunibot.utils.tuple.Tuple2;
 
 public final class SimpleParser
-{
+{	
 	public static final Pattern QUOTE_GROUP = Pattern.compile("\"([^\"]|\\\")*\"");
 	public static final Pattern LIST_GROUP = Pattern.compile(QUOTE_GROUP.pattern() + "|\\[.+\\]|\\{.+\\}|[^,]+");
 	
-	public static final Pattern COUPLE_KEY = Pattern.compile(QUOTE_GROUP.pattern() + "|[^,=]+");
+	public static final Pattern COUPLE_KEY = Pattern.compile(QUOTE_GROUP.pattern() + "|\\[.+\\]|\\{.+\\}|[^,=]+");
 	public static final Pattern COUPLE = Pattern.compile(COUPLE_KEY.pattern() +'='+ LIST_GROUP.pattern());
 	
 	private SimpleParser() {}
 	
+	/**
+	 * Parse a list of the form: '{@code [value, value, ..., value]}' or '{@code value}'
+	 */
 	public static LinkedList<String> parseList(String s)
 	{
 		LinkedList<String> list = new LinkedList<>();
@@ -37,6 +40,9 @@ public final class SimpleParser
 		return list;
 	}
 	
+	/**
+	 * Parse a map of the form: '<code>{key = value, key = value, ..., key = value}</code>' or '{@code key = value}'
+	 */
 	public static LinkedHashMap<String, String> parseMap(String s)
 	{
 		LinkedHashMap<String, String> map = new LinkedHashMap<>();
@@ -46,21 +52,22 @@ public final class SimpleParser
 			s = s.substring(1, s.length() -1);
 			Matcher m = COUPLE.matcher(s);
 			
-			while (m.find())
-			{
-				Tuple2<String,String> couple = parsePair(m.group().trim());
+			while (m.find()) {
+				Tuple2<String,String> couple = parseCouple(m.group().trim());
 				map.put(couple._1, couple._2);
 			}
-		} else if (COUPLE.matcher(s).matches())
-		{
-			Tuple2<String, String> couple = parsePair(s);
+		} else if (COUPLE.matcher(s).matches()) {
+			Tuple2<String, String> couple = parseCouple(s);
 			map.put(couple._1, couple._2);
 		}
 		
 		return map;
 	}
 	
-	public static Tuple2<String,String> parsePair(String s)
+	/**
+	 * Parse a key/value couple of the form: '{@code key = value}'
+	 */
+	public static Tuple2<String,String> parseCouple(String s)
 	{
 		Matcher keym = COUPLE_KEY.matcher(s); keym.find();
 		String key = keym.group();
@@ -68,8 +75,8 @@ public final class SimpleParser
 		Matcher valuem = LIST_GROUP.matcher(s.substring(key.length())); valuem.find();
 		String value = valuem.group();
 
-		if (QUOTE_GROUP.matcher(key).matches()) key = key.substring(1, key.length() -1);
-		if (QUOTE_GROUP.matcher(value).matches()) value = value.substring(1, value.length() -1);
+		if (QUOTE_GROUP.matcher(key.trim()).matches()) key = key.trim().substring(1, key.length() -1);
+		if (QUOTE_GROUP.matcher(value.trim()).matches()) value = value.trim().substring(1, value.length() -1);
 		
 		return Tuple.newTuple(key.trim(), value.trim());
 	}

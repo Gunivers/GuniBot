@@ -48,4 +48,6 @@ public abstract class Events<E extends discord4j.core.event.domain.Event>
 		
 		System.out.println("Events registered!");
 	}
+	
+	public static EventDispatcher getDispatcher() { return dispatcher; }
 }

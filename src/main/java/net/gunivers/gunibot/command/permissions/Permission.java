@@ -3,6 +3,8 @@ package net.gunivers.gunibot.command.permissions;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -128,7 +130,11 @@ public class Permission
 	
 	public static discord4j.core.object.util.Permission get(Permission perm)
 	{
-		return discord.entrySet().stream().filter(e -> e.getValue() == perm).findFirst().get().getKey();
+		Optional<Entry<discord4j.core.object.util.Permission,Permission>> p = discord.entrySet().stream().filter(e -> e.getValue() == perm)
+				.findFirst();
+		
+		if (p.isPresent()) return p.get().getKey();
+		return null;
 	}
 
 	public static boolean hasPermissions(Member member, Set<Permission> perms)

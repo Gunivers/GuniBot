@@ -1,4 +1,4 @@
-package net.gunivers.gunibot.az.lib;
+package net.gunivers.gunibot.core.az.lib;
 
 import java.awt.Color;
 import java.util.ArrayList;
