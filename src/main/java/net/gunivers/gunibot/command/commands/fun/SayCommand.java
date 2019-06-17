@@ -1,4 +1,4 @@
-package net.gunivers.gunibot.command.commands;
+package net.gunivers.gunibot.command.commands.fun;
 
 import java.util.List;
 
@@ -9,7 +9,7 @@ public class SayCommand extends Command {
 
 	@Override
 	public String getSyntaxFile() {
-		return "say.json";
+		return "fun/say.json";
 	}
 
 	public void say(MessageCreateEvent e, List<String> args) {

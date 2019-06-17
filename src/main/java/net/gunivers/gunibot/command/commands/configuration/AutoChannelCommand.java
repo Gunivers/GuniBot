@@ -1,4 +1,4 @@
-package net.gunivers.gunibot.command.commands;
+package net.gunivers.gunibot.command.commands.configuration;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -46,7 +46,7 @@ public class AutoChannelCommand extends Command {
 
 	@Override
 	public String getSyntaxFile() {
-		return "autochannel.json";
+		return "configuration/autochannel.json";
 	}
 
 }

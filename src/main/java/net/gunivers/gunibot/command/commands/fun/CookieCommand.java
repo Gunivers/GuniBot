@@ -1,4 +1,4 @@
-package net.gunivers.gunibot.command.commands;
+package net.gunivers.gunibot.command.commands.fun;
 
 import java.util.List;
 
@@ -9,7 +9,7 @@ public class CookieCommand extends Command {
 
 	@Override
 	public String getSyntaxFile() {
-		return "cookie.json";
+		return "fun/cookie.json";
 	}
 	
 	public void giveCookie(MessageCreateEvent e, List<String> args) {
