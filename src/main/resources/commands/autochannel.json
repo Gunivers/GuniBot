@@ -1,0 +1,24 @@
+{
+	"autochannel": 
+	{
+		"description": "Allow to give a number of cookies at a user",
+		"permissions": ["discord.administrator", "discord.manage_guild"],
+		"arguments": 
+		[
+			{
+				"type": "string",
+				"tag": "snowflake",
+				"matches": "\\d+",
+				"keep_value": true,
+				"execute": "registerChannel"
+			},
+			
+			{
+				"type": "string",
+				"tag": "list",
+				"matches": "list",
+				"execute": "list"
+			}
+		]
+	}
+}
