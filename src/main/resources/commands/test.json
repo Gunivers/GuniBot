@@ -13,13 +13,13 @@
 					{
 						"tag": "reaction",
 						"type": "string",
-						"matches": "react|reaction|reacts|reactions",
+						"matches": "reaction",
 						"execute": "azReact"
 					},
 					{
 						"tag": "embed",
 						"type": "string",
-						"matches": "embed|Embed|EMBED|embeds|Embeds|EMBEDS",
+						"matches": "embed",
 						"execute": "azEmbed"
 					}
 				]

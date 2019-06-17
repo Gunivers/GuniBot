@@ -1,6 +1,5 @@
 package net.gunivers.gunibot.core.command.nodes;
 
-import net.gunivers.gunibot.az.lib.SimpleParser;
 import net.gunivers.gunibot.core.command.JsonCommandFormatException;
 import net.gunivers.gunibot.utils.tuple.Tuple;
 import net.gunivers.gunibot.utils.tuple.Tuple2;
@@ -21,7 +20,7 @@ public class NodeList extends TypeNode {
 	@Override
 	protected boolean matchesNode(String s)
 	{
-		return SimpleParser.parseList(s).stream().allMatch(node::matchesNode);
+		return net.gunivers.gunibot.core.az.lib.SimpleParser.parseList(s).stream().allMatch(node::matchesNode);
 	}
 	
 	@Override

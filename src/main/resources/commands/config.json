@@ -1,0 +1,29 @@
+{
+	"config":
+	{
+		"description": "Manage the bot's configuration",
+		"permissions": ["discord.administrator"],
+		"arguments":
+		[
+			{
+				"tag": "list",
+				"type": "string",
+				"matches": "list",
+				"execute": "list"
+			},
+			{
+				"tag": "path",
+				"type": "string",
+				"keep_value": true,
+				"execute": "get",
+				"arguments":
+				[{
+					"tag": "value",
+					"type": "string...",
+					"keep_value": true,
+					"execute": "set"
+				}]
+			}
+		]
+	}
+}

@@ -14,6 +14,8 @@ import discord4j.core.object.entity.TextChannel;
 import discord4j.core.object.entity.VoiceChannel;
 import discord4j.core.object.util.Snowflake;
 
+import net.gunivers.gunibot.command.permissions.Permission;
+
 /**
  * Classe de donnée pour les objets Guild.
  * S'occupe également du chargement et de la sauvegarde de la plupart des objets discord contenu dans ce guild.
@@ -21,14 +23,20 @@ import discord4j.core.object.util.Snowflake;
  * @author Syl2010
  *
  */
-public class DataGuild extends DataObject<Guild> {
-
+public class DataGuild extends DataObject<Guild>
+{
 	private ConcurrentHashMap<Snowflake, DataMember> dataMembers = new ConcurrentHashMap<>();
 	private ConcurrentHashMap<Snowflake, DataTextChannel> dataTextChannels = new ConcurrentHashMap<>();
 	private ConcurrentHashMap<Snowflake, DataRole> dataRoles = new ConcurrentHashMap<>();
 	private ConcurrentHashMap<Snowflake, DataVoiceChannel> dataVoiceChannels = new ConcurrentHashMap<>();
 	private ConcurrentHashMap<Snowflake, DataCategory> dataCategories = new ConcurrentHashMap<>();
 
+	private String welcome = "Welcome to {server}";
+
+	{
+		this.getDataMember(this.getEntity().getOwner().block()).getPermissions().add(Permission.bot.get("server.owner"));
+	}
+	
 	/**
 	 * Créer cet objet lié à ce guild.
 	 * @param guild le guild lié à cet objet.
@@ -194,6 +202,8 @@ public class DataGuild extends DataObject<Guild> {
 		}
 		json.putOpt("categories", json_categories);
 
+		json.putOpt("welcome", welcome);
+		
 		return json;
 	}
 
@@ -210,6 +220,8 @@ public class DataGuild extends DataObject<Guild> {
 		JSONObject json_voice_channels = json.optJSONObject("voice_channels");
 		JSONObject json_categories = json.optJSONObject("categories");
 
+		welcome = json.getString("welcome");
+		
 		if(json_members != null) {
 			for(String s_member_id:json_members.keySet()) {
 				Snowflake member_id = Snowflake.of(s_member_id);
@@ -300,6 +312,7 @@ public class DataGuild extends DataObject<Guild> {
 			System.out.println(String.format("No categories datas in the guild '%s' (%s)! Skipping loading of the categories!", getEntity().getName(), getEntity().getId().asString()));
 		}
 	}
-
-
+	
+	public String getWelcome() { return welcome; }
+	public void setWelcome(String msg) { this.welcome = msg; }
 }
