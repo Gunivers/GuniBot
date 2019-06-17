@@ -18,16 +18,10 @@
 				"execute": "get",
 				"arguments":
 				[{
-					"tag": "set",
-					"type": "string",
-					"matches": "set",
-					"arguments":
-					[{
-						"tag": "value",
-						"type": "string...",
-						"keep_value": true,
-						"execute": "set"
-					}]
+					"tag": "value",
+					"type": "string...",
+					"keep_value": true,
+					"execute": "set"
 				}]
 			}
 		]

@@ -31,7 +31,7 @@ public class DataGuild extends DataObject<Guild>
 	private ConcurrentHashMap<Snowflake, DataVoiceChannel> dataVoiceChannels = new ConcurrentHashMap<>();
 	private ConcurrentHashMap<Snowflake, DataCategory> dataCategories = new ConcurrentHashMap<>();
 
-	public String welcome = "Welcome to {server}";
+	private String welcome = "Welcome to {server}";
 
 	{
 		this.getDataMember(this.getEntity().getOwner().block()).getPermissions().add(Permission.bot.get("server.owner"));
@@ -312,4 +312,7 @@ public class DataGuild extends DataObject<Guild>
 			System.out.println(String.format("No categories datas in the guild '%s' (%s)! Skipping loading of the categories!", getEntity().getName(), getEntity().getId().asString()));
 		}
 	}
+	
+	public String getWelcome() { return welcome; }
+	public void setWelcome(String msg) { this.welcome = msg; }
 }
