@@ -99,6 +99,7 @@ public class VoiceChannelCreator {
 	
 	private static void joinDeletingEvent(Snowflake sf) {
 		removingChannels.get(sf).dispose();
+		createdChannels.remove(createdChannels.keySet().stream().filter(s -> createdChannels.get(s).equals(sf)).findFirst().get());
 		removingChannels.remove(sf);
 	}
 	
