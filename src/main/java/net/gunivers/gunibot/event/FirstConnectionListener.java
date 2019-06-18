@@ -27,7 +27,7 @@ public class FirstConnectionListener extends Events<MemberJoinEvent>
 		EmbedBuilder builder = new EmbedBuilder(event.getMember().getPrivateChannel(), "Welcome to "+ g.getName() +'!', null);
 		builder.setColor(event.getClient().getSelf().block().asMember(event.getGuildId()).block().getColor().block());
 		builder.setDescription(Main.getDataCenter().getDataGuild(g)
-				.getWelcome().replace("{server}", g.getName()).replace("{user}", m.getDisplayName()).replace("{user.mention}", m.getMention()));
+				.getWelcomeMessage().replace("{server}", g.getName()).replace("{user}", m.getDisplayName()).replace("{user.mention}", m.getMention()));
 		
 		builder.buildAndSend();
 	}
