@@ -15,7 +15,7 @@ import org.json.JSONObject;
 import com.google.common.collect.Sets;
 import com.google.common.collect.Sets.SetView;
 
-import net.gunivers.gunibot.command.commands.moderation.Mult;
+//import net.gunivers.gunibot.command.commands.moderation.Mult;
 import net.gunivers.gunibot.core.command.keys.KeyEnum;
 import net.gunivers.gunibot.core.command.keys.KeyEnum.Position;
 import net.gunivers.gunibot.core.command.nodes.Node;
@@ -23,7 +23,7 @@ import net.gunivers.gunibot.core.command.nodes.NodeRoot;
 import net.gunivers.gunibot.utils.tuple.Tuple2;
 
 public class CommandParser {
-	
+
 	private static Command command;
 	private static Set<String> referencedId = new HashSet<>();
 
@@ -43,8 +43,8 @@ public class CommandParser {
 			NodeRoot n = parseRoot(obj);
 			c.setSyntax(n);
 			SetView<String> difference = Sets.symmetricDifference(referencedId, command.getReferences());
-			if(c instanceof Mult)
-				referencedId.forEach(System.out::println);
+			//if(c instanceof Mult)
+			//	referencedId.forEach(System.out::println);
 			if(!difference.isEmpty())
 				throw new JsonCommandFormatException("IDs non référencés ou non utilisés : " + difference.stream().collect(Collectors.joining(", ")) + "\n\tat " + command.getSyntaxFile());
 			command = null;
@@ -82,34 +82,34 @@ public class CommandParser {
 
 	private static Node parseArgument(JSONObject obj, Node n, Position pos, Position pos2) throws JsonCommandFormatException {
 
-			int nbrKeys = (int) obj.keySet().stream().filter(s -> !s.equals("comment")).count();
-			if (nbrKeys != obj.keySet().stream().filter(s -> !s.equals("comment")).distinct().count())
-				throw new JsonCommandFormatException("Multiplicité d'une clé dans un argument\n\tat " + command.getSyntaxFile());
-			
-			Map<String, KeyEnum> keysPresent = new HashMap<>();
-			keysPresent.put("comment", null);
-			for(KeyEnum ke : KeyEnum.getByPos(pos, pos2)) {
-				Tuple2<String, Node> result = ke.getClazz().parseJson(obj, n, command);
-				if(result._1 != null)
-					keysPresent.put(result._1, ke);
-				n = result._2;
-			}
-			List<KeyEnum> list = n.blacklist().stream().filter(ke -> keysPresent.containsValue(ke)).collect(Collectors.toList());
-			if(list.size() > 0)
-				throw new JsonCommandFormatException(n.getTag() + " est incompatible avec les clés : " + list.stream().map(ke -> ke.getClazz().getKey()).collect(Collectors.joining(", ")) + "\n\tat " + command.getSyntaxFile());
-			
-			list = n.mandatory().stream().filter(ke -> !keysPresent.containsValue(ke)).collect(Collectors.toList());
-			if(list.size() > 0)
-				throw new JsonCommandFormatException(n.getTag() + " doit obligatoirement être avec les clés : " + list.stream().map(ke -> ke.getClazz().getKey()).collect(Collectors.joining(", ")) + "\n\tat " + command.getSyntaxFile());
-			
-			String invalidKeys = obj.keySet().stream().filter(s -> !keysPresent.containsKey(s)).collect(Collectors.joining(", "));
-			if(!invalidKeys.equals(""))
-				throw new JsonCommandFormatException("Clé(s) invalide(s) " + invalidKeys + "\n\tat " + command.getSyntaxFile());
+		int nbrKeys = (int) obj.keySet().stream().filter(s -> !s.equals("comment")).count();
+		if (nbrKeys != obj.keySet().stream().filter(s -> !s.equals("comment")).distinct().count())
+			throw new JsonCommandFormatException("Multiplicité d'une clé dans un argument\n\tat " + command.getSyntaxFile());
 
-			return n;
+		Map<String, KeyEnum> keysPresent = new HashMap<>();
+		keysPresent.put("comment", null);
+		for(KeyEnum ke : KeyEnum.getByPos(pos, pos2)) {
+			Tuple2<String, Node> result = ke.getClazz().parseJson(obj, n, command);
+			if(result._1 != null)
+				keysPresent.put(result._1, ke);
+			n = result._2;
+		}
+		List<KeyEnum> list = n.blacklist().stream().filter(ke -> keysPresent.containsValue(ke)).collect(Collectors.toList());
+		if(list.size() > 0)
+			throw new JsonCommandFormatException(n.getTag() + " est incompatible avec les clés : " + list.stream().map(ke -> ke.getClazz().getKey()).collect(Collectors.joining(", ")) + "\n\tat " + command.getSyntaxFile());
+
+		list = n.mandatory().stream().filter(ke -> !keysPresent.containsValue(ke)).collect(Collectors.toList());
+		if(list.size() > 0)
+			throw new JsonCommandFormatException(n.getTag() + " doit obligatoirement être avec les clés : " + list.stream().map(ke -> ke.getClazz().getKey()).collect(Collectors.joining(", ")) + "\n\tat " + command.getSyntaxFile());
+
+		String invalidKeys = obj.keySet().stream().filter(s -> !keysPresent.containsKey(s)).collect(Collectors.joining(", "));
+		if(!invalidKeys.equals(""))
+			throw new JsonCommandFormatException("Clé(s) invalide(s) " + invalidKeys + "\n\tat " + command.getSyntaxFile());
+
+		return n;
 
 	}
-	
+
 	public static void addReference(String s) {
 		referencedId.add(s);
 	}
