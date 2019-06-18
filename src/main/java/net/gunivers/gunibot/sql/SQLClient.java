@@ -1,6 +1,5 @@
 package net.gunivers.gunibot.sql;
 
-import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -12,7 +11,7 @@ import org.json.JSONObject;
 
 public class SQLClient {
 
-	private static final String SQL_URL = "jdbc:mysql://172.18.85.253?serverTimezone=Europe/Paris"; //IP VM Interne, ne marche pas ailleurs que sur mon PC (Syl2010)
+	private static final String SQL_URL = "jdbc:mysql://172.17.228.156?serverTimezone=Europe/Paris"; //IP VM Interne, ne marche pas ailleurs que sur mon PC (Syl2010)
 	private static final String SQL_USER = "gunibot";
 	private static final String SQL_PASSWORD = "gunibot"; //mot de passe DB VM Interne
 
@@ -77,6 +76,7 @@ public class SQLClient {
 	public boolean hasGuildData(long guild_id) {
 		if(isDisable) return false;
 		checkConnection();
+
 		try {
 			return sqlConnection.prepareStatement(SQLDataTemplate.hasGuildData(guild_id)).execute();
 		} catch (SQLException e) {
@@ -117,31 +117,56 @@ public class SQLClient {
 		JSONObject json_voice_channels = new JSONObject();
 		JSONObject json_categories = new JSONObject();
 		try {
-			PreparedStatement statement = sqlConnection.prepareStatement(SQLDataTemplate.getGuildData(guild_id));
-			statement.execute();
-			ResultSet result = statement.getResultSet();
-			while(result.next()) {
-				BigDecimal member_id = result.getBigDecimal("members.id");
-				JSONObject json_member = result.getObject("members.json", JSONObject.class);
-				if(member_id != null) json_members.put(member_id.toPlainString(), json_member);
+			PreparedStatement guild_statement = sqlConnection.prepareStatement(SQLDataTemplate.getGuildData(guild_id));
+			guild_statement.execute();
+			ResultSet guild_result = guild_statement.getResultSet();
+			if(guild_result.next()) {
+				json = new JSONObject(guild_result.getObject("json", JSONObject.class));
+			}
 
-				BigDecimal text_channel_id = result.getBigDecimal("text_channels.id");
-				JSONObject json_text_channel = result.getObject("text_channels.json", JSONObject.class);
-				if(text_channel_id != null) json_text_channels.put(text_channel_id.toPlainString(), json_text_channel);
+			PreparedStatement members_statement = sqlConnection.prepareStatement(SQLDataTemplate.getMembersDataForGuild(guild_id));
+			members_statement.execute();
+			ResultSet member_result = members_statement.getResultSet();
+			while(member_result.next()) {
+				long member_id = member_result.getLong("members.id");
+				JSONObject json_member = member_result.getObject("members.json", JSONObject.class);
+				json_members.put(String.valueOf(member_id), json_member);
+			}
 
-				BigDecimal role_id = result.getBigDecimal("roles.id");
-				JSONObject json_role = result.getObject("roles.json", JSONObject.class);
-				if(role_id != null) json_roles.put(role_id.toPlainString(), json_role);
+			PreparedStatement text_channels_statement = sqlConnection.prepareStatement(SQLDataTemplate.getTextChannelsDataForGuild(guild_id));
+			text_channels_statement.execute();
+			ResultSet text_channels_result = text_channels_statement.getResultSet();
+			while(text_channels_result.next()) {
+				long text_channel_id = text_channels_result.getLong("text_channels.id");
+				JSONObject json_text_channel = text_channels_result.getObject("text_channels.json", JSONObject.class);
+				json_text_channels.put(String.valueOf(text_channel_id), json_text_channel);
+			}
 
-				BigDecimal voice_channel_id = result.getBigDecimal("voice_channels.id");
-				JSONObject json_voice_channel = result.getObject("voice_channels.json", JSONObject.class);
-				if(voice_channel_id != null) json_voice_channels.put(voice_channel_id.toPlainString(), json_voice_channel);
+			PreparedStatement roles_statement = sqlConnection.prepareStatement(SQLDataTemplate.getRolesDataForGuild(guild_id));
+			roles_statement.execute();
+			ResultSet roles_result = roles_statement.getResultSet();
+			while(roles_result.next()) {
+				long role_id = roles_result.getLong("roles.id");
+				JSONObject json_role = roles_result.getObject("roles.json", JSONObject.class);
+				json_roles.put(String.valueOf(role_id), json_role);
+			}
 
-				BigDecimal category_id = result.getBigDecimal("categories.id");
-				JSONObject json_category = result.getObject("categories.json", JSONObject.class);
-				if(category_id != null) json_categories.put(category_id.toPlainString(), json_category);
+			PreparedStatement voice_channels_statement = sqlConnection.prepareStatement(SQLDataTemplate.getVoiceChannelsDataForGuild(guild_id));
+			voice_channels_statement.execute();
+			ResultSet voice_channels_result = voice_channels_statement.getResultSet();
+			while(voice_channels_result.next()) {
+				long voice_channel_id = voice_channels_result.getLong("voice_channels.id");
+				JSONObject json_voice_channel = voice_channels_result.getObject("voice_channels.json", JSONObject.class);
+				json_voice_channels.put(String.valueOf(voice_channel_id), json_voice_channel);
+			}
 
-				result.getObject("json");
+			PreparedStatement categories_statement = sqlConnection.prepareStatement(SQLDataTemplate.getCategoriesDataForGuild(guild_id));
+			categories_statement.execute();
+			ResultSet categories_result = categories_statement.getResultSet();
+			while(categories_result.next()) {
+				long category_id = categories_result.getLong("categories.id");
+				JSONObject json_category = categories_result.getObject("categories.json", JSONObject.class);
+				json_categories.put(String.valueOf(category_id), json_category);
 			}
 		} catch (SQLException e) {
 			throw new RuntimeException(e);
@@ -159,18 +184,33 @@ public class SQLClient {
 		if(isDisable) return new HashMap<>();
 		checkConnection();
 
+		PreparedStatement guilds_statement;
+		try {
+			guilds_statement = sqlConnection.prepareStatement(SQLDataTemplate.getGuildsId());
+			guilds_statement.execute();
+			ResultSet guilds_result = guilds_statement.getResultSet();
 
-		// TODO get All Data guilds from SQL Database
-		return new HashMap<>();
+			HashMap<Long,JSONObject> output = new HashMap<>(guilds_result.getFetchSize());
+			while(guilds_result.next()) {
+				long guild_id = guilds_result.getLong("id");
+				output.put(guild_id, loadGuildData(guild_id));
+			}
+
+			return output;
+		} catch (SQLException e) {
+			throw new RuntimeException(e);
+		}
 	}
 
 	public boolean hasUserData(long user_id) {
 		if(isDisable) return false;
 		checkConnection();
 
-
-		// TODO Check SQL Database for User
-		return false;
+		try {
+			return sqlConnection.prepareStatement(SQLDataTemplate.hasUserData(user_id)).execute();
+		} catch (SQLException e) {
+			throw new RuntimeException(e);
+		}
 	}
 
 }
