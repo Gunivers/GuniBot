@@ -1,15 +1,21 @@
 package net.gunivers.gunibot.core.command;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import com.google.common.collect.Sets;
+import com.google.common.collect.Sets.SetView;
+
+import net.gunivers.gunibot.command.commands.moderation.Mult;
 import net.gunivers.gunibot.core.command.keys.KeyEnum;
 import net.gunivers.gunibot.core.command.keys.KeyEnum.Position;
 import net.gunivers.gunibot.core.command.nodes.Node;
@@ -19,6 +25,7 @@ import net.gunivers.gunibot.utils.tuple.Tuple2;
 public class CommandParser {
 	
 	private static Command command;
+	private static Set<String> referencedId = new HashSet<>();
 
 	/**
 	 * Parse la syntaxe d'une commande
@@ -29,11 +36,17 @@ public class CommandParser {
 	 */
 	public static NodeRoot parseCommand(Command c) {
 		try {
+			referencedId.clear();
 			command = c;
 			String s = Utils.getResourceFileContent("commands/", c.getSyntaxFile());
 			JSONObject obj = new JSONObject(s);
 			NodeRoot n = parseRoot(obj);
 			c.setSyntax(n);
+			SetView<String> difference = Sets.symmetricDifference(referencedId, command.getReferences());
+			if(c instanceof Mult)
+				referencedId.forEach(System.out::println);
+			if(!difference.isEmpty())
+				throw new JsonCommandFormatException("IDs non référencés ou non utilisés : " + difference.stream().collect(Collectors.joining(", ")) + "\n\tat " + command.getSyntaxFile());
 			command = null;
 			return n;
 		} catch (Exception e) {
@@ -83,7 +96,11 @@ public class CommandParser {
 			}
 			List<KeyEnum> list = n.blacklist().stream().filter(ke -> keysPresent.containsValue(ke)).collect(Collectors.toList());
 			if(list.size() > 0)
-				throw new JsonCommandFormatException(n.getTag() + " est incompatible avec les clés " + list.stream().map(ke -> ke.getClazz().getKey()).collect(Collectors.joining(", ")) + "\n\tat " + command.getSyntaxFile());
+				throw new JsonCommandFormatException(n.getTag() + " est incompatible avec les clés : " + list.stream().map(ke -> ke.getClazz().getKey()).collect(Collectors.joining(", ")) + "\n\tat " + command.getSyntaxFile());
+			
+			list = n.mandatory().stream().filter(ke -> !keysPresent.containsValue(ke)).collect(Collectors.toList());
+			if(list.size() > 0)
+				throw new JsonCommandFormatException(n.getTag() + " doit obligatoirement être avec les clés : " + list.stream().map(ke -> ke.getClazz().getKey()).collect(Collectors.joining(", ")) + "\n\tat " + command.getSyntaxFile());
 			
 			String invalidKeys = obj.keySet().stream().filter(s -> !keysPresent.containsKey(s)).collect(Collectors.joining(", "));
 			if(!invalidKeys.equals(""))
@@ -91,5 +108,9 @@ public class CommandParser {
 
 			return n;
 
+	}
+	
+	public static void addReference(String s) {
+		referencedId.add(s);
 	}
 }

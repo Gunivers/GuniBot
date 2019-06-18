@@ -11,7 +11,6 @@ import net.objecthunter.exp4j.ExpressionBuilder;
 public class ComputeCommand extends Command {
 
 	public void compute(MessageCreateEvent e, List<String> args) {
-		System.out.println("test");
 		try {
 			String expr = args.stream().collect(Collectors.joining(" "));
 			Expression exp = new ExpressionBuilder(expr).build();

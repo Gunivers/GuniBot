@@ -7,6 +7,7 @@ import java.util.function.Supplier;
 public enum KeyEnum {
 	
 	TYPE(KeyType::getInstance, Position.NOT_IN_ROOT),
+	ID(KeyId::getInstance, Position.DEFAULT),
 	MATCHES(KeyMatches::getInstance, Position.NOT_IN_ROOT),
 	EXECUTE(KeyExecute::getInstance, Position.DEFAULT),
 	KEEP_VALUE(KeyKeepValue::getInstance, Position.NOT_IN_ROOT),

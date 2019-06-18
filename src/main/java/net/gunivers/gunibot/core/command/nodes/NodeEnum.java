@@ -6,6 +6,7 @@ public enum NodeEnum {
 
 	INTEGER(NodeInt::new),
 	BOOLEAN(NodeBoolean::new),
+	REFERENCE(NodeReference::new),
 	STRING(NodeString::new);
 	
 	private Supplier<TypeNode> fun;
@@ -21,10 +22,4 @@ public enum NodeEnum {
 	public static NodeEnum valueOfIgnoreCase(String s) {
 		return NodeEnum.valueOf(s.toUpperCase());
 	}
-	
-	public static void main(String... args) {
-		NodeEnum n = NodeEnum.valueOf("test");
-		System.out.println(n);
-	}
-	
 }

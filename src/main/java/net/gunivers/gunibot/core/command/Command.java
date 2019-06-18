@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -26,6 +27,7 @@ public abstract class Command {
 	private Node syntax = null;
 	private Set<Permission> permissions = new HashSet<>();
 	private Set<String> aliases = new HashSet<>();
+	private Map<String, Node> idReference = new HashMap<>();
 
 	public String getDescription() {
 		return description;
@@ -60,8 +62,24 @@ public abstract class Command {
 		syntax = n;
 	}
 
+	public void addIdReference(String s, Node n) {
+		idReference.put(s, n);
+	}
+	
+	public Optional<Node> getNodeById(String s) {
+		return Optional.ofNullable(idReference.get(s));
+	}
+	
+	public Set<String> getReferences() {
+		return idReference.keySet();
+	}
+	
+	public boolean isReferenced(String s) {
+		return idReference.containsKey(s);
+	}
+	
 	public void apply(String command, MessageCreateEvent event) {
-		Tuple2<Tuple2<List<String>, Method>, CommandSyntaxError> result = syntax.matches(command);
+		Tuple2<Tuple2<List<String>, Method>, CommandSyntaxError> result = syntax.matches(command, this);
 		if (result._1 != null) {
 			try {
 				if (result._1._1.size() > 0)
