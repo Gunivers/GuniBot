@@ -9,8 +9,8 @@ import org.json.JSONObject;
 import discord4j.core.object.entity.Category;
 import discord4j.core.object.entity.Guild;
 import discord4j.core.object.entity.Member;
-import discord4j.core.object.entity.Role;
 import discord4j.core.object.entity.TextChannel;
+import discord4j.core.object.entity.Role;
 import discord4j.core.object.entity.VoiceChannel;
 import discord4j.core.object.util.Snowflake;
 
@@ -31,7 +31,8 @@ public class DataGuild extends DataObject<Guild>
 	private ConcurrentHashMap<Snowflake, DataVoiceChannel> dataVoiceChannels = new ConcurrentHashMap<>();
 	private ConcurrentHashMap<Snowflake, DataCategory> dataCategories = new ConcurrentHashMap<>();
 
-	private String welcome = "Welcome to {server}";
+	private String welcomeMessage = "Welcome to {server}";
+	private DataTextChannel welcomeChannel = null;
 
 	{
 		this.getDataMember(this.getEntity().getOwner().block()).getPermissions().add(Permission.bot.get("server.owner"));
@@ -202,7 +203,11 @@ public class DataGuild extends DataObject<Guild>
 		}
 		json.putOpt("categories", json_categories);
 
-		json.putOpt("welcome", welcome);
+		json.putOpt("welcome_message", welcomeMessage);
+		if (welcomeChannel != null)
+		{
+			json.putOpt("welcome_channel", welcomeChannel.getEntity().getId().asLong());
+		}
 		
 		return json;
 	}
@@ -219,8 +224,6 @@ public class DataGuild extends DataObject<Guild>
 		JSONObject json_roles = json.optJSONObject("roles");
 		JSONObject json_voice_channels = json.optJSONObject("voice_channels");
 		JSONObject json_categories = json.optJSONObject("categories");
-
-		welcome = json.getString("welcome");
 		
 		if(json_members != null) {
 			for(String s_member_id:json_members.keySet()) {
@@ -241,7 +244,7 @@ public class DataGuild extends DataObject<Guild>
 		}
 
 		if(json_text_channels != null) {
-			for(String s_text_channel_id:json_text_channels.keySet()) {
+			for(String s_text_channel_id : json_text_channels.keySet()) {
 				Snowflake text_channel_id = Snowflake.of(s_text_channel_id);
 				Optional<TextChannel> opt_text_channel = getEntity().getChannelById(text_channel_id).ofType(TextChannel.class).blockOptional();
 				if(opt_text_channel.isPresent()) {
@@ -311,8 +314,14 @@ public class DataGuild extends DataObject<Guild>
 		} else {
 			System.out.println(String.format("No categories datas in the guild '%s' (%s)! Skipping loading of the categories!", getEntity().getName(), getEntity().getId().asString()));
 		}
+
+		welcomeMessage = json.getString("welcome");
+//		welcomeChannel = new DataTextChannel(text_channel);
 	}
 	
-	public String getWelcome() { return welcome; }
-	public void setWelcome(String msg) { this.welcome = msg; }
+	public String getWelcomeMessage() { return welcomeMessage; }
+	public DataTextChannel getWelcomeChannel() { return welcomeChannel; }
+	
+	public void setWelcomeMessage(String msg) { this.welcomeMessage = msg; }
+	public void setWelcomeChannel(DataTextChannel channel) { this.welcomeChannel = channel; }
 }

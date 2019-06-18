@@ -1,4 +1,4 @@
-package net.gunivers.gunibot.command.commands;
+package net.gunivers.gunibot.command.commands.configuration;
 
 import java.util.HashSet;
 import java.util.List;
@@ -22,7 +22,7 @@ import reactor.core.publisher.Flux;
 public class PermissionCommand extends Command
 {
 	@Override
-	public String getSyntaxFile() { return "permission.json"; }
+	public String getSyntaxFile() { return "configuration/permission.json"; }
 
 	public void list(MessageCreateEvent event)
 	{
