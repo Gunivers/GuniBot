@@ -13,6 +13,8 @@ import discord4j.core.object.entity.Role;
 import discord4j.core.object.entity.TextChannel;
 import discord4j.core.object.entity.VoiceChannel;
 import discord4j.core.object.util.Snowflake;
+import discord4j.rest.http.client.ClientException;
+import net.gunivers.gunibot.Main;
 import net.gunivers.gunibot.command.permissions.Permission;
 
 /**
@@ -228,7 +230,16 @@ public class DataGuild extends DataObject<Guild>
 		if(json_members != null) {
 			for(String s_member_id:json_members.keySet()) {
 				Snowflake member_id = Snowflake.of(s_member_id);
-				Optional<Member> opt_member = getEntity().getMemberById(member_id).blockOptional();
+				Optional<Member> opt_member ;
+				try {
+					opt_member = getEntity().getMemberById(member_id).blockOptional();
+				} catch(ClientException e) {
+					if(e.getStatus().code() == 404) {
+						opt_member = Optional.empty();
+					} else {
+						throw e;
+					}
+				}
 				if(opt_member.isPresent()) {
 					if (dataMembers.containsKey(member_id)) {
 						dataMembers.get(member_id).load(json_members.getJSONObject(s_member_id));
@@ -246,7 +257,8 @@ public class DataGuild extends DataObject<Guild>
 		if(json_text_channels != null) {
 			for(String s_text_channel_id : json_text_channels.keySet()) {
 				Snowflake text_channel_id = Snowflake.of(s_text_channel_id);
-				Optional<TextChannel> opt_text_channel = getEntity().getChannelById(text_channel_id).ofType(TextChannel.class).blockOptional();
+				Optional<TextChannel> opt_text_channel = Main.returnOptional(getEntity().getChannelById(text_channel_id).ofType(TextChannel.class));
+
 				if(opt_text_channel.isPresent()) {
 					if (dataTextChannels.containsKey(text_channel_id)) {
 						dataTextChannels.get(text_channel_id).load(json_text_channels.getJSONObject(s_text_channel_id));
@@ -264,7 +276,8 @@ public class DataGuild extends DataObject<Guild>
 		if(json_roles != null) {
 			for(String s_role_id:json_roles.keySet()) {
 				Snowflake role_id = Snowflake.of(s_role_id);
-				Optional<Role> opt_role = getEntity().getRoleById(role_id).blockOptional();
+				Optional<Role> opt_role = Main.returnOptional(getEntity().getRoleById(role_id));
+
 				if(opt_role.isPresent()) {
 					if (dataRoles.containsKey(role_id)) {
 						dataRoles.get(role_id).load(json_roles.getJSONObject(s_role_id));
@@ -282,7 +295,8 @@ public class DataGuild extends DataObject<Guild>
 		if(json_voice_channels != null) {
 			for(String s_voice_channel_id:json_voice_channels.keySet()) {
 				Snowflake voice_channel_id = Snowflake.of(s_voice_channel_id);
-				Optional<VoiceChannel> opt_voice_channel = getEntity().getChannelById(voice_channel_id).ofType(VoiceChannel.class).blockOptional();
+				Optional<VoiceChannel> opt_voice_channel = Main.returnOptional(getEntity().getChannelById(voice_channel_id).ofType(VoiceChannel.class));
+
 				if(opt_voice_channel.isPresent()) {
 					if (dataVoiceChannels.containsKey(voice_channel_id)) {
 						dataVoiceChannels.get(voice_channel_id).load(json_voice_channels.getJSONObject(s_voice_channel_id));
@@ -300,7 +314,8 @@ public class DataGuild extends DataObject<Guild>
 		if(json_categories != null) {
 			for(String s_category_id:json_categories.keySet()) {
 				Snowflake category_id = Snowflake.of(s_category_id);
-				Optional<Category> opt_category = getEntity().getChannelById(category_id).ofType(Category.class).blockOptional();
+				Optional<Category> opt_category = Main.returnOptional(getEntity().getChannelById(category_id).ofType(Category.class));
+
 				if(opt_category.isPresent()) {
 					if (dataCategories.containsKey(category_id)) {
 						dataCategories.get(category_id).load(json_categories.getJSONObject(s_category_id));
