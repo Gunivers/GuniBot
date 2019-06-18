@@ -159,17 +159,19 @@ public final class SQLDataTemplate {
 	// insert Datas
 
 	public static String insertGuildData(long id, JSONObject json) {
-		String sql = "REPLACE INTO guilds id VALUE "+id+";";
+		String sql = "REPLACE INTO guilds (id) VALUE ("+id+");\n";
 
 		JSONObject json_members = json.optJSONObject("members");
 		if(json_members != null) {
 			HashSet<String> entries = new HashSet<>();
 
-			for(String member_id:json_members.keySet()) {
-				JSONObject json_member = json_members.getJSONObject(member_id);
-				entries.add("("+id+","+member_id+","+json_member+")");
+			if (json_members.length() > 1) {
+				for(String member_id:json_members.keySet()) {
+					JSONObject json_member = json_members.getJSONObject(member_id);
+					entries.add("("+id+","+member_id+",'"+json_member.toString()+"')");
+				}
+				sql += "REPLACE INTO members (guild_id,id,json) VALUES " + String.join(",", entries) + ";\n";
 			}
-			sql += "REPLACE INTO members (guild_id,id,json) VALUES (" + String.join(",", entries) + ");";
 			json.remove("members");
 		}
 
@@ -177,11 +179,13 @@ public final class SQLDataTemplate {
 		if(json_text_channels != null) {
 			HashSet<String> entries = new HashSet<>();
 
-			for(String text_channel_id:json_text_channels.keySet()) {
-				JSONObject json_text_channel = json_text_channels.getJSONObject(text_channel_id);
-				entries.add("("+id+","+text_channel_id+","+json_text_channel+")");
+			if (json_text_channels.length() > 1) {
+				for(String text_channel_id:json_text_channels.keySet()) {
+					JSONObject json_text_channel = json_text_channels.getJSONObject(text_channel_id);
+					entries.add("("+id+","+text_channel_id+",'"+json_text_channel.toString()+"')");
+				}
+				sql += "REPLACE INTO text_channels (guild_id,id,json) VALUES " + String.join(",", entries) + ";\n";
 			}
-			sql += "REPLACE INTO text_channels (guild_id,id,json) VALUES (" + String.join(",", entries) + ");";
 			json.remove("text_channels");
 		}
 
@@ -189,11 +193,13 @@ public final class SQLDataTemplate {
 		if(json_roles != null) {
 			HashSet<String> entries = new HashSet<>();
 
-			for(String role_id:json_roles.keySet()) {
-				JSONObject json_role = json_roles.getJSONObject(role_id);
-				entries.add("("+id+","+role_id+","+json_role+")");
+			if (json_roles.length() > 1) {
+				for(String role_id:json_roles.keySet()) {
+					JSONObject json_role = json_roles.getJSONObject(role_id);
+					entries.add("("+id+","+role_id+",'"+json_role.toString()+"')");
+				}
+				sql += "REPLACE INTO roles (guild_id,id,json) VALUES " + String.join(",", entries) + ";\n";
 			}
-			sql += "REPLACE INTO roles (guild_id,id,json) VALUES (" + String.join(",", entries) + ");";
 			json.remove("roles");
 		}
 
@@ -201,11 +207,13 @@ public final class SQLDataTemplate {
 		if(json_text_channels != null) {
 			HashSet<String> entries = new HashSet<>();
 
-			for(String voice_channel_id:json_voice_channels.keySet()) {
-				JSONObject json_voice_channel = json_voice_channels.getJSONObject(voice_channel_id);
-				entries.add("("+id+","+voice_channel_id+","+json_voice_channel+")");
+			if (json_text_channels.length() > 1) {
+				for(String voice_channel_id:json_voice_channels.keySet()) {
+					JSONObject json_voice_channel = json_voice_channels.getJSONObject(voice_channel_id);
+					entries.add("("+id+","+voice_channel_id+",'"+json_voice_channel.toString()+"')");
+				}
+				sql += "REPLACE INTO voice_channels (guild_id,id,json) VALUES " + String.join(",", entries) + ";\n";
 			}
-			sql += "REPLACE INTO voice_channels (guild_id,id,json) VALUES (" + String.join(",", entries) + ");";
 			json.remove("voice_channels");
 		}
 
@@ -213,15 +221,17 @@ public final class SQLDataTemplate {
 		if(json_categories != null) {
 			HashSet<String> entries = new HashSet<>();
 
-			for(String category_id:json_categories.keySet()) {
-				JSONObject json_category = json_categories.getJSONObject(category_id);
-				entries.add("("+id+","+category_id+","+json_category+")");
+			if (json_categories.length() > 1) {
+				for(String category_id:json_categories.keySet()) {
+					JSONObject json_category = json_categories.getJSONObject(category_id);
+					entries.add("("+id+","+category_id+",'"+json_category.toString()+"')");
+				}
+				sql += "REPLACE INTO categories (guild_id,id,json) VALUES " + String.join(",", entries) + ";\n";
 			}
-			sql += "REPLACE INTO categories (guild_id,id,json) VALUES (" + String.join(",", entries) + ");";
 			json.remove("categories");
 		}
 
-		sql += "REPLACE INTO guilds (guild_id,json) VALUE ("+id+","+json+");";
+		sql += "REPLACE INTO guilds (id,json) VALUE ("+id+",'"+json.toString()+"');";
 
 		return sql;
 	}

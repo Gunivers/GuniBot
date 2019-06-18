@@ -2,16 +2,16 @@ package net.gunivers.gunibot.sql;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.HashMap;
 
 import org.json.JSONObject;
 
 public class SQLClient {
 
-	private static final String SQL_URL = "jdbc:mysql://172.17.228.156?serverTimezone=Europe/Paris"; //IP VM Interne, ne marche pas ailleurs que sur mon PC (Syl2010)
+	private static final String SQL_URL = "jdbc:mysql://172.17.228.148?serverTimezone=Europe/Paris"; //IP VM Interne, ne marche pas ailleurs que sur mon PC (Syl2010)
 	private static final String SQL_USER = "gunibot";
 	private static final String SQL_PASSWORD = "gunibot"; //mot de passe DB VM Interne
 
@@ -59,14 +59,14 @@ public class SQLClient {
 
 	private void initTables() {
 		try {
-			sqlConnection.prepareStatement(SQLDataTemplate.useDatabase()).execute();
-			sqlConnection.prepareStatement(SQLDataTemplate.createGuildsTable()).execute();
-			sqlConnection.prepareStatement(SQLDataTemplate.createMembersTable()).execute();
-			sqlConnection.prepareStatement(SQLDataTemplate.createTextChannelsTable()).execute();
-			sqlConnection.prepareStatement(SQLDataTemplate.createRolesTable()).execute();
-			sqlConnection.prepareStatement(SQLDataTemplate.createVoiceChannelsTable()).execute();
-			sqlConnection.prepareStatement(SQLDataTemplate.createCategoriesTable()).execute();
-			sqlConnection.prepareStatement(SQLDataTemplate.createUsersTable()).execute();
+			sqlConnection.createStatement().execute(SQLDataTemplate.useDatabase());
+			sqlConnection.createStatement().execute(SQLDataTemplate.createGuildsTable());
+			sqlConnection.createStatement().execute(SQLDataTemplate.createMembersTable());
+			sqlConnection.createStatement().execute(SQLDataTemplate.createTextChannelsTable());
+			sqlConnection.createStatement().execute(SQLDataTemplate.createRolesTable());
+			sqlConnection.createStatement().execute(SQLDataTemplate.createVoiceChannelsTable());
+			sqlConnection.createStatement().execute(SQLDataTemplate.createCategoriesTable());
+			sqlConnection.createStatement().execute(SQLDataTemplate.createUsersTable());
 
 		} catch (SQLException e) {
 			throw new RuntimeException(e);
@@ -78,7 +78,7 @@ public class SQLClient {
 		checkConnection();
 
 		try {
-			return sqlConnection.prepareStatement(SQLDataTemplate.hasGuildData(guild_id)).execute();
+			return sqlConnection.createStatement().execute(SQLDataTemplate.hasGuildData(guild_id));
 		} catch (SQLException e) {
 			throw new RuntimeException(e);
 		}
@@ -89,7 +89,7 @@ public class SQLClient {
 		checkConnection();
 
 		try {
-			sqlConnection.prepareStatement(SQLDataTemplate.removeGuildData(guild_id)).execute();
+			sqlConnection.createStatement().execute(SQLDataTemplate.removeGuildData(guild_id));
 		} catch (SQLException e) {
 			throw new RuntimeException(e);
 		}
@@ -100,7 +100,7 @@ public class SQLClient {
 		checkConnection();
 
 		try {
-			sqlConnection.prepareStatement(SQLDataTemplate.insertGuildData(guild_id, datas)).execute();
+			for(String line:SQLDataTemplate.insertGuildData(guild_id, datas).split("\n")) sqlConnection.createStatement().execute(line);
 		} catch (SQLException e) {
 			throw new RuntimeException(e);
 		}
@@ -117,55 +117,55 @@ public class SQLClient {
 		JSONObject json_voice_channels = new JSONObject();
 		JSONObject json_categories = new JSONObject();
 		try {
-			PreparedStatement guild_statement = sqlConnection.prepareStatement(SQLDataTemplate.getGuildData(guild_id));
-			guild_statement.execute();
+			Statement guild_statement = sqlConnection.createStatement();
+			guild_statement.execute(SQLDataTemplate.getGuildData(guild_id));
 			ResultSet guild_result = guild_statement.getResultSet();
 			if(guild_result.next()) {
-				json = new JSONObject(guild_result.getObject("json", JSONObject.class));
+				json = new JSONObject(guild_result.getString("json"));
 			}
 
-			PreparedStatement members_statement = sqlConnection.prepareStatement(SQLDataTemplate.getMembersDataForGuild(guild_id));
-			members_statement.execute();
+			Statement members_statement = sqlConnection.createStatement();
+			members_statement.execute(SQLDataTemplate.getMembersDataForGuild(guild_id));
 			ResultSet member_result = members_statement.getResultSet();
 			while(member_result.next()) {
-				long member_id = member_result.getLong("members.id");
-				JSONObject json_member = member_result.getObject("members.json", JSONObject.class);
+				long member_id = member_result.getLong("id");
+				JSONObject json_member = new JSONObject(member_result.getString("json"));
 				json_members.put(String.valueOf(member_id), json_member);
 			}
 
-			PreparedStatement text_channels_statement = sqlConnection.prepareStatement(SQLDataTemplate.getTextChannelsDataForGuild(guild_id));
-			text_channels_statement.execute();
+			Statement text_channels_statement = sqlConnection.createStatement();
+			text_channels_statement.execute(SQLDataTemplate.getTextChannelsDataForGuild(guild_id));
 			ResultSet text_channels_result = text_channels_statement.getResultSet();
 			while(text_channels_result.next()) {
-				long text_channel_id = text_channels_result.getLong("text_channels.id");
-				JSONObject json_text_channel = text_channels_result.getObject("text_channels.json", JSONObject.class);
+				long text_channel_id = text_channels_result.getLong("id");
+				JSONObject json_text_channel = new JSONObject(text_channels_result.getString("json"));
 				json_text_channels.put(String.valueOf(text_channel_id), json_text_channel);
 			}
 
-			PreparedStatement roles_statement = sqlConnection.prepareStatement(SQLDataTemplate.getRolesDataForGuild(guild_id));
-			roles_statement.execute();
+			Statement roles_statement = sqlConnection.createStatement();
+			roles_statement.execute(SQLDataTemplate.getRolesDataForGuild(guild_id));
 			ResultSet roles_result = roles_statement.getResultSet();
 			while(roles_result.next()) {
-				long role_id = roles_result.getLong("roles.id");
-				JSONObject json_role = roles_result.getObject("roles.json", JSONObject.class);
+				long role_id = roles_result.getLong("id");
+				JSONObject json_role = new JSONObject(roles_result.getString("json"));
 				json_roles.put(String.valueOf(role_id), json_role);
 			}
 
-			PreparedStatement voice_channels_statement = sqlConnection.prepareStatement(SQLDataTemplate.getVoiceChannelsDataForGuild(guild_id));
-			voice_channels_statement.execute();
+			Statement voice_channels_statement = sqlConnection.createStatement();
+			voice_channels_statement.execute(SQLDataTemplate.getVoiceChannelsDataForGuild(guild_id));
 			ResultSet voice_channels_result = voice_channels_statement.getResultSet();
 			while(voice_channels_result.next()) {
-				long voice_channel_id = voice_channels_result.getLong("voice_channels.id");
-				JSONObject json_voice_channel = voice_channels_result.getObject("voice_channels.json", JSONObject.class);
+				long voice_channel_id = voice_channels_result.getLong("id");
+				JSONObject json_voice_channel = new JSONObject(voice_channels_result.getString("json"));
 				json_voice_channels.put(String.valueOf(voice_channel_id), json_voice_channel);
 			}
 
-			PreparedStatement categories_statement = sqlConnection.prepareStatement(SQLDataTemplate.getCategoriesDataForGuild(guild_id));
-			categories_statement.execute();
+			Statement categories_statement = sqlConnection.createStatement();
+			categories_statement.execute(SQLDataTemplate.getCategoriesDataForGuild(guild_id));
 			ResultSet categories_result = categories_statement.getResultSet();
 			while(categories_result.next()) {
-				long category_id = categories_result.getLong("categories.id");
-				JSONObject json_category = categories_result.getObject("categories.json", JSONObject.class);
+				long category_id = categories_result.getLong("id");
+				JSONObject json_category = new JSONObject(categories_result.getString("json"));
 				json_categories.put(String.valueOf(category_id), json_category);
 			}
 		} catch (SQLException e) {
@@ -184,10 +184,10 @@ public class SQLClient {
 		if(isDisable) return new HashMap<>();
 		checkConnection();
 
-		PreparedStatement guilds_statement;
+		Statement guilds_statement;
 		try {
-			guilds_statement = sqlConnection.prepareStatement(SQLDataTemplate.getGuildsId());
-			guilds_statement.execute();
+			guilds_statement = sqlConnection.createStatement();
+			guilds_statement.execute(SQLDataTemplate.getGuildsId());
 			ResultSet guilds_result = guilds_statement.getResultSet();
 
 			HashMap<Long,JSONObject> output = new HashMap<>(guilds_result.getFetchSize());
@@ -207,7 +207,7 @@ public class SQLClient {
 		checkConnection();
 
 		try {
-			return sqlConnection.prepareStatement(SQLDataTemplate.hasUserData(user_id)).execute();
+			return sqlConnection.createStatement().execute(SQLDataTemplate.hasUserData(user_id));
 		} catch (SQLException e) {
 			throw new RuntimeException(e);
 		}
