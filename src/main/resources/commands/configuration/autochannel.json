@@ -1,7 +1,7 @@
 {
 	"autochannel": 
 	{
-		"description": "Allow to give a number of cookies at a user",
+		"description": "Define Auto Channel",
 		"permissions": ["discord.administrator", "discord.manage_guild"],
 		"arguments": 
 		[

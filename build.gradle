@@ -24,6 +24,8 @@ dependencies
 	
 	testImplementation 'junit:junit:4.12'
 	compile group: 'org.reflections', name: 'reflections', version: '0.9.11'
+	compile group: 'net.objecthunter', name: 'exp4j', version: '0.4.4'
+	
 }
 
 // Define the main class for the application
