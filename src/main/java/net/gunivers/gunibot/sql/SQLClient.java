@@ -84,6 +84,17 @@ public class SQLClient {
 		}
 	}
 
+	public boolean hasUserData(long user_id) {
+		if(isDisable) return false;
+		checkConnection();
+
+		try {
+			return sqlConnection.createStatement().execute(SQLDataTemplate.hasUserData(user_id));
+		} catch (SQLException e) {
+			throw new RuntimeException(e);
+		}
+	}
+
 	public void removeGuildData(long guild_id) {
 		if(isDisable) return;
 		checkConnection();
@@ -95,12 +106,34 @@ public class SQLClient {
 		}
 	}
 
+	public void removeUserData(long user_id) {
+		if(isDisable) return;
+		checkConnection();
+
+		try {
+			sqlConnection.createStatement().execute(SQLDataTemplate.removeUserData(user_id));
+		} catch (SQLException e) {
+			throw new RuntimeException(e);
+		}
+	}
+
 	public void saveGuildData(long guild_id, JSONObject datas) {
 		if(isDisable) return;
 		checkConnection();
 
 		try {
 			for(String line:SQLDataTemplate.insertGuildData(guild_id, datas).split("\n")) sqlConnection.createStatement().execute(line);
+		} catch (SQLException e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	public void saveUserData(long user_id, JSONObject datas) {
+		if(isDisable) return;
+		checkConnection();
+
+		try {
+			sqlConnection.createStatement().execute(SQLDataTemplate.insertUserData(user_id, datas));
 		} catch (SQLException e) {
 			throw new RuntimeException(e);
 		}
@@ -180,13 +213,30 @@ public class SQLClient {
 		return json;
 	}
 
+	public JSONObject loadUserData(long id) {
+		if(isDisable) return new JSONObject();
+		checkConnection();
+
+		try {
+			Statement user_statement = sqlConnection.createStatement();
+			user_statement.execute(SQLDataTemplate.getUserData(id));
+			ResultSet user_result = user_statement.getResultSet();
+			if(user_result.next()) {
+				return new JSONObject(user_result.getString("json"));
+			} else {
+				return new JSONObject();
+			}
+		} catch (SQLException e) {
+			throw new RuntimeException(e);
+		}
+	}
+
 	public HashMap<Long,JSONObject> getAllDataGuilds() {
 		if(isDisable) return new HashMap<>();
 		checkConnection();
 
-		Statement guilds_statement;
 		try {
-			guilds_statement = sqlConnection.createStatement();
+			Statement guilds_statement = sqlConnection.createStatement();
 			guilds_statement.execute(SQLDataTemplate.getGuildsId());
 			ResultSet guilds_result = guilds_statement.getResultSet();
 
@@ -202,12 +252,22 @@ public class SQLClient {
 		}
 	}
 
-	public boolean hasUserData(long user_id) {
-		if(isDisable) return false;
+	public HashMap<Long,JSONObject> getAllDataUsers() {
+		if(isDisable) return new HashMap<>();
 		checkConnection();
 
 		try {
-			return sqlConnection.createStatement().execute(SQLDataTemplate.hasUserData(user_id));
+			Statement users_statement = sqlConnection.createStatement();
+			users_statement.execute(SQLDataTemplate.getUsersId());
+			ResultSet users_result = users_statement.getResultSet();
+
+			HashMap<Long,JSONObject> output = new HashMap<>(users_result.getFetchSize());
+			while(users_result.next()) {
+				long user_id = users_result.getLong("id");
+				output.put(user_id, loadUserData(user_id));
+			}
+
+			return output;
 		} catch (SQLException e) {
 			throw new RuntimeException(e);
 		}

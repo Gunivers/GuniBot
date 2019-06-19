@@ -9,6 +9,8 @@ import org.json.JSONObject;
 import discord4j.core.DiscordClient;
 import discord4j.core.event.domain.lifecycle.ReadyEvent;
 import discord4j.core.object.entity.Guild;
+import discord4j.core.object.entity.Member;
+import discord4j.core.object.entity.User;
 import discord4j.core.object.presence.Activity;
 import discord4j.core.object.presence.Presence;
 import discord4j.core.object.util.Snowflake;
@@ -28,6 +30,11 @@ public class DataCenter {
 	 */
 	private ConcurrentHashMap<Snowflake, DataGuild> dataGuilds;
 
+	/**
+	 * Contient tout les utilisateurs possédant des données (ou mis en cache en cas de modification de données, synchronisé entre les serveurs).
+	 */
+	private ConcurrentHashMap<Snowflake, DataUser> dataUsers;
+
 	private SQLClient sql;
 
 	public DataCenter(ReadyEvent event) {
@@ -35,6 +42,7 @@ public class DataCenter {
 		botClient.updatePresence(Presence.idle(Activity.watching("Loading Data Control..."))).subscribe();
 
 		dataGuilds = new ConcurrentHashMap<>();
+		dataUsers = new ConcurrentHashMap<>(128);
 
 		sql = new SQLClient(true);
 		loadGuilds();
@@ -48,6 +56,11 @@ public class DataCenter {
 		if(hasRegisteredData(guild)) {
 			dataGuilds.put(guild.getId(), new DataGuild(guild, sql.loadGuildData(guild.getId().asLong())));
 		}
+		for (Member user:guild.getMembers().toIterable()) {
+			if(hasRegisteredData(user) && !dataUsers.containsKey(user.getId())) {
+				dataUsers.put(user.getId(), new DataUser(user, sql.loadUserData(user.getId().asLong())));
+			}
+		}
 	}
 
 	/**
@@ -60,6 +73,19 @@ public class DataCenter {
 			removeRegisteredData(guild);
 		} else {
 			dataGuilds.remove(guild.getId());
+		}
+	}
+
+	/**
+	 * Supprime les données de l'utilisateur indiqué.
+	 * @param user l'utilisateur dont les données seront supprimés.
+	 */
+	public void removeUser(User user) {
+		if(hasRegisteredData(user)) {
+			dataUsers.remove(user.getId());
+			removeRegisteredData(user);
+		} else {
+			dataUsers.remove(user.getId());
 		}
 	}
 
@@ -84,6 +110,26 @@ public class DataCenter {
 	}
 
 	/**
+	 * Récupère les données d" l'utilisateur indiqué, et le garde en cache pour enregistré les données modifiés.
+	 * @param user L'utilisateur.
+	 * @return l'objet de donnée de l'utilisateur.
+	 */
+	public DataUser getDataUser(User user) {
+		if(dataUsers.containsKey(user.getId())) {
+			return dataUsers.get(user.getId());
+		} else {
+			DataUser data_user;
+			if(hasRegisteredData(user)) {
+				data_user = new DataUser(user, sql.loadUserData(user.getId().asLong()));
+			} else {
+				data_user = new DataUser(user);
+			}
+			dataUsers.put(user.getId(), data_user);
+			return data_user;
+		}
+	}
+
+	/**
 	 * Supprime du cache toutes les données de serveur qui ne sont pas enregistré.
 	 */
 	public void clearDataGuildsCache() {
@@ -99,6 +145,21 @@ public class DataCenter {
 	}
 
 	/**
+	 * Supprime du cache toutes les données d'utilisateur qui ne sont pas enregistré.
+	 */
+	public void clearDataUsersCache() {
+		for(Snowflake id:dataUsers.keySet()) {
+			Optional<User> user_opt = botClient.getUserById(id).blockOptional();
+			if(user_opt.isPresent()) {
+				User user = user_opt.get();
+				if(!hasRegisteredData(user)) {
+					dataUsers.remove(user.getId());
+				}
+			}
+		}
+	}
+
+	/**
 	 * Vérifie si le serveur indiqué possède des données dans la base de donnée.
 	 * @param guild le serveur à vérifier.
 	 * @return {@code true} si le serveur possède des données dans la base de donnée, {@code false} sinon.
@@ -108,11 +169,28 @@ public class DataCenter {
 	}
 
 	/**
+	 * Vérifie si l'utilisateur indiqué possède des données dans la base de donnée.
+	 * @param user l'utilisateur à vérifier.
+	 * @return {@code true} si l'utilisateur possède des données dans la base de donnée, {@code false} sinon.
+	 */
+	private boolean hasRegisteredData(User user) {
+		return sql.hasUserData(user.getId().asLong());
+	}
+
+	/**
 	 * Supprime les données du serveur indiqué de la base de donnée.
 	 * @param guild le serveur a supprimmé de la base de donnée.
 	 */
 	private void removeRegisteredData(Guild guild) {
 		sql.removeGuildData(guild.getId().asLong());
+	}
+
+	/**
+	 * Supprime les données de l'utilisateur indiqué de la base de donnée.
+	 * @param user l'utilisateur a supprimmé de la base de donnée.
+	 */
+	private void removeRegisteredData(User user) {
+		sql.removeUserData(user.getId().asLong());
 	}
 
 	/**
@@ -127,6 +205,21 @@ public class DataCenter {
 			//dataGuild.clearAllCache();
 		} else {
 			System.err.println(String.format("The guild '%s' (%s) has no data object to save!", guild.getName(), guild.getId().asString()));
+		}
+	}
+
+	/**
+	 * Sauvegarde les données de l'utilisateur indiqué dans la base de donnée.
+	 * Après sauvegarde, les données en cache dans cet objet de données sont supprimés (en réflexion).
+	 * @param user l'utilisateur à sauvegarder.
+	 */
+	public void saveUser(User user) {
+		DataUser dataUser = dataUsers.get(user.getId());
+		if(dataUser != null) {
+			sql.saveUserData(user.getId().asLong(), dataUser.save());
+			//dataGuild.clearAllCache();
+		} else {
+			System.err.println(String.format("The user '%s' (%s) has no data object to save!", user.getUsername(), user.getId().asString()));
 		}
 	}
 
@@ -149,6 +242,24 @@ public class DataCenter {
 	}
 
 	/**
+	 * Charge les données de l'utilisateur indiqué depuis la base de donnée.
+	 * @param user l'utilisateur à charger.
+	 */
+	public void loadUser(User user) {
+		if (hasRegisteredData(user)) {
+			Snowflake id = user.getId();
+			JSONObject json = sql.loadUserData(id.asLong());
+			if (dataUsers.containsKey(id)) {
+				dataUsers.get(id).load(json);
+			} else {
+				dataUsers.put(id, new DataUser(user, json));
+			}
+		} else {
+			System.err.println(String.format("The user '%s' (%s) ha no data to load!", user.getUsername(), user.getId().asString()));
+		}
+	}
+
+	/**
 	 * Sauvegarde les données de tout les serveurs dans la base de donnée.
 	 * Le cache des serveurs est nettoyé après la sauvegarde.
 	 */
@@ -157,6 +268,17 @@ public class DataCenter {
 			sql.saveGuildData(guild_entry.getKey().asLong(), guild_entry.getValue().save());
 		}
 		clearDataGuildsCache();
+	}
+
+	/**
+	 * Sauvegarde les données de tout les utilisateurs dans la base de donnée.
+	 * Le cache des utilisateurs est nettoyé après la sauvegarde.
+	 */
+	public void saveUsers() {
+		for(Entry<Snowflake, DataUser> user_entry:dataUsers.entrySet()) {
+			sql.saveUserData(user_entry.getKey().asLong(), user_entry.getValue().save());
+		}
+		clearDataUsersCache();
 	}
 
 	/**
@@ -179,9 +301,30 @@ public class DataCenter {
 		}
 	}
 
+	/**
+	 * Charge les données de tout les utilisateurs enregistrés dans la base de donnée.
+	 */
+	public void loadUsers() {
+		for(Entry<Long, JSONObject> entry:sql.getAllDataUsers().entrySet()) {
+			Snowflake id = Snowflake.of(entry.getKey());
+			Optional<User> opt_user = botClient.getUserById(id).blockOptional();
+
+			if(opt_user.isPresent()) {
+				if (dataUsers.containsKey(id)) {
+					dataUsers.get(id).load(entry.getValue());
+				} else {
+					dataUsers.put(id, new DataUser(opt_user.get(), entry.getValue()));
+				}
+			} else {
+				System.err.println(String.format("The user id '%s' is not reachable! Skipping loading of this user!", id.asString()));
+			}
+		}
+	}
+
 	public void shutdown() {
 		botClient.updatePresence(Presence.doNotDisturb(Activity.watching("Shutdown...")));
 		saveGuilds();
+		saveUsers();
 		botClient.logout().subscribe();
 	}
 

@@ -51,7 +51,6 @@ public final class SQLDataTemplate {
 
 	public static String createUsersTable() {
 		return "CREATE TABLE IF NOT EXISTS users "
-				+ "(guild_id BIGINT NOT NULL UNIQUE KEY REFERENCES guilds (id) ON DELETE CASCADE, "
 				+ "id BIGINT NOT NULL PRIMARY KEY, "
 				+ "json JSON);";
 	}
@@ -234,6 +233,10 @@ public final class SQLDataTemplate {
 		sql += "REPLACE INTO guilds (id,json) VALUE ("+id+",'"+json.toString()+"');";
 
 		return sql;
+	}
+
+	public static String insertUserData(long user_id, JSONObject datas) {
+		return "REPLACE INTO users (id,json) VALUE ("+user_id+",'"+datas.toString()+"');";
 	}
 
 }
