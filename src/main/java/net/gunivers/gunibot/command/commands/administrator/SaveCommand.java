@@ -1,4 +1,4 @@
-package net.gunivers.gunibot.command.commands;
+package net.gunivers.gunibot.command.commands.administrator;
 
 import java.awt.Color;
 
@@ -14,7 +14,7 @@ public class SaveCommand extends Command {
 
 	@Override
 	public String getSyntaxFile() {
-		return "save.json";
+		return "administrator/save.json";
 	}
 
 	public void save(MessageCreateEvent event) {

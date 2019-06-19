@@ -1,4 +1,4 @@
-package net.gunivers.gunibot.command.commands;
+package net.gunivers.gunibot.command.commands.developper;
 
 import java.awt.Color;
 
@@ -13,7 +13,7 @@ public class PerfCommand extends Command {
 
 	@Override
 	public String getSyntaxFile() {
-		return "performance.json";
+		return "developper/performance.json";
 	}
 
 	public void getPerf(MessageCreateEvent event) {

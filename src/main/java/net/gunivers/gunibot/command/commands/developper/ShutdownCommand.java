@@ -1,4 +1,4 @@
-package net.gunivers.gunibot.command.commands;
+package net.gunivers.gunibot.command.commands.developper;
 
 import discord4j.core.event.domain.message.MessageCreateEvent;
 import net.gunivers.gunibot.Main;
@@ -8,7 +8,7 @@ public class ShutdownCommand extends Command {
 
 	@Override
 	public String getSyntaxFile() {
-		return "shutdown.json";
+		return "developper/shutdown.json";
 	}
 
 	public void shutdown(MessageCreateEvent event) {
