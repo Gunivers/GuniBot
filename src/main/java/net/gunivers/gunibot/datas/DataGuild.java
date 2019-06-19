@@ -31,9 +31,8 @@ public class DataGuild extends DataObject<Guild>
 	private ConcurrentHashMap<Snowflake, DataRole> dataRoles = new ConcurrentHashMap<>();
 	private ConcurrentHashMap<Snowflake, DataVoiceChannel> dataVoiceChannels = new ConcurrentHashMap<>();
 	private ConcurrentHashMap<Snowflake, DataCategory> dataCategories = new ConcurrentHashMap<>();
-
-	private static final String DEFAULT_WELCOME_MESSAGE = "Welcome to {server}";
-	private String welcomeMessage = DEFAULT_WELCOME_MESSAGE;
+	
+	private String welcomeMessage = "Server: {server} ; User: {user} ; Mention: {user.mention}";
 	private DataTextChannel welcomeChannel = null;
 
 	{
@@ -330,7 +329,7 @@ public class DataGuild extends DataObject<Guild>
 			System.out.println(String.format("No categories datas in the guild '%s' (%s)! Skipping loading of the categories!", getEntity().getName(), getEntity().getId().asString()));
 		}
 
-		welcomeMessage = json.optString("welcome", DEFAULT_WELCOME_MESSAGE);
+		welcomeMessage = json.optString("welcome", welcomeMessage);
 		//		welcomeChannel = new DataTextChannel(text_channel);
 	}
 
