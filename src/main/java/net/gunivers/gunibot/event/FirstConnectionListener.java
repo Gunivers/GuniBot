@@ -13,8 +13,6 @@ import net.gunivers.gunibot.core.lib.EmbedBuilder;
 import net.gunivers.gunibot.datas.Configuration;
 import net.gunivers.gunibot.datas.DataTextChannel;
 
-import reactor.core.publisher.Mono;
-
 public class FirstConnectionListener extends Events<MemberJoinEvent>
 {
 	protected FirstConnectionListener() { super(MemberJoinEvent.class); }
@@ -30,7 +28,7 @@ public class FirstConnectionListener extends Events<MemberJoinEvent>
 		Member m = event.getMember();
 		DataTextChannel tc = Configuration.WELCOME_CHANNEL.get(Main.getDataCenter().getDataGuild(g));
 		
-		EmbedBuilder builder = new EmbedBuilder(tc == null ? event.getMember().getPrivateChannel() : Mono.just(tc.getEntity()),
+		EmbedBuilder builder = new EmbedBuilder(tc == null ? event.getMember().getPrivateChannel().block() : tc.getEntity(),
 				"Welcome to "+ g.getName() +'!', null);
 		
 		builder.setColor(event.getClient().getSelf().block().asMember(event.getGuildId()).block().getColor().block());

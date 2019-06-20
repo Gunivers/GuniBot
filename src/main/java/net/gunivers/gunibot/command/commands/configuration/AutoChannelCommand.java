@@ -30,7 +30,7 @@ public class AutoChannelCommand extends Command {
 	}
 	
 	public void list(MessageCreateEvent e) {
-		final EmbedBuilder builder = new EmbedBuilder(e.getMessage().getChannel(), "Autochannel List", null);
+		final EmbedBuilder builder = new EmbedBuilder(e.getMessage().getChannel().block(), "Autochannel List", null);
 		builder.setAuthor(e.getMember().get());
 		final Field list = new Field("");
 		list.getValue().append(

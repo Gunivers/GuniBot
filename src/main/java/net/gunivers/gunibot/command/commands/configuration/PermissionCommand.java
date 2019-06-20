@@ -26,7 +26,7 @@ public class PermissionCommand extends Command
 
 	public void list(MessageCreateEvent event)
 	{
-		EmbedBuilder builder = new EmbedBuilder(event.getMessage().getChannel(), "Permission List", null);
+		EmbedBuilder builder = new EmbedBuilder(event.getMessage().getChannel().block(), "Permission List", null);
 		builder.setRequestedBy(event.getMember().orElse(null));
 		
 		Field discord = new Field("Discord Built-ins");
@@ -60,7 +60,7 @@ public class PermissionCommand extends Command
 			return;
 		}
 		
-		EmbedBuilder builder = new EmbedBuilder(event.getMessage().getChannel(), "Permissions of: ", null);
+		EmbedBuilder builder = new EmbedBuilder(event.getMessage().getChannel().block(), "Permissions of: ", null);
 		builder.setRequestedBy(event.getMember().get());
 		
 		for (DataMember m : members.toIterable())
@@ -97,7 +97,7 @@ public class PermissionCommand extends Command
 			return;
 		}
 		
-		EmbedBuilder builder = new EmbedBuilder(event.getMessage().getChannel(), "Success!", null);
+		EmbedBuilder builder = new EmbedBuilder(event.getMessage().getChannel().block(), "Success!", null);
 		builder.setRequestedBy(event.getMember().get());
 		builder.addField("Permissions changed:", perms.stream().map(Permission::getName).reduce("", (a,b) -> a + " - " + b + '\n'), true);
 		

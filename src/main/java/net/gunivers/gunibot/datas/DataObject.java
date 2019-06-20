@@ -57,5 +57,10 @@ public abstract class DataObject<E extends Entity> {
 	 * @param json les données json de la base de donnée.
 	 */
 	public void load(JSONObject json) {}
-
+	
+	@Override
+	public String toString() {
+		if (this.getEntity() == null) return "NO_DATA";
+		return this.getEntity().toString().substring(this.getEntity().toString().indexOf('{')) +": "+ this.getEntity().getId();
+	}
 }

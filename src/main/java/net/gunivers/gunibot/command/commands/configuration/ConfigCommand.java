@@ -30,7 +30,7 @@ public class ConfigCommand extends Command {
 	{	
 		DataGuild g = Main.getDataCenter().getDataGuild(event.getGuild().block());
 		
-		EmbedBuilder builder = new EmbedBuilder(event.getMessage().getChannel(), "Configuration for server " + g.getEntity().getName(), null);
+		EmbedBuilder builder = new EmbedBuilder(event.getMessage().getChannel().block(), "Configuration for server " + g.getEntity().getName(), null);
 		builder.setRequestedBy(event.getMember().get());
 		
 		Field names = new Field("Name"); Field types = new Field("Type"); Field targets = new Field("Target");
@@ -49,7 +49,7 @@ public class ConfigCommand extends Command {
 	public void get(MessageCreateEvent event, List<String> args)
 	{
 		DataGuild g = Main.getDataCenter().getDataGuild(event.getGuild().block());
-		EmbedBuilder builder = new EmbedBuilder(event.getMessage().getChannel(), g.getEntity().getName() + "'s Configuration", null);
+		EmbedBuilder builder = new EmbedBuilder(event.getMessage().getChannel().block(), g.getEntity().getName() + "'s Configuration", null);
 		builder.setRequestedBy(event.getMember().get());
 		
 		Configuration.all.stream().filter(c -> c.getName().equalsIgnoreCase(args.get(0))).forEach(config ->
@@ -87,7 +87,7 @@ public class ConfigCommand extends Command {
 		Category ca = args.size() == 2 ? ((TextChannel) event.getMessage().getChannel().block()).getCategory().blockOptional().orElse(null)
 				: Parser.parseCategory(args.get(2), g.getEntity()).blockFirst();
 		
-		EmbedBuilder builder = new EmbedBuilder(event.getMessage().getChannel(), g.getEntity().getName() + "'s Configuration", null);
+		EmbedBuilder builder = new EmbedBuilder(event.getMessage().getChannel().block(), g.getEntity().getName() + "'s Configuration", null);
 		builder.setRequestedBy(event.getMember().get());
 		
 		Configuration.all.stream().filter(c -> c.getName().equalsIgnoreCase(args.get(0))).forEach(c -> {

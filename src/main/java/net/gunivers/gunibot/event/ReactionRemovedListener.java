@@ -9,7 +9,7 @@ import discord4j.core.event.domain.message.ReactionRemoveEvent;
 import discord4j.core.object.entity.Message;
 import discord4j.core.object.reaction.ReactionEmoji;
 
-import net.gunivers.gunibot.utils.Util;
+import static net.gunivers.gunibot.core.BotUtils.emojiToId;
 import net.gunivers.gunibot.utils.tuple.Tuple;
 import net.gunivers.gunibot.utils.tuple.Tuple3;
 
@@ -31,7 +31,7 @@ public class ReactionRemovedListener extends Events<ReactionRemoveEvent>
 			if (tuple._1 == event.getMessage().block().getId().asLong())
 			{
 				if (tuple._2 == null) return true;
-				else out = tuple._2 == Util.emojiToId(event.getEmoji()) ? true : out;
+				else out = tuple._2 == emojiToId(event.getEmoji()) ? true : out;
 			}
 		}
 		
@@ -41,15 +41,15 @@ public class ReactionRemovedListener extends Events<ReactionRemoveEvent>
 	@Override
 	protected void apply(ReactionRemoveEvent event)
 	{
-		list.stream().filter(t -> event.getMessage().block().getId().asLong() == t._1).filter(t -> t._2 == null || t._2 == Util.emojiToId(event.getEmoji()))
+		list.stream().filter(t -> event.getMessage().block().getId().asLong() == t._1).filter(t -> t._2 == null || t._2 == emojiToId(event.getEmoji()))
 			.forEach(t -> t._3.accept(event));
 	}
 	
 	public void clear() { list.clear(); }
 	
 	public void on(Message msg, Consumer<ReactionRemoveEvent> action) { list.add(Tuple.newTuple(msg.getId().asLong(), null, action)); }
-	public void on(Message msg, ReactionEmoji r, Consumer<ReactionRemoveEvent> action) { list.add(Tuple.newTuple(msg.getId().asLong(), Util.emojiToId(r), action)); }
+	public void on(Message msg, ReactionEmoji r, Consumer<ReactionRemoveEvent> action) { list.add(Tuple.newTuple(msg.getId().asLong(), emojiToId(r), action)); }
 	
 	public void cancel(Message msg) { list = list.stream().filter(t -> t._1 != msg.getId().asLong()).collect(Collectors.toList()); }
-	public void cancel(Message msg, ReactionEmoji r) { list = list.stream().filter(t -> t._1 != msg.getId().asLong() && t._2 != Util.emojiToId(r)).collect(Collectors.toList()); }
+	public void cancel(Message msg, ReactionEmoji r) { list = list.stream().filter(t -> t._1 != msg.getId().asLong() && t._2 != emojiToId(r)).collect(Collectors.toList()); }
 }

@@ -8,8 +8,12 @@ import java.util.List;
 
 import discord4j.core.object.entity.Member;
 import discord4j.core.object.entity.MessageChannel;
-import reactor.core.publisher.Mono;
 
+/**
+ * This class allows you to build and generate embeds easily
+ * @author A~Z
+ *
+ */
 public class EmbedBuilder
 {
 	public static final short TITLE_LIMIT = discord4j.core.object.Embed.MAX_TITLE_LENGTH;
@@ -18,7 +22,7 @@ public class EmbedBuilder
 	public static final short FOOTER_LIMIT = discord4j.core.object.Embed.Footer.MAX_TEXT_LENGTH;
 	public static final short AUTHOR_NAME_LIMIT = discord4j.core.object.Embed.Author.MAX_NAME_LENGTH;
 	
-	private final Mono<? extends MessageChannel> channel;
+	private final MessageChannel channel;
 	
 	private String title = null;
 	private String url = null;
@@ -40,38 +44,38 @@ public class EmbedBuilder
 	private EmbedBuilder child = null;
 	
 	
-	public EmbedBuilder(Mono<? extends MessageChannel> channel) {
+	public EmbedBuilder(MessageChannel channel) {
 		this.channel = channel;
 	}
 	
-	public EmbedBuilder(Mono<? extends MessageChannel> channel, String title, String titleURL) {
+	public EmbedBuilder(MessageChannel channel, String title, String titleURL) {
 		this(channel, title, titleURL, null, null, null, null, null, null, null, null);
 	}
 	
-	public EmbedBuilder(Mono<? extends MessageChannel> channel, Member author, String authorURL, Color color, String imageURL) {
+	public EmbedBuilder(MessageChannel channel, Member author, String authorURL, Color color, String imageURL) {
 		this(channel, null, null, author, authorURL, color, imageURL);
 	}
 	
-	public EmbedBuilder(Mono<? extends MessageChannel> channel, String description, String footer, String footerURL, String thumbnail) {
+	public EmbedBuilder(MessageChannel channel, String description, String footer, String footerURL, String thumbnail) {
 		this(channel, null, null, description, footer, footerURL, thumbnail);
 	}
 	
-	public EmbedBuilder(Mono<? extends MessageChannel> channel, String title, String titleURL, Member author, String authorURL, Color color, String imageURL)
+	public EmbedBuilder(MessageChannel channel, String title, String titleURL, Member author, String authorURL, Color color, String imageURL)
 	{
 		this(channel, title, titleURL, author, authorURL, color, imageURL, null, null, null, null);
 	}
 	
-	public EmbedBuilder(Mono<? extends MessageChannel> channel, String title, String titleURL, String description, String footer, String footerURL,
+	public EmbedBuilder(MessageChannel channel, String title, String titleURL, String description, String footer, String footerURL,
 			String thumbnail) {
 		this(channel, title, titleURL, null, null, null, null, description, footer, footerURL, thumbnail);
 	}
 	
-	public EmbedBuilder(Mono<? extends MessageChannel> channel, Member author, String authorURL, Color color, String imageURL, String desc, String footer,
+	public EmbedBuilder(MessageChannel channel, Member author, String authorURL, Color color, String imageURL, String desc, String footer,
 			String footerURL, String thumbnail) {
 		this(channel, null, null, author, authorURL, color, imageURL, desc, footer, footerURL, thumbnail);
 	}
-	
-	public EmbedBuilder(Mono<? extends MessageChannel> channel, String title, String titleURL, Member author, String authorURL, Color color, String imageURL,
+
+	public EmbedBuilder(MessageChannel channel, String title, String titleURL, Member author, String authorURL, Color color, String imageURL,
 			String description, String footer, String footerURL, String thumbnail)
 	{
 		this.channel = channel;
@@ -92,12 +96,14 @@ public class EmbedBuilder
 		this.displayImage = image != null;
 	}
 	
-	
+	/**
+	 * Normalize and send this embed through the channel specified in constructor.
+	 */
 	public void buildAndSend()
 	{
 		this.normalize();
 		
-		channel.flatMap(c -> c.createEmbed(embed ->
+		channel.createEmbed(embed ->
 		{
 			embed.setTimestamp(Instant.now());
 			
@@ -113,11 +119,20 @@ public class EmbedBuilder
 			if (thumbnail != null) embed.setThumbnail(thumbnail);
 			
 			fields.stream().forEachOrdered(field -> embed.addField(field.name, field.value.toString(), field.inline));
-		})).subscribe();
+		}).subscribe();
 		
 		if (child != null) child.buildAndSend();
 	}
 	
+	/**
+	 * Normalize this builder to discord embeds's norms.
+	 * Hence, empty String values will be replaced by {@code null} and thus not considered in the creating process of {@link #buildAndSend()}.
+	 * If those values are above discord's limits, they will be cut down to those.
+	 * Afterward, each Field will be normalized following {@link Field#normalize()}.
+	 * <p>
+	 * If there is more than the discord max amount of fields, this embed builder will collect the first 25 fields, then generate a second
+	 * builder containing the remaining fields. The generated builder would then be recursiely normalized.
+	 */
 	public void normalize()
 	{
 		if (title != null && title.trim().equals("")) title = null;
@@ -151,10 +166,20 @@ public class EmbedBuilder
 		}
 	}
 	
+	/**
+	 * Add a field of specified name, value, and inline.
+	 * @see #addField(Field)
+	 */
 	public void addField(String name, String value, boolean inline) { this.addField(new Field(name, value)); }
+
+	/**
+	 * If the specified field already possess a father, then it will be replaced by a field of same values but different instance.<br>
+	 * This builder then set itself as the father of the field, and add the field the field list.
+	 * @param field
+	 */
 	public void addField(Field field)
 	{
-		if (field.father != null) field = new Field(field.name, field.value.toString());
+		if (field.father != null) field = new Field(field.name, field.value.toString(), field.inline);
 		field.father = this;
 		this.fields.add(field);
 	}
@@ -175,7 +200,7 @@ public class EmbedBuilder
 	}
 	
 	public List<Field> getFields() { return Collections.unmodifiableList(fields); }
-	public Mono<? extends MessageChannel> getChannel() { return channel; }
+	public MessageChannel getChannel() { return channel; }
 	
 	public String getTitle() { return title; }
 	public String getTitleURL() { return url; }
@@ -238,7 +263,13 @@ public class EmbedBuilder
 		public void setName(String name) { this.name = name; }
 		public void setValue(String value) { this.value = new StringBuilder(value); }
 		public void setInline(boolean inline) { this.inline = inline; }
-		
+
+		/**
+		 * Normalize this Field to discord embeds's norms.<br>
+		 * If the name or value is blank or empty, it will be replaced by the relevant constant: {@link #NO_NAME} or {@link NO_VALUE}<br>
+		 * If the value's length is greater than discord's limit, it is cut down to create another child field at the index of
+		 * either {@link #VALUE_LIMIT} if this field's value doesn't contains '\n', either at its last occurence within 
+		 */
 		public void normalize()
 		{
 			value = new StringBuilder(value.toString().trim());
@@ -251,13 +282,21 @@ public class EmbedBuilder
 			{
 				int index = value.toString().contains("\n") ? value.substring(0, VALUE_LIMIT).lastIndexOf('\n') : VALUE_LIMIT;
 				
-				Field child = new Field(name, value.substring(index));
+				Field child = new Field(name + "-child", value.substring(index));
 				father.fields.add(father.fields.indexOf(this), child);
 			
 				value = new StringBuilder(value.substring(0, index));
 				child.father = father;
 				child.normalize();
 			}
+		}
+
+		/**
+		 * @param field
+		 * @return true if the name, value, and inline properties are similar themselves.
+		 */
+		public boolean isSimilar(Field field) {
+			return field.name.equals(name) && field.value.toString().equals(value.toString()) && field.inline == inline;
 		}
 	}
 }
