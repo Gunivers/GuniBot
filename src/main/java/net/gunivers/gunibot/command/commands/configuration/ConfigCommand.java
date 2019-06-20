@@ -9,10 +9,10 @@ import discord4j.core.object.entity.TextChannel;
 import discord4j.core.object.entity.VoiceChannel;
 
 import net.gunivers.gunibot.Main;
-import net.gunivers.gunibot.core.az.lib.EmbedBuilder;
-import net.gunivers.gunibot.core.az.lib.EmbedBuilder.Field;
 import net.gunivers.gunibot.core.command.Command;
 import net.gunivers.gunibot.core.command.parser.Parser;
+import net.gunivers.gunibot.core.lib.EmbedBuilder;
+import net.gunivers.gunibot.core.lib.EmbedBuilder.Field;
 import net.gunivers.gunibot.datas.Configuration;
 import net.gunivers.gunibot.datas.DataCategory;
 import net.gunivers.gunibot.datas.DataGuild;

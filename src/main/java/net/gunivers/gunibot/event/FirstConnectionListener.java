@@ -9,7 +9,7 @@ import discord4j.core.object.entity.Guild;
 import discord4j.core.object.entity.Member;
 
 import net.gunivers.gunibot.Main;
-import net.gunivers.gunibot.core.az.lib.EmbedBuilder;
+import net.gunivers.gunibot.core.lib.EmbedBuilder;
 import net.gunivers.gunibot.datas.Configuration;
 import net.gunivers.gunibot.datas.DataTextChannel;
 

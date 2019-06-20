@@ -1,4 +1,4 @@
-package net.gunivers.gunibot.core.az.lib;
+package net.gunivers.gunibot.core.lib;
 
 import java.awt.Color;
 import java.time.Instant;

@@ -6,9 +6,9 @@ import java.util.stream.Collectors;
 
 import discord4j.core.event.domain.message.MessageCreateEvent;
 import net.gunivers.gunibot.command.permissions.Permission;
-import net.gunivers.gunibot.core.az.lib.EmbedBuilder;
-import net.gunivers.gunibot.core.az.lib.EmbedBuilder.Field;
 import net.gunivers.gunibot.core.command.Command;
+import net.gunivers.gunibot.core.lib.EmbedBuilder;
+import net.gunivers.gunibot.core.lib.EmbedBuilder.Field;
 
 public class HelpCommand extends Command
 {

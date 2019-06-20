@@ -20,7 +20,7 @@ public class NodeList extends TypeNode {
 	@Override
 	protected boolean matchesNode(String s)
 	{
-		return net.gunivers.gunibot.core.az.lib.SimpleParser.parseList(s).stream().allMatch(node::matchesNode);
+		return net.gunivers.gunibot.core.lib.SimpleParser.parseList(s).stream().allMatch(node::matchesNode);
 	}
 	
 	@Override
