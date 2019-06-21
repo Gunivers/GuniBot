@@ -19,7 +19,7 @@ public class SaveCommand extends Command {
 
 	public void save(MessageCreateEvent event) {
 		Guild guild = event.getGuild().block();
-		Main.getDataCenter().saveGuild(guild);
+		Main.getBotInstance().getDataCenter().saveGuild(guild);
 
 		Message message = event.getMessage();
 		message.getChannel().flatMap(channel -> channel.createEmbed(spec -> {

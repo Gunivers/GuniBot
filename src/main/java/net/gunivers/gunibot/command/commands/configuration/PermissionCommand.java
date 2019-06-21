@@ -12,8 +12,8 @@ import net.gunivers.gunibot.command.permissions.Permission;
 import net.gunivers.gunibot.core.command.Command;
 import net.gunivers.gunibot.core.command.parser.Parser;
 import net.gunivers.gunibot.core.lib.EmbedBuilder;
-import net.gunivers.gunibot.core.lib.SimpleParser;
 import net.gunivers.gunibot.core.lib.EmbedBuilder.Field;
+import net.gunivers.gunibot.core.lib.SimpleParser;
 import net.gunivers.gunibot.datas.DataGuild;
 import net.gunivers.gunibot.datas.DataMember;
 import net.gunivers.gunibot.datas.DataRole;
@@ -28,41 +28,41 @@ public class PermissionCommand extends Command
 	{
 		EmbedBuilder builder = new EmbedBuilder(event.getMessage().getChannel().block(), "Permission List", null);
 		builder.setRequestedBy(event.getMember().orElse(null));
-		
+
 		Field discord = new Field("Discord Built-ins");
 		discord.setValue(Permission.discord.keySet().stream().map(Permission.discord::get).map(Permission::getName)
 				.reduce("", (r,s) -> r += s + '\n'));
 		builder.addField(discord);
-		
+
 		Field bot = new Field("Bot Customized");
 		bot.setValue(Permission.bot.values().stream().sorted((a,b) -> a.higherThan(b) ? 1 : 0).map(Permission::getName).reduce("", (r,s) -> r += s + '\n'));
 		builder.addField(bot);
-		
-		DataGuild guild = Main.getDataCenter().getDataGuild(event.getGuild().block());
+
+		DataGuild guild = Main.getBotInstance().getDataCenter().getDataGuild(event.getGuild().block());
 		for (Role role : event.getGuild().block().getRoles().toIterable())
 		{
 			Field f = new Field(role.getName());
 			f.setValue(guild.getDataRole(role).getPermissions().stream().map(Permission::getName).reduce("", (r,s) -> r += s + '\n'));
 			builder.addField(f);
 		}
-		
+
 		builder.buildAndSend();
 	}
-	
+
 	public void get(MessageCreateEvent event, List<String> args)
 	{
-		DataGuild g = Main.getDataCenter().getDataGuild(event.getGuild().block());
+		DataGuild g = Main.getBotInstance().getDataCenter().getDataGuild(event.getGuild().block());
 		Flux<DataMember> members = Parser.parseMember(args.get(0), g.getEntity()).map(g::getDataMember);
 		Flux<DataRole> roles = Parser.parseRole(args.get(0), g.getEntity()).map(g::getDataRole);
-		
+
 		if (members.blockFirst() == null && roles.blockFirst() == null) {
 			event.getMessage().getChannel().flatMap(c -> c.createMessage(args.get(0) + " did not match for any user nor role.")).subscribe();
 			return;
 		}
-		
+
 		EmbedBuilder builder = new EmbedBuilder(event.getMessage().getChannel().block(), "Permissions of: ", null);
 		builder.setRequestedBy(event.getMember().get());
-		
+
 		for (DataMember m : members.toIterable())
 		{
 			Field f = new Field("User: " + m.getEntity().getDisplayName());
@@ -70,7 +70,7 @@ public class PermissionCommand extends Command
 			m.getEntity().getBasePermissions().block().forEach(p -> f.getValue().append(" - "+ Permission.discord.get(p).getName() +'\n'));
 			builder.addField(f);
 		}
-		
+
 		for (DataRole r : roles.toIterable())
 		{
 			Field f = new Field("Role: " + r.getEntity().getName());
@@ -78,29 +78,29 @@ public class PermissionCommand extends Command
 			r.getEntity().getPermissions().forEach(p -> f.getValue().append(" - "+ Permission.discord.get(p).getName() +'\n'));
 			builder.addField(f);
 		}
-		
+
 		builder.buildAndSend();
 	}
 
 	public void set(MessageCreateEvent event, List<String> args)
 	{
 		boolean add = Boolean.parseBoolean(args.get(1));
-		DataGuild g =  Main.getDataCenter().getDataGuild(event.getGuild().block());
-		
+		DataGuild g =  Main.getBotInstance().getDataCenter().getDataGuild(event.getGuild().block());
+
 		Set<Permission> perms = SimpleParser.parseList(args.get(0)).stream().map(Permission::getByName).reduce(new HashSet<>(), (l,s) -> {l.addAll(s); return l;});
-		
+
 		//If the level of any permission is higher than the highest level of the user
 		int level = Permission.getHighestPermission(event.getMember().get()).getLevel();
 		for (Permission p : perms) if (p.getLevel() > level) {
 			event.getMessage().getChannel().flatMap(c -> c.createMessage("The permission '"+ p.getName() +"' is of level "+ p.getLevel()
-					+ "\nYou may not access permissions of higher level than "+ level)).subscribe();
+			+ "\nYou may not access permissions of higher level than "+ level)).subscribe();
 			return;
 		}
-		
+
 		EmbedBuilder builder = new EmbedBuilder(event.getMessage().getChannel().block(), "Success!", null);
 		builder.setRequestedBy(event.getMember().get());
 		builder.addField("Permissions changed:", perms.stream().map(Permission::getName).reduce("", (a,b) -> a + " - " + b + '\n'), true);
-		
+
 		//Managing users permissions
 		List<DataMember> users = SimpleParser.parseList(args.get(2)).stream().flatMap(s -> Parser.parseMember(s, g.getEntity()).toStream()).map(g::getDataMember).collect(Collectors.toList());
 		Field u = new Field("Users:");
@@ -109,7 +109,7 @@ public class PermissionCommand extends Command
 			else user.getPermissions().removeAll(perms);
 			u.getValue().append(" - " + user.getEntity().getDisplayName() + '\n');
 		}
-		
+
 		//Managing roles permissions
 		List<DataRole> roles = SimpleParser.parseList(args.get(2)).stream().flatMap(s -> Parser.parseRole(s, g.getEntity()).toStream()).map(g::getDataRole).collect(Collectors.toList());
 		Field r = new Field("Roles:");
@@ -118,7 +118,7 @@ public class PermissionCommand extends Command
 			else role.getPermissions().removeAll(perms);
 			r.getValue().append(" - " + role.getEntity().getName() + '\n');
 		}
-		
+
 		builder.addField(u);
 		builder.addField(r);
 		builder.buildAndSend();

@@ -12,7 +12,7 @@ public class ShutdownCommand extends Command {
 	}
 
 	public void shutdown(MessageCreateEvent event) {
-		Main.shutdown();
+		Main.getBotInstance().shutdown();
 	}
 
 }

@@ -27,7 +27,7 @@ public class DataCommand extends Command {
 
 		Message message = event.getMessage();
 		message.getChannel().flatMap(channel -> channel.createMessage(spec -> {
-			JSONObject json = Main.getDataCenter().getDataGuild(guild).save();
+			JSONObject json = Main.getBotInstance().getDataCenter().getDataGuild(guild).save();
 			spec.setContent(String.format("**Data Report** for guild **%s**\n```json\n%s\n```", guild.getName(), json.toString(4)));
 		})).subscribe();
 	}
@@ -39,7 +39,7 @@ public class DataCommand extends Command {
 
 			Message message = event.getMessage();
 			message.getChannel().flatMap(channel -> channel.createMessage(spec -> {
-				JSONObject json = Main.getDataCenter().getDataUser(user).save();
+				JSONObject json = Main.getBotInstance().getDataCenter().getDataUser(user).save();
 				spec.setContent(String.format("**Data Report** for user **%s**\n```json\n%s\n```", user.getUsername(), json.toString(4)));
 			})).subscribe();
 		} catch (ObjectParsingException e) {

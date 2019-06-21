@@ -7,7 +7,6 @@ import discord4j.core.object.entity.Category;
 import discord4j.core.object.entity.Member;
 import discord4j.core.object.entity.TextChannel;
 import discord4j.core.object.entity.VoiceChannel;
-
 import net.gunivers.gunibot.Main;
 import net.gunivers.gunibot.core.command.Command;
 import net.gunivers.gunibot.core.command.parser.Parser;
@@ -27,12 +26,12 @@ public class ConfigCommand extends Command {
 	public String getSyntaxFile() { return "configuration/config.json"; }
 
 	public void list(MessageCreateEvent event)
-	{	
-		DataGuild g = Main.getDataCenter().getDataGuild(event.getGuild().block());
-		
+	{
+		DataGuild g = Main.getBotInstance().getDataCenter().getDataGuild(event.getGuild().block());
+
 		EmbedBuilder builder = new EmbedBuilder(event.getMessage().getChannel().block(), "Configuration for server " + g.getEntity().getName(), null);
 		builder.setRequestedBy(event.getMember().get());
-		
+
 		Field names = new Field("Name"); Field types = new Field("Type"); Field targets = new Field("Target");
 		for (Configuration<? extends DataObject<?>,?> config : Configuration.all)
 		{
@@ -40,18 +39,18 @@ public class ConfigCommand extends Command {
 			types.getValue().append(config.getValueType().getSimpleName() + '\n');
 			targets.getValue().append(config.getDataType().getSimpleName().substring(4) + '\n');
 		}
-		
+
 		builder.addField(names); builder.addField(types); builder.addField(targets);
 		builder.buildAndSend();
 	}
-	
+
 	@SuppressWarnings("unchecked")
 	public void get(MessageCreateEvent event, List<String> args)
 	{
-		DataGuild g = Main.getDataCenter().getDataGuild(event.getGuild().block());
+		DataGuild g = Main.getBotInstance().getDataCenter().getDataGuild(event.getGuild().block());
 		EmbedBuilder builder = new EmbedBuilder(event.getMessage().getChannel().block(), g.getEntity().getName() + "'s Configuration", null);
 		builder.setRequestedBy(event.getMember().get());
-		
+
 		Configuration.all.stream().filter(c -> c.getName().equalsIgnoreCase(args.get(0))).forEach(config ->
 		{
 			String desc = "";
@@ -65,36 +64,36 @@ public class ConfigCommand extends Command {
 
 		if (builder.getDescription() == null)
 			builder.setDescription("404: No configuration found for name: "+ args.get(0));
-		
+
 		builder.buildAndSend();
 	}
 
 	@SuppressWarnings("unchecked")
 	public void set(MessageCreateEvent event, List<String> args)
 	{
-		DataGuild g = Main.getDataCenter().getDataGuild(event.getGuild().block());
+		DataGuild g = Main.getBotInstance().getDataCenter().getDataGuild(event.getGuild().block());
 
 		Member m = args.size() == 2 ? event.getMember().orElse(null)
 				: Parser.parseMember(args.get(2), g.getEntity()).blockFirst();
-		
+
 		TextChannel tc = args.size() == 2 ? (TextChannel) event.getMessage().getChannel().block()
 				: Parser.parseTextChannel(args.get(2), g.getEntity()).blockFirst();
-		
+
 		VoiceChannel vc = args.size() == 2 ? event.getMember().get().getVoiceState().blockOptional().isPresent() ?
 				event.getMember().get().getVoiceState().block().getChannel().block() : null
 				: Parser.parseVoiceChannel(args.get(2), g.getEntity()).blockFirst();
-		
+
 		Category ca = args.size() == 2 ? ((TextChannel) event.getMessage().getChannel().block()).getCategory().blockOptional().orElse(null)
 				: Parser.parseCategory(args.get(2), g.getEntity()).blockFirst();
-		
+
 		EmbedBuilder builder = new EmbedBuilder(event.getMessage().getChannel().block(), g.getEntity().getName() + "'s Configuration", null);
 		builder.setRequestedBy(event.getMember().get());
-		
+
 		Configuration.all.stream().filter(c -> c.getName().equalsIgnoreCase(args.get(0))).forEach(c -> {
 			try
 			{
 				builder.setDescription(c.getName());
-				
+
 				Field old = new Field("Old value");
 				if (c.getDataType() == DataGuild.class)
 				{
@@ -144,15 +143,15 @@ public class ConfigCommand extends Command {
 			{
 				builder.clear();
 				builder.setDescription("An error occured while parsing! " + e.getClass().getSimpleName() +": "+ e.getMessage()
-					+ "\nConfiguration for '"+ c.getName() +"' should be of type '"+ c.getValueType().getSimpleName().substring(4) +'\'');
-				
+				+ "\nConfiguration for '"+ c.getName() +"' should be of type '"+ c.getValueType().getSimpleName().substring(4) +'\'');
+
 				e.printStackTrace();
 			}
 		});
-		
+
 		if (builder.getDescription() == null)
 			builder.setDescription("404: No configuration found for name: "+ args.get(0));
-		
+
 		builder.buildAndSend();
 	}
 
@@ -162,7 +161,7 @@ public class ConfigCommand extends Command {
 		{
 			return ConfigCommand.class.getMethod("getParameterizedType", DataObject.class).getParameters()[0].getParameterizedType().getClass();
 		} catch (NoSuchMethodException | SecurityException e) { e.printStackTrace(); }
-		
+
 		return null;
 	}
 }

@@ -8,7 +8,6 @@ import discord4j.core.object.reaction.ReactionEmoji;
 import discord4j.core.object.reaction.ReactionEmoji.Custom;
 import discord4j.core.object.util.Image;
 import discord4j.rest.http.client.ClientException;
-
 import net.gunivers.gunibot.Main;
 import reactor.core.publisher.Mono;
 
@@ -20,7 +19,7 @@ public class BotUtils {
 	 * @param r Une Runnable à exécuter
 	 */
 	public static void takeMemberIdentity(Member m, Runnable r) {
-		DiscordClient dc = Main.getBotClient();
+		DiscordClient dc = Main.getBotInstance().getBotClient();
 		Image defaultImage = dc.getSelf().block().getAvatar().block();
 		String defaultName = dc.getSelf().block().getUsername();
 		dc.edit(ues ->
@@ -29,12 +28,12 @@ public class BotUtils {
 			ues.setUsername(m.getDisplayName());
 		});
 		r.run();
-		dc.edit(ues -> 
+		dc.edit(ues ->
 		{
 			ues.setAvatar(defaultImage);
 			ues.setUsername(defaultName);
 		}
-		);	
+				);
 	}
 
 	/**
