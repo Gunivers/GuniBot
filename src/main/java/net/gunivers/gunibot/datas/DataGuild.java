@@ -33,8 +33,13 @@ public class DataGuild extends DataObject<Guild>
 	private ConcurrentHashMap<Snowflake, DataVoiceChannel> dataVoiceChannels = new ConcurrentHashMap<>();
 	private ConcurrentHashMap<Snowflake, DataCategory> dataCategories = new ConcurrentHashMap<>();
 	
+	private boolean welcomeEnabled = true;
 	private String welcomeMessage = "Server: {server} ; User: {user} ; Mention: {user.mention}";
-	private DataTextChannel welcomeChannel = null;
+	private long welcomeChannel = -1L;
+
+	private boolean ccEnabled = false;
+	private long ccActive = -1L;
+	private long ccArchive = -1L;
 
 	{
 		this.getDataMember(this.getEntity().getOwner().block()).getPermissions().add(Permission.bot.get("server.owner"));
@@ -205,12 +210,18 @@ public class DataGuild extends DataObject<Guild>
 		}
 		json.putOpt("categories", json_categories);
 
-		json.putOpt("welcome_message", welcomeMessage);
-		if (welcomeChannel != null)
-		{
-			json.putOpt("welcome_channel", welcomeChannel.getEntity().getId().asLong());
-		}
-
+		JSONObject welcome = new JSONObject();
+		welcome.putOpt("enabled", welcomeEnabled);
+		welcome.putOpt("message", welcomeMessage);
+		welcome.putOpt("channel", welcomeChannel);
+		json.put("welcome", welcome);
+		
+		JSONObject cc = new JSONObject();
+		cc.putOpt("enabled", ccEnabled);
+		cc.putOpt("active", ccActive);
+		cc.putOpt("archive", ccArchive);
+		json.put("cchannel", cc);
+		
 		return json;
 	}
 
@@ -330,13 +341,30 @@ public class DataGuild extends DataObject<Guild>
 			System.out.println(String.format("No categories datas in the guild '%s' (%s)! Skipping loading of the categories!", getEntity().getName(), getEntity().getId().asString()));
 		}
 
-		welcomeMessage = json.optString("welcome", welcomeMessage);
-		//		welcomeChannel = new DataTextChannel(text_channel);
+		JSONObject welcome = json.optJSONObject("welcome") == null ? new JSONObject() : json.getJSONObject("welcome");
+		welcomeEnabled = welcome.optBoolean("enabled", welcomeEnabled);
+		welcomeMessage = welcome.optString("message", welcomeMessage);
+		welcomeChannel = welcome.optLong("channel", welcomeChannel);
+		
+		JSONObject cc = json.optJSONObject("cchannel") == null ? new JSONObject() : json.getJSONObject("cchannel");
+		ccEnabled = cc.getBoolean("enabled");
+		ccActive = cc.getLong("active");
+		ccArchive = cc.getLong("archive");
 	}
 
+	public boolean isWelcomeEnabled() { return welcomeEnabled; }
 	public String getWelcomeMessage() { return welcomeMessage; }
-	public DataTextChannel getWelcomeChannel() { return welcomeChannel; }
+	public long getWelcomeChannel() { return welcomeChannel; }
+	
+	/** cc stands for custom channel */ public boolean isCCEnabled() { return ccEnabled; }
+	/** cc stands for custom channel */ public long getCCActive() { return ccActive; }
+	/** cc stands for custom channel */ public long getCCArchive() { return ccArchive; }
 
+	public void setWelcomeEnable(boolean enable) { this.welcomeEnabled = enable; }
 	public void setWelcomeMessage(String msg) { this.welcomeMessage = msg; }
-	public void setWelcomeChannel(DataTextChannel channel) { this.welcomeChannel = channel; }
+	public void setWelcomeChannel(long channel) { this.welcomeChannel = channel; }
+	
+	public void setCCEnable(boolean enable) { this.ccEnabled = enable; }
+	public void setCCActive(long c) { this.ccActive = c; }
+	public void setCCArchive(long c) { this.ccArchive = c; }
 }
