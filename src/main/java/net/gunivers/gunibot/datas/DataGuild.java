@@ -13,8 +13,6 @@ import discord4j.core.object.entity.Role;
 import discord4j.core.object.entity.TextChannel;
 import discord4j.core.object.entity.VoiceChannel;
 import discord4j.core.object.util.Snowflake;
-import discord4j.rest.http.client.ClientException;
-
 import net.gunivers.gunibot.command.permissions.Permission;
 import net.gunivers.gunibot.core.BotUtils;
 
@@ -32,7 +30,7 @@ public class DataGuild extends DataObject<Guild>
 	private ConcurrentHashMap<Snowflake, DataRole> dataRoles = new ConcurrentHashMap<>();
 	private ConcurrentHashMap<Snowflake, DataVoiceChannel> dataVoiceChannels = new ConcurrentHashMap<>();
 	private ConcurrentHashMap<Snowflake, DataCategory> dataCategories = new ConcurrentHashMap<>();
-	
+
 	private boolean welcomeEnabled = true;
 	private String welcomeMessage = "Server: {server} ; User: {user} ; Mention: {user.mention}";
 	private long welcomeChannel = -1L;
@@ -206,13 +204,13 @@ public class DataGuild extends DataObject<Guild>
 		welcome.putOpt("message", welcomeMessage);
 		welcome.putOpt("channel", welcomeChannel);
 		json.put("welcome", welcome);
-		
+
 		JSONObject cc = new JSONObject();
 		cc.putOpt("enabled", ccEnabled);
 		cc.putOpt("active", ccActive);
 		cc.putOpt("archive", ccArchive);
 		json.put("cchannel", cc);
-		
+
 		return json;
 	}
 
@@ -232,21 +230,15 @@ public class DataGuild extends DataObject<Guild>
 		if(json_members != null) {
 			for(String s_member_id:json_members.keySet()) {
 				Snowflake member_id = Snowflake.of(s_member_id);
-				Optional<Member> opt_member ;
-				try {
-					opt_member = getEntity().getMemberById(member_id).blockOptional();
-				} catch(ClientException e) {
-					if(e.getStatus().code() == 404) {
-						opt_member = Optional.empty();
-					} else {
-						throw e;
-					}
-				}
+				Optional<Member> opt_member = BotUtils.returnOptional(getEntity().getMemberById(member_id));
+
 				if(opt_member.isPresent()) {
 					if (dataMembers.containsKey(member_id)) {
 						dataMembers.get(member_id).load(json_members.getJSONObject(s_member_id));
 					} else {
-						dataMembers.put(member_id, new DataMember(opt_member.get(), json_members.getJSONObject(s_member_id)));
+						DataMember data_member = new DataMember(opt_member.get());
+						data_member.load(json_members.getJSONObject(s_member_id));
+						dataMembers.put(member_id, data_member);
 					}
 				} else {
 					System.err.println(String.format("The member id '%s' in the guild '%s' (%s) is not reachable! Skipping loading of this member!", member_id.asString(), getEntity().getName(), getEntity().getId().asString()));
@@ -265,7 +257,9 @@ public class DataGuild extends DataObject<Guild>
 					if (dataTextChannels.containsKey(text_channel_id)) {
 						dataTextChannels.get(text_channel_id).load(json_text_channels.getJSONObject(s_text_channel_id));
 					} else {
-						dataTextChannels.put(text_channel_id, new DataTextChannel(opt_text_channel.get(), json_text_channels.getJSONObject(s_text_channel_id)));
+						DataTextChannel data_text_channel = new DataTextChannel(opt_text_channel.get());
+						data_text_channel.load(json_text_channels.getJSONObject(s_text_channel_id));
+						dataTextChannels.put(text_channel_id, data_text_channel);
 					}
 				} else {
 					System.err.println(String.format("The text channel id '%s' in the guild '%s' (%s) is not reachable! Skipping loading of this text channel!", text_channel_id.asString(), getEntity().getName(), getEntity().getId().asString()));
@@ -284,7 +278,9 @@ public class DataGuild extends DataObject<Guild>
 					if (dataRoles.containsKey(role_id)) {
 						dataRoles.get(role_id).load(json_roles.getJSONObject(s_role_id));
 					} else {
-						dataRoles.put(role_id, new DataRole(opt_role.get(), json_roles.getJSONObject(s_role_id)));
+						DataRole data_role = new DataRole(opt_role.get());
+						data_role.load(json_roles.getJSONObject(s_role_id));
+						dataRoles.put(role_id, data_role);
 					}
 				} else {
 					System.err.println(String.format("The role id '%s' in the guild '%s' (%s) is not reachable! Skipping loading of this role!", role_id.asString(), getEntity().getName(), getEntity().getId().asString()));
@@ -303,7 +299,9 @@ public class DataGuild extends DataObject<Guild>
 					if (dataVoiceChannels.containsKey(voice_channel_id)) {
 						dataVoiceChannels.get(voice_channel_id).load(json_voice_channels.getJSONObject(s_voice_channel_id));
 					} else {
-						dataVoiceChannels.put(voice_channel_id, new DataVoiceChannel(opt_voice_channel.get(), json_voice_channels.getJSONObject(s_voice_channel_id)));
+						DataVoiceChannel data_voice_channel = new DataVoiceChannel(opt_voice_channel.get());
+						data_voice_channel.load(json_voice_channels.getJSONObject(s_voice_channel_id));
+						dataVoiceChannels.put(voice_channel_id, data_voice_channel);
 					}
 				} else {
 					System.err.println(String.format("The voice channel id '%s' in the guild '%s' (%s) is not reachable! Skipping loading of this voice channel!", voice_channel_id.asString(), getEntity().getName(), getEntity().getId().asString()));
@@ -322,7 +320,9 @@ public class DataGuild extends DataObject<Guild>
 					if (dataCategories.containsKey(category_id)) {
 						dataCategories.get(category_id).load(json_categories.getJSONObject(s_category_id));
 					} else {
-						dataCategories.put(category_id, new DataCategory(opt_category.get(), json_categories.getJSONObject(s_category_id)));
+						DataCategory data_category = new DataCategory(opt_category.get());
+						data_category.load(json_categories.getJSONObject(s_category_id));
+						dataCategories.put(category_id, data_category);
 					}
 				} else {
 					System.err.println(String.format("The category id '%s' in the guild '%s' (%s) is not reachable! Skipping loading of this category!", category_id.asString(), getEntity().getName(), getEntity().getId().asString()));
@@ -336,7 +336,7 @@ public class DataGuild extends DataObject<Guild>
 		welcomeEnabled = welcome.optBoolean("enabled", welcomeEnabled);
 		welcomeMessage = welcome.optString("message", welcomeMessage);
 		welcomeChannel = welcome.optLong("channel", welcomeChannel);
-		
+
 		JSONObject cc = json.optJSONObject("cchannel") == null ? new JSONObject() : json.getJSONObject("cchannel");
 		ccEnabled = cc.getBoolean("enabled");
 		ccActive = cc.getLong("active");
@@ -346,7 +346,7 @@ public class DataGuild extends DataObject<Guild>
 	public boolean isWelcomeEnabled() { return welcomeEnabled; }
 	public String getWelcomeMessage() { return welcomeMessage; }
 	public long getWelcomeChannel() { return welcomeChannel; }
-	
+
 	/** cc stands for custom channel */ public boolean isCCEnabled() { return ccEnabled; }
 	/** cc stands for custom channel */ public long getCCActive() { return ccActive; }
 	/** cc stands for custom channel */ public long getCCArchive() { return ccArchive; }
@@ -354,7 +354,7 @@ public class DataGuild extends DataObject<Guild>
 	public void setWelcomeEnable(boolean enable) { this.welcomeEnabled = enable; }
 	public void setWelcomeMessage(String msg) { this.welcomeMessage = msg; }
 	public void setWelcomeChannel(long channel) { this.welcomeChannel = channel; }
-	
+
 	public void setCCEnable(boolean enable) { this.ccEnabled = enable; }
 	public void setCCActive(long c) { this.ccActive = c; }
 	public void setCCArchive(long c) { this.ccArchive = c; }
