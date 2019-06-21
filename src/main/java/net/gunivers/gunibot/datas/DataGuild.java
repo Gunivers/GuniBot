@@ -14,8 +14,9 @@ import discord4j.core.object.entity.TextChannel;
 import discord4j.core.object.entity.VoiceChannel;
 import discord4j.core.object.util.Snowflake;
 import discord4j.rest.http.client.ClientException;
-import net.gunivers.gunibot.Main;
+
 import net.gunivers.gunibot.command.permissions.Permission;
+import net.gunivers.gunibot.core.BotUtils;
 
 /**
  * Classe de donnée pour les objets Guild.
@@ -31,9 +32,8 @@ public class DataGuild extends DataObject<Guild>
 	private ConcurrentHashMap<Snowflake, DataRole> dataRoles = new ConcurrentHashMap<>();
 	private ConcurrentHashMap<Snowflake, DataVoiceChannel> dataVoiceChannels = new ConcurrentHashMap<>();
 	private ConcurrentHashMap<Snowflake, DataCategory> dataCategories = new ConcurrentHashMap<>();
-
-	private static final String DEFAULT_WELCOME_MESSAGE = "Welcome to {server}";
-	private String welcomeMessage = DEFAULT_WELCOME_MESSAGE;
+	
+	private String welcomeMessage = "Server: {server} ; User: {user} ; Mention: {user.mention}";
 	private DataTextChannel welcomeChannel = null;
 
 	{
@@ -257,7 +257,7 @@ public class DataGuild extends DataObject<Guild>
 		if(json_text_channels != null) {
 			for(String s_text_channel_id : json_text_channels.keySet()) {
 				Snowflake text_channel_id = Snowflake.of(s_text_channel_id);
-				Optional<TextChannel> opt_text_channel = Main.returnOptional(getEntity().getChannelById(text_channel_id).ofType(TextChannel.class));
+				Optional<TextChannel> opt_text_channel = BotUtils.returnOptional(getEntity().getChannelById(text_channel_id).ofType(TextChannel.class));
 
 				if(opt_text_channel.isPresent()) {
 					if (dataTextChannels.containsKey(text_channel_id)) {
@@ -276,7 +276,7 @@ public class DataGuild extends DataObject<Guild>
 		if(json_roles != null) {
 			for(String s_role_id:json_roles.keySet()) {
 				Snowflake role_id = Snowflake.of(s_role_id);
-				Optional<Role> opt_role = Main.returnOptional(getEntity().getRoleById(role_id));
+				Optional<Role> opt_role = BotUtils.returnOptional(getEntity().getRoleById(role_id));
 
 				if(opt_role.isPresent()) {
 					if (dataRoles.containsKey(role_id)) {
@@ -295,7 +295,7 @@ public class DataGuild extends DataObject<Guild>
 		if(json_voice_channels != null) {
 			for(String s_voice_channel_id:json_voice_channels.keySet()) {
 				Snowflake voice_channel_id = Snowflake.of(s_voice_channel_id);
-				Optional<VoiceChannel> opt_voice_channel = Main.returnOptional(getEntity().getChannelById(voice_channel_id).ofType(VoiceChannel.class));
+				Optional<VoiceChannel> opt_voice_channel = BotUtils.returnOptional(getEntity().getChannelById(voice_channel_id).ofType(VoiceChannel.class));
 
 				if(opt_voice_channel.isPresent()) {
 					if (dataVoiceChannels.containsKey(voice_channel_id)) {
@@ -314,7 +314,7 @@ public class DataGuild extends DataObject<Guild>
 		if(json_categories != null) {
 			for(String s_category_id:json_categories.keySet()) {
 				Snowflake category_id = Snowflake.of(s_category_id);
-				Optional<Category> opt_category = Main.returnOptional(getEntity().getChannelById(category_id).ofType(Category.class));
+				Optional<Category> opt_category = BotUtils.returnOptional(getEntity().getChannelById(category_id).ofType(Category.class));
 
 				if(opt_category.isPresent()) {
 					if (dataCategories.containsKey(category_id)) {
@@ -330,7 +330,7 @@ public class DataGuild extends DataObject<Guild>
 			System.out.println(String.format("No categories datas in the guild '%s' (%s)! Skipping loading of the categories!", getEntity().getName(), getEntity().getId().asString()));
 		}
 
-		welcomeMessage = json.optString("welcome", DEFAULT_WELCOME_MESSAGE);
+		welcomeMessage = json.optString("welcome", welcomeMessage);
 		//		welcomeChannel = new DataTextChannel(text_channel);
 	}
 

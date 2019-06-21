@@ -9,11 +9,11 @@ import discord4j.core.event.domain.message.MessageCreateEvent;
 import discord4j.core.object.entity.Role;
 import net.gunivers.gunibot.Main;
 import net.gunivers.gunibot.command.permissions.Permission;
-import net.gunivers.gunibot.core.az.lib.EmbedBuilder;
-import net.gunivers.gunibot.core.az.lib.EmbedBuilder.Field;
-import net.gunivers.gunibot.core.az.lib.SimpleParser;
 import net.gunivers.gunibot.core.command.Command;
 import net.gunivers.gunibot.core.command.parser.Parser;
+import net.gunivers.gunibot.core.lib.EmbedBuilder;
+import net.gunivers.gunibot.core.lib.SimpleParser;
+import net.gunivers.gunibot.core.lib.EmbedBuilder.Field;
 import net.gunivers.gunibot.datas.DataGuild;
 import net.gunivers.gunibot.datas.DataMember;
 import net.gunivers.gunibot.datas.DataRole;
@@ -26,7 +26,7 @@ public class PermissionCommand extends Command
 
 	public void list(MessageCreateEvent event)
 	{
-		EmbedBuilder builder = new EmbedBuilder(event.getMessage().getChannel(), "Permission List", null);
+		EmbedBuilder builder = new EmbedBuilder(event.getMessage().getChannel().block(), "Permission List", null);
 		builder.setRequestedBy(event.getMember().orElse(null));
 		
 		Field discord = new Field("Discord Built-ins");
@@ -60,7 +60,7 @@ public class PermissionCommand extends Command
 			return;
 		}
 		
-		EmbedBuilder builder = new EmbedBuilder(event.getMessage().getChannel(), "Permissions of: ", null);
+		EmbedBuilder builder = new EmbedBuilder(event.getMessage().getChannel().block(), "Permissions of: ", null);
 		builder.setRequestedBy(event.getMember().get());
 		
 		for (DataMember m : members.toIterable())
@@ -97,7 +97,7 @@ public class PermissionCommand extends Command
 			return;
 		}
 		
-		EmbedBuilder builder = new EmbedBuilder(event.getMessage().getChannel(), "Success!", null);
+		EmbedBuilder builder = new EmbedBuilder(event.getMessage().getChannel().block(), "Success!", null);
 		builder.setRequestedBy(event.getMember().get());
 		builder.addField("Permissions changed:", perms.stream().map(Permission::getName).reduce("", (a,b) -> a + " - " + b + '\n'), true);
 		

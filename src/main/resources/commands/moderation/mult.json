@@ -1,0 +1,33 @@
+{
+	"mult": 
+	{
+		"description": "",
+		"permissions": ["discord.administrator", "discord.manage_guild"],
+		"arguments": 
+		[
+			{
+				"type": "string",
+				"tag": "add",
+				"matches": "add",
+				"id": "add1",
+				"arguments":
+				[
+					{
+						"type": "integer",
+						"tag": "int",
+						"keep_value": true,
+						"execute": "test",
+						"arguments":
+						[
+							{
+								"type": "reference",
+								"tag": "...",
+								"matches": "add1"
+							}
+						]
+					}
+				]
+			}
+		]
+	}
+}
