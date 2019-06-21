@@ -1,0 +1,28 @@
+{
+	"data": 
+	{
+		"description": "Display internal data of the guild/user in JSON format",
+		"permissions": ["discord.administrator"],
+		"arguments":
+		[
+			{
+				"type": "string",
+				"tag": "guild",
+				"matches": "guild",
+				"execute": "displayGuildData"
+			},
+			{
+				"type": "string",
+				"tag": "user",
+				"matches": "user",
+				"arguments": 
+				[{
+					"type": "string",
+					"tag": "user",
+					"keep_value": true,
+					"execute": "displayUserData"
+				}]
+			}
+		]
+	}
+}

@@ -11,7 +11,7 @@ import org.json.JSONObject;
 
 public class SQLClient {
 
-	private static final String SQL_URL = "jdbc:mysql://172.17.228.148?serverTimezone=Europe/Paris"; //IP VM Interne, ne marche pas ailleurs que sur mon PC (Syl2010)
+	private static final String SQL_URL = "jdbc:mysql://172.17.228.152?serverTimezone=Europe/Paris"; //IP VM Interne, ne marche pas ailleurs que sur mon PC (Syl2010)
 	private static final String SQL_USER = "gunibot";
 	private static final String SQL_PASSWORD = "gunibot"; //mot de passe DB VM Interne
 

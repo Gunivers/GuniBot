@@ -51,7 +51,7 @@ public final class SQLDataTemplate {
 
 	public static String createUsersTable() {
 		return "CREATE TABLE IF NOT EXISTS users "
-				+ "id BIGINT NOT NULL PRIMARY KEY, "
+				+ "(id BIGINT NOT NULL PRIMARY KEY, "
 				+ "json JSON);";
 	}
 

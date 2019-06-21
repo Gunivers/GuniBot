@@ -44,7 +44,7 @@ public class DataCenter {
 		dataGuilds = new ConcurrentHashMap<>();
 		dataUsers = new ConcurrentHashMap<>(128);
 
-		sql = new SQLClient(true);
+		sql = new SQLClient(false);
 		loadGuilds();
 	}
 
