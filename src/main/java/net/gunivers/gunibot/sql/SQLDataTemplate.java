@@ -16,35 +16,35 @@ public final class SQLDataTemplate {
 
 	public static String createMembersTable() {
 		return "CREATE TABLE IF NOT EXISTS members "
-				+ "(guild_id BIGINT NOT NULL UNIQUE KEY REFERENCES guilds (id) ON DELETE CASCADE, "
+				+ "(guild_id BIGINT NOT NULL REFERENCES guilds (id) ON DELETE CASCADE, "
 				+ "id BIGINT NOT NULL PRIMARY KEY REFERENCES users (id) ON DELETE CASCADE, "
 				+ "json JSON);";
 	}
 
 	public static String createTextChannelsTable() {
 		return "CREATE TABLE IF NOT EXISTS text_channels "
-				+ "(guild_id BIGINT NOT NULL UNIQUE KEY REFERENCES guilds (id) ON DELETE CASCADE, "
+				+ "(guild_id BIGINT NOT NULL REFERENCES guilds (id) ON DELETE CASCADE, "
 				+ "id BIGINT NOT NULL PRIMARY KEY, "
 				+ "json JSON);";
 	}
 
 	public static String createRolesTable() {
 		return "CREATE TABLE IF NOT EXISTS roles "
-				+ "(guild_id BIGINT NOT NULL UNIQUE KEY REFERENCES guilds (id) ON DELETE CASCADE, "
+				+ "(guild_id BIGINT NOT NULL REFERENCES guilds (id) ON DELETE CASCADE, "
 				+ "id BIGINT NOT NULL PRIMARY KEY, "
 				+ "json JSON);";
 	}
 
 	public static String createVoiceChannelsTable() {
 		return "CREATE TABLE IF NOT EXISTS voice_channels "
-				+ "(guild_id BIGINT NOT NULL UNIQUE KEY REFERENCES guilds (id) ON DELETE CASCADE, "
+				+ "(guild_id BIGINT NOT NULL REFERENCES guilds (id) ON DELETE CASCADE, "
 				+ "id BIGINT NOT NULL PRIMARY KEY, "
 				+ "json JSON);";
 	}
 
 	public static String createCategoriesTable() {
 		return "CREATE TABLE IF NOT EXISTS categories "
-				+ "(guild_id BIGINT NOT NULL UNIQUE KEY REFERENCES guilds (id) ON DELETE CASCADE, "
+				+ "(guild_id BIGINT NOT NULL REFERENCES guilds (id) ON DELETE CASCADE, "
 				+ "id BIGINT NOT NULL PRIMARY KEY, "
 				+ "json JSON);";
 	}
@@ -106,23 +106,23 @@ public final class SQLDataTemplate {
 	}
 
 	public static String getMembersDataForGuild(long id) {
-		return "SELECT guilds.id,members.id,members.json FROM guilds,members WHERE guilds.id="+id+";";
+		return "SELECT members.guild_id,members.id,members.json FROM guilds,members WHERE guilds.id="+id+";";
 	}
 
 	public static String getTextChannelsDataForGuild(long id) {
-		return "SELECT guilds.id,text_channels.id,text_channels.json FROM guilds,text_channels WHERE guilds.id="+id+";";
+		return "SELECT text_channels.guild_id,text_channels.id,text_channels.json FROM guilds,text_channels WHERE guilds.id="+id+";";
 	}
 
 	public static String getRolesDataForGuild(long id) {
-		return "SELECT guilds.id,roles.id,roles.json FROM guilds,roles WHERE guilds.id="+id+";";
+		return "SELECT roles.guild_id,roles.id,roles.json FROM guilds,roles WHERE guilds.id="+id+";";
 	}
 
 	public static String getVoiceChannelsDataForGuild(long id) {
-		return "SELECT guilds.id,voice_channels.id,voice_channels.json FROM guilds,voice_channels WHERE guilds.id="+id+";";
+		return "SELECT voice_channels.guild_id,voice_channels.id,voice_channels.json FROM guilds,voice_channels WHERE guilds.id="+id+";";
 	}
 
 	public static String getCategoriesDataForGuild(long id) {
-		return "SELECT guilds.id,categories.id,categories.json FROM guilds,categories WHERE guilds.id="+id+";";
+		return "SELECT categories.guild_id,categories.id,categories.json FROM guilds,categories WHERE guilds.id="+id+";";
 	}
 
 	public static String getUserData(long id) {

@@ -15,6 +15,7 @@ import discord4j.core.object.entity.Entity;
 public abstract class DataObject<E extends Entity> {
 
 	private E entity;
+	//TODO Future system : Wrapped Data
 
 	/**
 	 * Créer l'objet Data et enregistre Entity.
@@ -22,16 +23,6 @@ public abstract class DataObject<E extends Entity> {
 	 */
 	public DataObject(E entity) {
 		this.entity = entity;
-	}
-
-	/**
-	 * Créer l'object Data, enregistre Entity, et exécute directement la fonction {@link #load(JSONObject)}.
-	 * @param entity l'entité caractéristique de cet objet.
-	 * @param json les données à chargé dans la fonction {@link #load(JSONObject)}.
-	 */
-	public DataObject(E entity, JSONObject json) {
-		this.entity = entity;
-		load(json);
 	}
 
 	/**
@@ -57,7 +48,7 @@ public abstract class DataObject<E extends Entity> {
 	 * @param json les données json de la base de donnée.
 	 */
 	public void load(JSONObject json) {}
-	
+
 	@Override
 	public String toString() {
 		if (this.getEntity() == null) return "NO_DATA";

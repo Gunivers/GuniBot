@@ -44,8 +44,7 @@ public class DataCenter {
 		dataGuilds = new ConcurrentHashMap<>();
 		dataUsers = new ConcurrentHashMap<>(128);
 
-		sql = new SQLClient(false);
-		loadGuilds();
+		sql = new SQLClient(true);
 	}
 
 	/**
@@ -54,11 +53,15 @@ public class DataCenter {
 	 */
 	public void addGuild(Guild guild) {
 		if(hasRegisteredData(guild)) {
-			dataGuilds.put(guild.getId(), new DataGuild(guild, sql.loadGuildData(guild.getId().asLong())));
+			DataGuild data_guild = new DataGuild(guild);
+			data_guild.load(sql.loadGuildData(guild.getId().asLong()));
+			dataGuilds.put(guild.getId(), data_guild);
 		}
 		for (Member user:guild.getMembers().toIterable()) {
 			if(hasRegisteredData(user) && !dataUsers.containsKey(user.getId())) {
-				dataUsers.put(user.getId(), new DataUser(user, sql.loadUserData(user.getId().asLong())));
+				DataUser data_user = new DataUser(user);
+				data_user.load(sql.loadUserData(user.getId().asLong()));
+				dataUsers.put(user.getId(), data_user);
 			}
 		}
 	}
@@ -100,7 +103,8 @@ public class DataCenter {
 		} else {
 			DataGuild data_guild;
 			if(hasRegisteredData(guild)) {
-				data_guild = new DataGuild(guild, sql.loadGuildData(guild.getId().asLong()));
+				data_guild = new DataGuild(guild);
+				data_guild.load(sql.loadGuildData(guild.getId().asLong()));
 			} else {
 				data_guild = new DataGuild(guild);
 			}
@@ -120,7 +124,8 @@ public class DataCenter {
 		} else {
 			DataUser data_user;
 			if(hasRegisteredData(user)) {
-				data_user = new DataUser(user, sql.loadUserData(user.getId().asLong()));
+				data_user = new DataUser(user);
+				data_user.load(sql.loadUserData(user.getId().asLong()));
 			} else {
 				data_user = new DataUser(user);
 			}
@@ -234,7 +239,9 @@ public class DataCenter {
 			if (dataGuilds.containsKey(id)) {
 				dataGuilds.get(id).load(json);
 			} else {
-				dataGuilds.put(id, new DataGuild(guild, json));
+				DataGuild data_guild = new DataGuild(guild);
+				data_guild.load(json);
+				dataGuilds.put(id, data_guild);
 			}
 		} else {
 			System.err.println(String.format("The guild '%s' (%s) ha no data to load!", guild.getName(), guild.getId().asString()));
@@ -252,7 +259,9 @@ public class DataCenter {
 			if (dataUsers.containsKey(id)) {
 				dataUsers.get(id).load(json);
 			} else {
-				dataUsers.put(id, new DataUser(user, json));
+				DataUser data_user = new DataUser(user);
+				data_user.load(json);
+				dataUsers.put(id, data_user);
 			}
 		} else {
 			System.err.println(String.format("The user '%s' (%s) ha no data to load!", user.getUsername(), user.getId().asString()));
@@ -293,7 +302,9 @@ public class DataCenter {
 				if (dataGuilds.containsKey(id)) {
 					dataGuilds.get(id).load(entry.getValue());
 				} else {
-					dataGuilds.put(id, new DataGuild(opt_guild.get(), entry.getValue()));
+					DataGuild data_guild = new DataGuild(opt_guild.get());
+					data_guild.load(entry.getValue());
+					dataGuilds.put(id, data_guild);
 				}
 			} else {
 				System.err.println(String.format("The guild id '%s' is not reachable! Skipping loading of this guild!", id.asString()));
@@ -313,7 +324,9 @@ public class DataCenter {
 				if (dataUsers.containsKey(id)) {
 					dataUsers.get(id).load(entry.getValue());
 				} else {
-					dataUsers.put(id, new DataUser(opt_user.get(), entry.getValue()));
+					DataUser data_user = new DataUser(opt_user.get());
+					data_user.load(entry.getValue());
+					dataUsers.put(id, data_user);
 				}
 			} else {
 				System.err.println(String.format("The user id '%s' is not reachable! Skipping loading of this user!", id.asString()));

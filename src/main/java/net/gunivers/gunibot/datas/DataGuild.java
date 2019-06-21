@@ -54,15 +54,6 @@ public class DataGuild extends DataObject<Guild>
 	}
 
 	/**
-	 * Créer cet objet lié à ce guild et charge les données json dans la fonction {@link #load(JSONObject)}.
-	 * @param guild le guild lié à cet objet.
-	 * @param json les données json à chargés dans {@link #load(JSONObject)}.
-	 */
-	public DataGuild(Guild guild, JSONObject json) {
-		super(guild, json);
-	}
-
-	/**
 	 * Créer et/ou récupère les données du membre indiqué en cache dans cet objet.
 	 * @param member le membre.
 	 * @return l'objet de donnée du membre.

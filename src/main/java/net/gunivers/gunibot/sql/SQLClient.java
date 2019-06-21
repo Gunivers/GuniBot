@@ -210,6 +210,7 @@ public class SQLClient {
 		json.putOpt("roles", json_roles);
 		json.putOpt("voice_channels", json_voice_channels);
 		json.putOpt("categories", json_categories);
+
 		return json;
 	}
 
