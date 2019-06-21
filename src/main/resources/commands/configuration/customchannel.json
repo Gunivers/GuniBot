@@ -1,0 +1,78 @@
+{
+	"customchannel": 
+	{
+		"description": "Manage customs channels",
+		"permissions": [],
+		"aliases": ["cchannel","customch","cc"],
+		"arguments": 
+		[
+			{
+				"tag": "list",
+				"type": "string",
+				"matches": "list",
+				"execute": "list",
+				"arguments":
+				[{
+					"tag": "status",
+					"type": "string",
+					"matches": "active|archived",
+					"execute": "list"
+				}]
+			},
+			{
+				"tag": "add",
+				"type": "string",
+				"matches": "add|create",
+				"arguments":
+				[{
+					"tag": "name",
+					"type": "string",
+					"keep_value": true,
+					"arguments":
+					[{
+						"tag": "private",
+						"type": "boolean",
+						"keep_value": true,
+						"execute": "add"
+					}]
+				}]
+			},
+			{
+				"tag": "del",
+				"type": "string",
+				"matches": "del|delete|remove",
+				"execute": "del"
+			},
+			{
+				"tag": "renew",
+				"type": "string",
+				"matches": "renew",
+				"execute": "renew"
+			},
+			{
+				"tag": "privacy",
+				"type": "string",
+				"matches": "privacy",
+				"arguments":
+				[{
+					"tag": "private",
+					"type": "boolean",
+					"keep_value": true,
+					"execute": "privacy"
+				}]
+			},
+			{
+				"tag": "invite",
+				"type": "string",
+				"matches": "invite",
+				"arguments":
+				[{
+					"tag": "users",
+					"type": "string...",
+					"keep_value": true,
+					"execute": "invite"
+				}]
+			}
+		]
+	}
+}

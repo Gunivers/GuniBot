@@ -5,12 +5,12 @@ import java.util.Collections;
 import java.util.List;
 
 import discord4j.core.event.domain.guild.MemberJoinEvent;
-import discord4j.core.object.entity.Guild;
 import discord4j.core.object.entity.Member;
+import discord4j.core.object.entity.TextChannel;
+import discord4j.core.object.util.Snowflake;
 import net.gunivers.gunibot.Main;
 import net.gunivers.gunibot.core.lib.EmbedBuilder;
-import net.gunivers.gunibot.datas.Configuration;
-import net.gunivers.gunibot.datas.DataTextChannel;
+import net.gunivers.gunibot.datas.DataGuild;
 
 public class FirstConnectionListener extends Events<MemberJoinEvent>
 {
@@ -23,16 +23,19 @@ public class FirstConnectionListener extends Events<MemberJoinEvent>
 	@Override
 	protected void apply(MemberJoinEvent event)
 	{
-		Guild g = event.getGuild().block();
+		DataGuild g = Main.getBotInstance().getDataCenter().getDataGuild(event.getGuild().block());
 		Member m = event.getMember();
-		DataTextChannel tc = Configuration.WELCOME_CHANNEL.get(Main.getBotInstance().getDataCenter().getDataGuild(g));
 
-		EmbedBuilder builder = new EmbedBuilder(tc == null ? event.getMember().getPrivateChannel().block() : tc.getEntity(),
-				"Welcome to "+ g.getName() +'!', null);
+		TextChannel tc = g.getWelcomeChannel() == -1L ? null
+				: g.getEntity().getChannelById(Snowflake.of(g.getWelcomeChannel())).ofType(TextChannel.class).block();
+
+		EmbedBuilder builder = new EmbedBuilder(tc == null ? event.getMember().getPrivateChannel().block() : tc,
+				"Welcome to "+ g.getEntity().getName() +'!', null);
 
 		builder.setColor(event.getClient().getSelf().block().asMember(event.getGuildId()).block().getColor().block());
-		builder.setDescription(String.valueOf(Configuration.WELCOME_MESSAGE.get(Main.getBotInstance().getDataCenter().getDataGuild(g)))
-				.replace("{server}", g.getName()).replace("{user}", m.getDisplayName()).replace("{user.mention}", m.getMention()));
+
+		builder.setDescription(g.getWelcomeMessage()
+				.replace("{server}", g.getEntity().getName()).replace("{user}", m.getDisplayName()).replace("{user.mention}", m.getMention()));
 
 		builder.buildAndSend();
 	}

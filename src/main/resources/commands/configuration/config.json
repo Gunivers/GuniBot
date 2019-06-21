@@ -12,16 +12,35 @@
 				"execute": "list"
 			},
 			{
-				"tag": "path",
+				"tag": "get",
 				"type": "string",
+				"matches": "get",
 				"keep_value": true,
-				"execute": "get",
 				"arguments":
 				[{
-					"tag": "value",
-					"type": "string...",
+					"tag": "path",
+					"type": "string",
 					"keep_value": true,
-					"execute": "set"
+					"execute": "get"
+				}]
+			},
+			{
+				"tag": "set",
+				"type": "string",
+				"matches": "set",
+				"arguments":
+				[{
+					"tag": "path",
+					"type": "string",
+					"keep_value": true,
+					"execute": "get",
+					"arguments":
+					[{
+						"tag": "value",
+						"type": "string...",
+						"keep_value": true,
+						"execute": "set"
+					}]
 				}]
 			}
 		]

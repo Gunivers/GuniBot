@@ -26,7 +26,7 @@ public class NodeString extends TypeNode {
 	
 	@Override
 	public String toString() {
-		if(regex.matches("(\\w|\\d|)*"))
+		if(regex.matches("(\\w|\\d)*"))
 			return regex + childrenToString();
 		else if (regex.matches("(\\w|\\d|\\|)*"))
 			return getTag() + childrenToString();
