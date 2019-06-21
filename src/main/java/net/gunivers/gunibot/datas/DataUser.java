@@ -11,10 +11,6 @@ public class DataUser extends DataObject<User>
 		super(user);
 	}
 
-	public DataUser(User user, JSONObject json) {
-		super(user, json);
-	}
-
 
 	@Override
 	public JSONObject save()

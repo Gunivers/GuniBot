@@ -11,18 +11,14 @@ import net.gunivers.gunibot.command.permissions.Permission;
 public class DataRole extends DataObject<Role>
 {
 	private Set<Permission> perms = new HashSet<>();
-	
+
 	public DataRole(Role role) {
 		super(role);
 	}
 
-	public DataRole(Role role, JSONObject json) {
-		super(role, json);
-	}
 
-	
 	public Set<Permission> getPermissions() { return perms; }
-	
+
 	@Override
 	public JSONObject save()
 	{
@@ -30,7 +26,7 @@ public class DataRole extends DataObject<Role>
 		json.put("permissions", perms.stream().collect(HashSet::new, (set, perm) -> set.add(perm.getName()), Set::addAll));
 		return json;
 	}
-	
+
 	@Override
 	public void load(JSONObject json)
 	{
