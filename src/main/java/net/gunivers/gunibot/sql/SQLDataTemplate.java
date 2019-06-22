@@ -55,8 +55,8 @@ public final class SQLDataTemplate {
 				+ "json JSON);";
 	}
 
-	public static String useDatabase() {
-		return "USE gunibot;";
+	public static String useDatabase(String db) {
+		return "USE "+db+";";
 	}
 
 	// Check Tables

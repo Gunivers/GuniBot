@@ -11,3 +11,4 @@ gradle/
 bin/
 /bin-default/
 /.classpath
+/config

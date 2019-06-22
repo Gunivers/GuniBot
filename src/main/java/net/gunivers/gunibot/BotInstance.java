@@ -13,6 +13,7 @@ import discord4j.core.object.presence.Presence;
 import discord4j.gateway.retry.RetryOptions;
 import net.gunivers.gunibot.auto_vocal_channel.VoiceChannelCreator;
 import net.gunivers.gunibot.core.command.Command;
+import net.gunivers.gunibot.core.main_parser.BotConfig;
 import net.gunivers.gunibot.datas.DataCenter;
 import net.gunivers.gunibot.event.Events;
 import reactor.core.scheduler.Schedulers;
@@ -22,22 +23,24 @@ public class BotInstance {
 	private DataCenter dataCenter; // Système controlant toute les données du bot
 	private LinkedBlockingQueue<GuildCreateEvent> guildQueue; // File d'attente des serveurs à charger
 	private DiscordClient botClient;
+	private BotConfig config;
 
 	/**
 	 * créé le bot à partir du token donné et l'initialise.
 	 *
-	 * @param token le token nécessaire à la connection sur discord du bot.
+	 * @param BotConfig la configuration du bot.
 	 */
-	public BotInstance(String token) {
+	public BotInstance(BotConfig config) {
+		this.config = config;
 		guildQueue = new LinkedBlockingQueue<>();
 
-		if (token == null) {
+		if (config.token == null) {
 			throw new IllegalArgumentException("Vous devez indiquez votre token en argument !");
 		} else {
 			System.out.println("Liste des commandes chargées :");
 			Command.loadCommands();
 			System.out.println("Nombre de commandes chargées : " + Command.commands.size());
-			DiscordClientBuilder builder = new DiscordClientBuilder(token);
+			DiscordClientBuilder builder = new DiscordClientBuilder(config.token);
 			builder.setRetryOptions(new RetryOptions(Duration.ofSeconds(30), Duration.ofMinutes(1), 1000, Schedulers.single())); // En cas de déconnection imprévue, tente de se reconnecter à l'infini
 			builder.setInitialPresence(Presence.doNotDisturb(Activity.watching("Démarrage...")));
 			botClient = builder.build();
@@ -46,7 +49,7 @@ public class BotInstance {
 
 			// Initializing Events (nécessaire pour l'initialisation du bots et de ses données)
 			dispatcher.on(ReadyEvent.class).take(1).subscribe(event -> { //code éxécuté qu'une seule fois lorsque le bot est connecté à discord
-				dataCenter = new DataCenter(event);
+				dataCenter = new DataCenter(event, this);
 				while (guildQueue.size() > 0) {
 					try {
 						dataCenter.addGuild(guildQueue.take().getGuild());
@@ -100,5 +103,7 @@ public class BotInstance {
 	public DataCenter getDataCenter() { return dataCenter; }
 
 	public DiscordClient getBotClient() { return botClient; }
+
+	public BotConfig getConfig() { return config; }
 
 }

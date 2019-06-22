@@ -1,4 +1,4 @@
-package net.gunivers.gunibot.syl2010.lib.analyzer;
+package net.gunivers.gunibot.core.main_parser;
 
 import java.time.Instant;
 import java.util.List;

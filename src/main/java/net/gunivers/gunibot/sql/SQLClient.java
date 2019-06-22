@@ -9,20 +9,43 @@ import java.util.HashMap;
 
 import org.json.JSONObject;
 
+import net.gunivers.gunibot.core.main_parser.BotConfig;
+
 public class SQLClient {
 
-	private static final String SQL_URL = "jdbc:mysql://172.17.228.152?serverTimezone=Europe/Paris"; //IP VM Interne, ne marche pas ailleurs que sur mon PC (Syl2010)
-	private static final String SQL_USER = "gunibot";
-	private static final String SQL_PASSWORD = "gunibot"; //mot de passe DB VM Interne
+	public static class SQLConfig {
+		public final String sqlUrl;
+		public final String sqlUser;
+		public final String sqlPassword;
+		public final String sqlDb;
+
+		public SQLConfig(BotConfig config) {
+			sqlUrl = config.sql_url;
+			sqlUser = config.sql_user;
+			sqlPassword = config.sql_pwd;
+			sqlDb = config.sql_db;
+		}
+
+		private SQLConfig(String sql_url, String sql_user, String sql_pwd, String sql_db) {
+			sqlUrl = sql_url;
+			sqlUser = sql_user;
+			sqlPassword = sql_pwd;
+			sqlDb = sql_db;
+		}
+	}
+
+	public static final SQLConfig TEST_CONFIG = new SQLConfig("jdbc:mysql://172.17.228.152?serverTimezone=Europe/Paris", "gunibot", "gunibot", "gunibot");
 
 	private Connection sqlConnection;
 	private boolean isDisable;
+	private SQLConfig config;
 
-	public SQLClient() {
-		this(false);
+	public SQLClient(SQLConfig config) {
+		this(config, false);
 	}
 
-	public SQLClient(boolean optional) {
+	public SQLClient(SQLConfig config, boolean optional) {
+		this.config = config;
 		isDisable = false;
 		try {
 			sqlConnection = connect();
@@ -38,10 +61,9 @@ public class SQLClient {
 		}
 	}
 
-	private static Connection connect() {
+	private Connection connect() {
 		try {
-
-			return DriverManager.getConnection(SQL_URL, SQL_USER, SQL_PASSWORD);
+			return DriverManager.getConnection(config.sqlUrl, config.sqlUser, config.sqlPassword);
 		} catch (SQLException e) {
 			throw new RuntimeException("Error on database access !", e);
 		}
@@ -59,7 +81,7 @@ public class SQLClient {
 
 	private void initTables() {
 		try {
-			sqlConnection.createStatement().execute(SQLDataTemplate.useDatabase());
+			sqlConnection.createStatement().execute(SQLDataTemplate.useDatabase(config.sqlDb));
 			sqlConnection.createStatement().execute(SQLDataTemplate.createGuildsTable());
 			sqlConnection.createStatement().execute(SQLDataTemplate.createMembersTable());
 			sqlConnection.createStatement().execute(SQLDataTemplate.createTextChannelsTable());

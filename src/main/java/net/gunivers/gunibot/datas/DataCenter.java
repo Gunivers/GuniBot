@@ -14,7 +14,9 @@ import discord4j.core.object.entity.User;
 import discord4j.core.object.presence.Activity;
 import discord4j.core.object.presence.Presence;
 import discord4j.core.object.util.Snowflake;
+import net.gunivers.gunibot.BotInstance;
 import net.gunivers.gunibot.sql.SQLClient;
+import net.gunivers.gunibot.sql.SQLClient.SQLConfig;
 
 /**
  * Centre de contrôle des données du bot.
@@ -24,6 +26,7 @@ import net.gunivers.gunibot.sql.SQLClient;
 public class DataCenter {
 
 	private DiscordClient botClient;
+	private BotInstance botInstance;
 
 	/**
 	 * Contient tout les serveurs possédant des données (ou mis en cache en cas de modification de données).
@@ -37,14 +40,15 @@ public class DataCenter {
 
 	private SQLClient sql;
 
-	public DataCenter(ReadyEvent event) {
+	public DataCenter(ReadyEvent event, BotInstance bot_instance) {
+		botInstance = bot_instance;
 		botClient = event.getClient();
 		botClient.updatePresence(Presence.idle(Activity.watching("Loading Data Control..."))).subscribe();
 
 		dataGuilds = new ConcurrentHashMap<>();
 		dataUsers = new ConcurrentHashMap<>(128);
 
-		sql = new SQLClient(true);
+		sql = new SQLClient(new SQLConfig(botInstance.getConfig()), true);
 	}
 
 	/**
