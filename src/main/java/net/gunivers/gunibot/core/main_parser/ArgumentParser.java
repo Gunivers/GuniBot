@@ -15,9 +15,9 @@ public class ArgumentParser {
 		HashMap<String,String> output = new HashMap<>(args.length);
 		StringAnalyzer analyzer = new StringAnalyzer(args);
 
+		String current_key = "";
 		while (analyzer.hasNext()) {
 			String str = analyzer.next();
-			String current_key = "";
 
 			if(current_key.isEmpty()) {
 				if (str.startsWith("-")) {
