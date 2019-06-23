@@ -18,7 +18,7 @@ public class DataTextChannel extends DataObject<TextChannel>
 	@Override
 	public JSONObject save()
 	{
-		JSONObject obj = new JSONObject();
+		JSONObject obj = super.save();
 		obj.put("owner", owner);
 		obj.put("private", privacy);
 		return obj;
@@ -27,6 +27,7 @@ public class DataTextChannel extends DataObject<TextChannel>
 	@Override
 	public void load(JSONObject obj)
 	{
+		super.load(obj);
 		this.owner = obj.getLong("owner");
 		this.privacy = obj.getBoolean("private");
 	}
