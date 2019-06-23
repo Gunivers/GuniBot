@@ -56,6 +56,14 @@ public abstract class DataObject<E extends Entity> {
 	}
 
 	/**
+	 * Supprimes les données enregistrés avec cette clef
+	 * @param key la clef des données encapsulés
+	 */
+	public void removeWrappedDatas(String key) {
+		wrappedDatas.remove(key);
+	}
+
+	/**
 	 * Récupère les données encapsulés enregistré avec cette clef
 	 * @param key la clef des données à récupéré
 	 * @return les données encapsulés
