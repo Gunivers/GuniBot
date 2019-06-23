@@ -31,6 +31,8 @@ public class DataGuild extends DataObject<Guild>
 	private ConcurrentHashMap<Snowflake, DataVoiceChannel> dataVoiceChannels = new ConcurrentHashMap<>();
 	private ConcurrentHashMap<Snowflake, DataCategory> dataCategories = new ConcurrentHashMap<>();
 
+	private String prefix = "/";
+	
 	private boolean welcomeEnabled = true;
 	private String welcomeMessage = "Server: {server} ; User: {user} ; Mention: {user.mention}";
 	private long welcomeChannel = -1L;
@@ -199,6 +201,8 @@ public class DataGuild extends DataObject<Guild>
 		}
 		json.putOpt("categories", json_categories);
 
+		json.putOpt("prefix", prefix);
+		
 		JSONObject welcome = new JSONObject();
 		welcome.putOpt("enabled", welcomeEnabled);
 		welcome.putOpt("message", welcomeMessage);
@@ -332,17 +336,21 @@ public class DataGuild extends DataObject<Guild>
 			System.out.println(String.format("No categories datas in the guild '%s' (%s)! Skipping loading of the categories!", getEntity().getName(), getEntity().getId().asString()));
 		}
 
-		JSONObject welcome = json.optJSONObject("welcome") == null ? new JSONObject() : json.getJSONObject("welcome");
+		prefix = json.optString("prefix", prefix);
+		
+		JSONObject welcome = json.optJSONObject("welcome"); if (welcome == null) welcome = new JSONObject();
 		welcomeEnabled = welcome.optBoolean("enabled", welcomeEnabled);
 		welcomeMessage = welcome.optString("message", welcomeMessage);
 		welcomeChannel = welcome.optLong("channel", welcomeChannel);
 
-		JSONObject cc = json.optJSONObject("cchannel") == null ? new JSONObject() : json.getJSONObject("cchannel");
+		JSONObject cc = json.optJSONObject("cchannel"); if (cc == null) cc = new JSONObject();
 		ccEnabled = cc.getBoolean("enabled");
 		ccActive = cc.getLong("active");
 		ccArchive = cc.getLong("archive");
 	}
 
+	public String getPrefix() { return prefix; }
+	
 	public boolean isWelcomeEnabled() { return welcomeEnabled; }
 	public String getWelcomeMessage() { return welcomeMessage; }
 	public long getWelcomeChannel() { return welcomeChannel; }
@@ -351,6 +359,8 @@ public class DataGuild extends DataObject<Guild>
 	/** cc stands for custom channel */ public long getCCActive() { return ccActive; }
 	/** cc stands for custom channel */ public long getCCArchive() { return ccArchive; }
 
+	public void setPrefix(String prefix) { this.prefix = prefix; }
+	
 	public void setWelcomeEnable(boolean enable) { this.welcomeEnabled = enable; }
 	public void setWelcomeMessage(String msg) { this.welcomeMessage = msg; }
 	public void setWelcomeChannel(long channel) { this.welcomeChannel = channel; }

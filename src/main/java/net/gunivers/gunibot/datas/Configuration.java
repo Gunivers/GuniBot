@@ -24,6 +24,8 @@ public class Configuration<T>
 	
 	static
 	{
+		new Configuration<>("prefix", DataGuild::getPrefix, DataGuild::setPrefix, (d,s) -> s.trim(), String.class);
+		
 		new Configuration<>("welcome.enable", DataGuild::isWelcomeEnabled, DataGuild::setWelcomeEnable, (d,s) -> Boolean.valueOf(s), Boolean.class);
 		new Configuration<>("welcome.message", DataGuild::getWelcomeMessage, DataGuild::setWelcomeMessage, (d,s) -> s.trim(), String.class);
 		new Configuration<>("welcome.channel", DataGuild::getWelcomeChannel, DataGuild::setWelcomeChannel, (d,s) -> Parser.parseCategory(s, d.getEntity()).blockFirst().getId().asLong(), Long.class);

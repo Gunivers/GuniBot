@@ -20,7 +20,6 @@ import net.gunivers.gunibot.utils.tuple.Tuple2;
 
 public abstract class Command {
 
-	public static final String PREFIX = "/";
 	public static final Map<List<String>, Command> commands = new HashMap<>();
 
 	private String description = "";
@@ -127,6 +126,6 @@ public abstract class Command {
 
 	@Override
 	public String toString() {
-		return Command.PREFIX + syntax.toString();
+		return syntax.toString();
 	}
 }
