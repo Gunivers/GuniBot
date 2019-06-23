@@ -30,6 +30,7 @@ public class DataMember extends DataObject<Member>
 	@Override
 	public void load(JSONObject json)
 	{
+		super.load(json);
 		perms = json.getJSONArray("permissions").toList().stream()
 				.collect(HashSet::new, (s, p) -> s.addAll(Permission.getByName((String) p)), Set::addAll);
 	}

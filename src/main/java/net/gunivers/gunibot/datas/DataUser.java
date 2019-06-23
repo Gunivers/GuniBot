@@ -21,6 +21,6 @@ public class DataUser extends DataObject<User>
 	@Override
 	public void load(JSONObject json)
 	{
-
+		super.load(json);
 	}
 }
