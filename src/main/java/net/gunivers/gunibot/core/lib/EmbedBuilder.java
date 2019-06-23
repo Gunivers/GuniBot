@@ -6,8 +6,12 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import discord4j.core.object.Embed;
 import discord4j.core.object.entity.Member;
+import discord4j.core.object.entity.Message;
 import discord4j.core.object.entity.MessageChannel;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 /**
  * This class allows you to build and generate embeds easily
@@ -42,7 +46,8 @@ public class EmbedBuilder
 	private List<Field> fields = new ArrayList<>();
 	
 	private EmbedBuilder child = null;
-	
+	private Flux<Embed> embeds = null;
+	private Flux<Message> messages = null;
 	
 	public EmbedBuilder(MessageChannel channel) {
 		this.channel = channel;
@@ -102,8 +107,10 @@ public class EmbedBuilder
 	public void buildAndSend()
 	{
 		this.normalize();
+		this.embeds = Flux.empty();
+		this.messages = Flux.empty();
 		
-		channel.createEmbed(embed ->
+		Mono<Message> msg = channel.createEmbed(embed ->
 		{
 			embed.setTimestamp(Instant.now());
 			
@@ -119,9 +126,18 @@ public class EmbedBuilder
 			if (thumbnail != null) embed.setThumbnail(thumbnail);
 			
 			fields.stream().forEachOrdered(field -> embed.addField(field.name, field.value.toString(), field.inline));
-		}).subscribe();
+		});
 		
-		if (child != null) child.buildAndSend();
+		this.embeds = this.embeds.concatWithValues(msg.map(Message::getEmbeds).block().toArray(new Embed[0]));
+		this.messages = this.messages.concatWith(msg);
+		msg.subscribe();
+		
+		if (child != null)
+		{
+			child.buildAndSend();
+			this.embeds = this.embeds.concatWith(child.embeds);
+			this.messages = this.messages.concatWith(child.messages);
+		}
 	}
 	
 	/**
@@ -198,6 +214,17 @@ public class EmbedBuilder
 			if (footerURL == null) footerURL = member.getAvatarUrl();
 		}
 	}
+	
+	/**
+	 * If this builder was not yet built, return an empty Flux. Else, return the embeds that were sended.
+	 * @return
+	 */
+	public Flux<Embed> getEmbeds() { return embeds == null ? Flux.empty() : embeds; }
+	/**
+	 * If this builder was not yet built, return an empty Flux. Else, return the messages that were sended.
+	 * @return
+	 */
+	public Flux<Message> getMessages() { return messages == null ? Flux.empty() : messages; }
 	
 	public List<Field> getFields() { return Collections.unmodifiableList(fields); }
 	public MessageChannel getChannel() { return channel; }
