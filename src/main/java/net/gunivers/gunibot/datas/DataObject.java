@@ -77,7 +77,7 @@ public abstract class DataObject<E extends Entity> {
 	/**
 	 * Fonction de sauvegarde de donnée appelé par DataCenter.
 	 * Les données json sont récupérés pour être enregistré dans la base de donnée.
-	 * ATTENTION : super.save() doit être appelés et retransmit afin que le système de "Wrapped Datas" fonctionne !
+	 * ATTENTION : Pour la surcharge : super.save() doit être appelés et retransmit afin que le système de "Wrapped Datas" fonctionne !
 	 * @return les données json qui seront sauvegardés.
 	 */
 	public JSONObject save() {
@@ -89,7 +89,7 @@ public abstract class DataObject<E extends Entity> {
 	/**
 	 * Fonction de chargement des données appelé par DataCenter.
 	 * Les données json de la base de donnée sont transmises à cette fonction.
-	 * ATTENTION : super.load(json) doit être appelés avec les données json d'origine afin que le système de "Wrapped Datas" fonctionne !
+	 * ATTENTION : Pour la surcharge : super.load(json) doit être appelés avec les données json d'origine afin que le système de "Wrapped Datas" fonctionne !
 	 * @param json les données json de la base de donnée.
 	 */
 	public void load(JSONObject json) {
