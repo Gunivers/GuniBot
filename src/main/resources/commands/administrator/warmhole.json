@@ -1,0 +1,23 @@
+{
+	"warmhole": {
+		"description": "Link two MessageChannels",
+		"permissions": ["discord.administrator"],
+		"arguments": [
+			{
+				"type": "string",
+				"matches": "\\d+",
+				"tag": "MessageChannelId",
+				"keep_value": true,
+				"arguments": [
+					{
+						"type": "string",
+						"matches": "\\d+",
+						"tag": "MessageChannelId",
+						"keep_value": true,
+						"execute": "link"
+					}
+				]
+			}
+		]
+	}
+}

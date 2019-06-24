@@ -9,5 +9,8 @@ public class Tuple1<A> extends Tuple {
 	Tuple1(A value) {
 		_1 = value;
 	}
-
+	
+	public boolean equals(Tuple1<A> tuple) {
+		return _1.equals(tuple._1);
+	}
 }

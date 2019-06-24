@@ -20,4 +20,8 @@ public class Tuple6<A, B, C, D, E, F> extends Tuple {
 		_6 = value6;
 	}
 
+	public boolean equals(Tuple6<A, B, C, D, E, F> tuple) {
+		return _1.equals(tuple._1) && _2.equals(tuple._2) && _3.equals(tuple._3) && _4.equals(tuple._4)
+				&& _5.equals(tuple._5) && _6.equals(tuple._6);
+	}
 }
