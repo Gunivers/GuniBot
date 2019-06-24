@@ -22,7 +22,8 @@ public class BotConfig {
 			throw new RuntimeException(e);
 		}
 
-		token = arg_parser.getDefaultArguments("t", config.getArguments("token"));
+		token = arg_parser.getDefaultArguments("t", config.getDefaultArguments("token", ""));
+		if(token.isEmpty()) throw new IllegalArgumentException("Aucun token n'as été donné !");
 
 		if (arg_parser.hasArguments("sql_url") && arg_parser.hasArguments("sql_ip")) throw new IllegalArgumentException("");
 		else if (config.hasArguments("sql_url") && config.hasArguments("sql_ip")) throw new IllegalArgumentException("");
@@ -33,7 +34,8 @@ public class BotConfig {
 
 
 		sql_user = arg_parser.getDefaultArguments("sql_user", config.getDefaultArguments("sql_user", "gunibot"));
-		sql_pwd = arg_parser.getDefaultArguments("sql_pwd", config.getArguments("sql_password"));
+		sql_pwd = arg_parser.getDefaultArguments("sql_pwd", config.getDefaultArguments("sql_password", ""));
+		if(sql_pwd.isEmpty()) System.err.println("Aucun mot de passe précisé pour la base de données ! La base de données ne fonctionnera pas sans un mot de passe !");
 		sql_db = arg_parser.getDefaultArguments("sql_db", config.getDefaultArguments("sql_database", "gunibot"));
 	}
 
