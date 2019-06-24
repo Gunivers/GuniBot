@@ -1,4 +1,4 @@
-package net.gunivers.gunibot.syl2010.lib;
+package net.gunivers.gunibot.core;
 
 /**
  * Objet pouvant stocker une valeur. Permet de modifier des valeurs à travers
