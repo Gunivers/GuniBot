@@ -356,9 +356,9 @@ public class DataGuild extends DataObject<Guild>
 	public String getWelcomeMessage() { return welcomeMessage; }
 	public long getWelcomeChannel() { return welcomeChannel; }
 
-	/** cc stands for custom channel */ public boolean isCCEnabled() { return ccEnabled; }
-	/** cc stands for custom channel */ public long getCCActive() { return ccActive; }
-	/** cc stands for custom channel */ public long getCCArchive() { return ccArchive; }
+	public boolean isCCEnabled() { return ccEnabled; }
+	public long getCCActive() { return ccActive; }
+	public long getCCArchive() { return ccArchive; }
 
 	public void setPrefix(String prefix) { this.prefix = prefix; }
 	
