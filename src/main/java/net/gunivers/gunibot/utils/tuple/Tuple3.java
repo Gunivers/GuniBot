@@ -14,8 +14,7 @@ public class Tuple3<A, B, C> extends Tuple {
 		_3 = value3;
 	}
 
-	public String toString()
-	{
-		return "T3[" + _1 + ", " + _2 + ", " + _3 + "]";
+	public boolean equals(Tuple3<A, B, C> tuple) {
+		return _1.equals(tuple._1) && _2.equals(tuple._2) && _3.equals(tuple._3);
 	}
 }

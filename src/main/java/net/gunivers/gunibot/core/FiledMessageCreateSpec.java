@@ -1,4 +1,4 @@
-package net.gunivers.gunibot.syl2010.lib;
+package net.gunivers.gunibot.core;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;

@@ -1,0 +1,22 @@
+{
+	"imitate": {
+		"description": " Make the bot say something as the specified user",
+		"permissions": [],
+		"execute": "imitate",
+		"arguments": [
+			{
+				"type": "string",
+				"tag": "user",
+				"keep_value": true,
+				"arguments": [
+					{
+						"type": "string...",
+						"tag": "message",
+						"keep_value": true,
+						"execute": "imitate"
+					}
+				]
+			}
+		]
+	}
+}

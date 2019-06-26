@@ -22,4 +22,7 @@ public class Tuple7<A, B, C, D, E, F, G> extends Tuple {
 		_7 = value7;
 	}
 	
+	public boolean equals(Tuple7<A, B, C, D, E, F, G> tuple) {
+		return _1.equals(tuple._1) && _2.equals(tuple._2) && _3.equals(tuple._3) && _4.equals(tuple._4) && _5.equals(tuple._5) && _6.equals(tuple._6) && _7.equals(tuple._7);
+	}
 }
