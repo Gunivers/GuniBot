@@ -130,7 +130,6 @@ public class EmbedBuilder
 		
 		this.embeds = this.embeds.concatWithValues(msg.map(Message::getEmbeds).block().toArray(new Embed[0]));
 		this.messages = this.messages.concatWith(msg);
-		msg.subscribe();
 		
 		if (child != null)
 		{
