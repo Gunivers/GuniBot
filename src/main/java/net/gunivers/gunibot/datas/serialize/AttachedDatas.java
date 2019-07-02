@@ -5,7 +5,7 @@ import java.util.HashMap;
 import discord4j.core.object.entity.Entity;
 import discord4j.core.object.util.Snowflake;
 
-class AttachedDatas<E extends Entity> {
+abstract class AttachedDatas<E extends Entity> {
 
 	public final Class<E> type;
 	public final Snowflake id;
