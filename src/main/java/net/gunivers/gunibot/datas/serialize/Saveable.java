@@ -1,6 +1,6 @@
 package net.gunivers.gunibot.datas.serialize;
 
-public interface Serializable {
+public interface Saveable {
 
 	public Serializer save();
 }

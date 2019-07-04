@@ -55,6 +55,12 @@ public final class SQLDataTemplate {
 				+ "json JSON);";
 	}
 
+	public static String createSystemsTable() {
+		return "CREATE TABLE IF NOT EXISTS systems "
+				+ "(id VARCHAR NOT NULL PRIMARY KEY, "
+				+ "json JSON);";
+	}
+
 	public static String useDatabase(String db) {
 		return "USE "+db+";";
 	}
@@ -89,6 +95,10 @@ public final class SQLDataTemplate {
 		return "SHOW TABLES LIKE 'users';";
 	}
 
+	public static String checkSystemsTable() {
+		return "SHOW TABLES LIKE 'systems';";
+	}
+
 	// has Datas
 
 	public static String hasGuildData(long id) {
@@ -97,6 +107,10 @@ public final class SQLDataTemplate {
 
 	public static String hasUserData(long id) {
 		return "SELECT id FROM users WHERE id="+id+" LIMIT 1;";
+	}
+
+	public static String hasSystemData(String id) {
+		return "SELECT id FROM systems WHERE id="+id+" LIMIT 1;";
 	}
 
 	// get Datas
@@ -129,12 +143,20 @@ public final class SQLDataTemplate {
 		return "SELECT id,json FROM users WHERE id="+id;
 	}
 
+	public static String getSystemData(String id) {
+		return "SELECT id,json FROM systems WHERE id="+id;
+	}
+
 	public static String getGuildsId() {
 		return "SELECT id FROM guilds;";
 	}
 
 	public static String getUsersId() {
-		return "SELECT is FROM users;";
+		return "SELECT id FROM users;";
+	}
+
+	public static String getSystemsId() {
+		return "SELECT id FROM systems;";
 	}
 
 	public static String getGuildsData() {
@@ -142,7 +164,11 @@ public final class SQLDataTemplate {
 	}
 
 	public static String getUsersData() {
-		return "SELECT is,json FROM users;";
+		return "SELECT id,json FROM users;";
+	}
+
+	public static String getSystemsData() {
+		return "SELECT id,json FROM systems;";
 	}
 
 	// remove Datas
@@ -153,6 +179,10 @@ public final class SQLDataTemplate {
 
 	public static String removeUserData(long id) {
 		return "DELETE FROM users WHERE id="+id+";";
+	}
+
+	public static String removeSystemData(String id) {
+		return "DELETE FROM systems WHERE id="+id+";";
 	}
 
 	// insert Datas
@@ -237,6 +267,10 @@ public final class SQLDataTemplate {
 
 	public static String insertUserData(long user_id, JSONObject datas) {
 		return "REPLACE INTO users (id,json) VALUE ("+user_id+",'"+datas.toString()+"');";
+	}
+
+	public static String insertSystemData(String system_id, JSONObject datas) {
+		return "REPLACE INTO systems (id,json) VALUE ("+system_id+",'"+datas.toString()+"');";
 	}
 
 }
