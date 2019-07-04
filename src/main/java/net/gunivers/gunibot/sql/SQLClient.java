@@ -89,6 +89,7 @@ public class SQLClient {
 			sqlConnection.createStatement().execute(SQLDataTemplate.createVoiceChannelsTable());
 			sqlConnection.createStatement().execute(SQLDataTemplate.createCategoriesTable());
 			sqlConnection.createStatement().execute(SQLDataTemplate.createUsersTable());
+			sqlConnection.createStatement().execute(SQLDataTemplate.createSystemsTable());
 
 		} catch (SQLException e) {
 			throw new RuntimeException(e);
@@ -117,6 +118,17 @@ public class SQLClient {
 		}
 	}
 
+	public boolean hasSystemData(String system_id) {
+		if(isDisable) return false;
+		checkConnection();
+
+		try {
+			return sqlConnection.createStatement().execute(SQLDataTemplate.hasSystemData(system_id));
+		} catch (SQLException e) {
+			throw new RuntimeException(e);
+		}
+	}
+
 	public void removeGuildData(long guild_id) {
 		if(isDisable) return;
 		checkConnection();
@@ -139,6 +151,17 @@ public class SQLClient {
 		}
 	}
 
+	public void removeSystemData(String system_id) {
+		if(isDisable) return;
+		checkConnection();
+
+		try {
+			sqlConnection.createStatement().execute(SQLDataTemplate.removeSystemData(system_id));
+		} catch (SQLException e) {
+			throw new RuntimeException(e);
+		}
+	}
+
 	public void saveGuildData(long guild_id, JSONObject datas) {
 		if(isDisable) return;
 		checkConnection();
@@ -156,6 +179,17 @@ public class SQLClient {
 
 		try {
 			sqlConnection.createStatement().execute(SQLDataTemplate.insertUserData(user_id, datas));
+		} catch (SQLException e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	public void saveSystemData(String system_id, JSONObject datas) {
+		if(isDisable) return;
+		checkConnection();
+
+		try {
+			for(String line:SQLDataTemplate.insertSystemData(system_id, datas).split("\n")) sqlConnection.createStatement().execute(line);
 		} catch (SQLException e) {
 			throw new RuntimeException(e);
 		}
@@ -254,6 +288,24 @@ public class SQLClient {
 		}
 	}
 
+	public JSONObject loadSystemData(String id) {
+		if(isDisable) return new JSONObject();
+		checkConnection();
+
+		try {
+			Statement system_statement = sqlConnection.createStatement();
+			system_statement.execute(SQLDataTemplate.getSystemData(id));
+			ResultSet system_result = system_statement.getResultSet();
+			if(system_result.next()) {
+				return new JSONObject(system_result.getString("json"));
+			} else {
+				return new JSONObject();
+			}
+		} catch (SQLException e) {
+			throw new RuntimeException(e);
+		}
+	}
+
 	public HashMap<Long,JSONObject> getAllDataGuilds() {
 		if(isDisable) return new HashMap<>();
 		checkConnection();
@@ -288,6 +340,27 @@ public class SQLClient {
 			while(users_result.next()) {
 				long user_id = users_result.getLong("id");
 				output.put(user_id, loadUserData(user_id));
+			}
+
+			return output;
+		} catch (SQLException e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	public HashMap<String,JSONObject> getAllDataSystems() {
+		if(isDisable) return new HashMap<>();
+		checkConnection();
+
+		try {
+			Statement systems_statement = sqlConnection.createStatement();
+			systems_statement.execute(SQLDataTemplate.getSystemsId());
+			ResultSet systems_result = systems_statement.getResultSet();
+
+			HashMap<String, JSONObject> output = new HashMap<>(systems_result.getFetchSize());
+			while(systems_result.next()) {
+				String system_id = systems_result.getString("id");
+				output.put(system_id, loadSystemData(system_id));
 			}
 
 			return output;

@@ -1,5 +1,6 @@
 package net.gunivers.gunibot.datas;
 
+import java.util.HashMap;
 import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
@@ -15,6 +16,8 @@ import discord4j.core.object.presence.Activity;
 import discord4j.core.object.presence.Presence;
 import discord4j.core.object.util.Snowflake;
 import net.gunivers.gunibot.BotInstance;
+import net.gunivers.gunibot.datas.serialize.Restorable;
+import net.gunivers.gunibot.datas.serialize.Serializer;
 import net.gunivers.gunibot.sql.SQLClient;
 import net.gunivers.gunibot.sql.SQLClient.SQLConfig;
 
@@ -38,6 +41,11 @@ public class DataCenter {
 	 */
 	private ConcurrentHashMap<Snowflake, DataUser> dataUsers;
 
+	/**
+	 * Contient la liste des systèmes/objets sauvegardable (appelés par la fonction save, gèrent eux même leurs structures de données)
+	 */
+	private HashMap<String, Restorable> dataSystems;
+
 	private SQLClient sql;
 
 	public DataCenter(ReadyEvent event, BotInstance bot_instance) {
@@ -47,8 +55,17 @@ public class DataCenter {
 
 		dataGuilds = new ConcurrentHashMap<>();
 		dataUsers = new ConcurrentHashMap<>(128);
+		dataSystems = new HashMap<>();
 
 		sql = new SQLClient(new SQLConfig(botInstance.getConfig()), true);
+	}
+
+	public void registerSystem(String system_id, Restorable system) {
+		dataSystems.put(system_id, system);
+	}
+
+	public void unregisterSystem(String system_id) {
+		dataSystems.remove(system_id);
 	}
 
 	/**
@@ -187,6 +204,15 @@ public class DataCenter {
 	}
 
 	/**
+	 * Vérifie si le système indiqué possède des données dans la base de donnée.
+	 * @param String l'id du système à vérifier.
+	 * @return {@code true} si ce système possède des données dans la base de donnée, {@code false} sinon.
+	 */
+	private boolean hasRegisteredData(String system_id) {
+		return sql.hasSystemData(system_id);
+	}
+
+	/**
 	 * Supprime les données du serveur indiqué de la base de donnée.
 	 * @param guild le serveur a supprimmé de la base de donnée.
 	 */
@@ -201,6 +227,14 @@ public class DataCenter {
 	private void removeRegisteredData(User user) {
 		sql.removeUserData(user.getId().asLong());
 	}
+
+	//	/**
+	//	 * Supprime les données du système indiqué de la base de donnée.
+	//	 * @param String l'id du système a supprimmé de la base de donnée.
+	//	 */
+	//	private void removeRegisteredData(String system_id) {
+	//		sql.removeSystemData(system_id);
+	//	}
 
 	/**
 	 * Sauvegarde les données du serveur indiqué dans la base de donnée.
@@ -229,6 +263,19 @@ public class DataCenter {
 			//dataGuild.clearAllCache();
 		} else {
 			System.err.println(String.format("The user '%s' (%s) has no data object to save!", user.getUsername(), user.getId().asString()));
+		}
+	}
+
+	/**
+	 * Sauvegarde les données du système indiqué dans la base de donnée.
+	 * @param String id du système à sauvegarder.
+	 */
+	public void saveSystem(String system_id) {
+		Restorable system_datas = dataSystems.get(system_id);
+		if(system_datas != null) {
+			sql.saveSystemData(system_id, system_datas.save().toJson());
+		} else {
+			System.err.println(String.format("The system '%s' is not registered!", system_id));
 		}
 	}
 
@@ -273,6 +320,23 @@ public class DataCenter {
 	}
 
 	/**
+	 * Charge les données du système indiqué depuis la base de donnée.
+	 * @param String l'id du système à charger.
+	 */
+	public void loadSystem(String system_id) {
+		if (dataSystems.containsKey(system_id)) {
+			if (hasRegisteredData(system_id)) {
+				dataSystems.get(system_id).load(Serializer.from(sql.loadSystemData(system_id)));
+			} else {
+				System.err.println(String.format("The system '%s' ha no data to load!", system_id));
+			}
+		} else {
+			System.err.println(String.format("The system '%s' is not registered!", system_id));
+		}
+
+	}
+
+	/**
 	 * Sauvegarde les données de tout les serveurs dans la base de donnée.
 	 * Le cache des serveurs est nettoyé après la sauvegarde.
 	 */
@@ -292,6 +356,15 @@ public class DataCenter {
 			sql.saveUserData(user_entry.getKey().asLong(), user_entry.getValue().save());
 		}
 		clearDataUsersCache();
+	}
+
+	/**
+	 * Sauvegarde les données de tout les systèmes dans la base de donnée.
+	 */
+	public void saveSystems() {
+		for(Entry<String, Restorable> system_entry:dataSystems.entrySet()) {
+			sql.saveSystemData(system_entry.getKey(), system_entry.getValue().save().toJson());
+		}
 	}
 
 	/**
@@ -338,10 +411,25 @@ public class DataCenter {
 		}
 	}
 
+	/**
+	 * Charge les données de tout les systèmes enregistrés dans la base de donnée.
+	 */
+	public void loadSystems() {
+		for(Entry<String, JSONObject> entry:sql.getAllDataSystems().entrySet()) {
+
+			if(dataSystems.containsKey(entry.getKey())) {
+				dataSystems.get(entry.getKey()).load(Serializer.from(entry.getValue()));
+			} else {
+				System.err.println(String.format("The system id '%s' is not registered! Skipping loading of this system!", entry.getKey()));
+			}
+		}
+	}
+
 	public void shutdown() {
 		botClient.updatePresence(Presence.doNotDisturb(Activity.watching("Shutdown...")));
 		saveGuilds();
 		saveUsers();
+		saveSystems();
 		botClient.logout().subscribe();
 	}
 
