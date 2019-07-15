@@ -1,6 +1,8 @@
 package net.gunivers.gunibot.command.commands.administrator;
 
 import java.awt.Color;
+import java.io.ByteArrayInputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 import org.json.JSONObject;
@@ -28,7 +30,10 @@ public class DataCommand extends Command {
 		Message message = event.getMessage();
 		message.getChannel().flatMap(channel -> channel.createMessage(spec -> {
 			JSONObject json = Main.getBotInstance().getDataCenter().getDataGuild(guild).save();
-			spec.setContent(String.format("**Data Report** for guild **%s**\n```json\n%s\n```", guild.getName(), json.toString(4)));
+
+			String content = String.format("**Data Report** for guild **%s**\n```json\n%s\n```", guild.getName(), json.toString(4));
+			if (content.length() > 2000) spec .addFile("output.txt", new ByteArrayInputStream(content.getBytes(StandardCharsets.UTF_8)));
+			else spec.setContent(content);
 		})).subscribe();
 	}
 
@@ -40,8 +45,12 @@ public class DataCommand extends Command {
 			Message message = event.getMessage();
 			message.getChannel().flatMap(channel -> channel.createMessage(spec -> {
 				JSONObject json = Main.getBotInstance().getDataCenter().getDataUser(user).save();
-				spec.setContent(String.format("**Data Report** for user **%s**\n```json\n%s\n```", user.getUsername(), json.toString(4)));
+
+				String content = String.format("**Data Report** for user **%s**\n```json\n%s\n```", user.getUsername(), json.toString(4));
+				if (content.length() > 2000) spec .addFile("output.txt", new ByteArrayInputStream(content.getBytes(StandardCharsets.UTF_8)));
+				else spec.setContent(content);
 			})).subscribe();
+
 		} catch (ObjectParsingException e) {
 			Message message = event.getMessage();
 			message.getChannel().flatMap(channel -> channel.createEmbed(embed_spec -> {
