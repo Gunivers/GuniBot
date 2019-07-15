@@ -117,9 +117,9 @@ public class BackupCommand extends Command {
 				json_guild.put("owner", guild.getOwnerId().asString());
 				json_guild.put("region", guild.getRegionId());
 				if(guild.getSplashUrl(Format.GIF).isPresent()) json_guild.put("splash", guild.getSplashUrl(Format.GIF).get());
-				if(guild.getSystemChannelId().isPresent()) json_guild.put("system_channel", guild.getSystemChannelId().get());
+				if(guild.getSystemChannelId().isPresent()) json_guild.put("system_channel", guild.getSystemChannelId().get().asString());
 				json_guild.put("verification", guild.getVerificationLevel().getValue());
-				if(guild.getWidgetChannelId().isPresent()) json_guild.put("widget_channel", guild.getWidgetChannelId().get());
+				if(guild.getWidgetChannelId().isPresent()) json_guild.put("widget_channel", guild.getWidgetChannelId().get().asString());
 
 				json_datas.put("guild", json_guild);
 				// Roles
