@@ -1,7 +1,7 @@
 {
 	"backup": 
 	{
-		"description": "Backup all discord data",
+		"description": "Backup all discord data of this server",
 		"permissions": ["discord.administrator"],
 		"arguments": 
 		[
