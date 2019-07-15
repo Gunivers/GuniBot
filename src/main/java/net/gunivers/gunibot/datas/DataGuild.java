@@ -1,5 +1,6 @@
 package net.gunivers.gunibot.datas;
 
+import java.util.HashMap;
 import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
@@ -32,7 +33,7 @@ public class DataGuild extends DataObject<Guild>
 	private ConcurrentHashMap<Snowflake, DataCategory> dataCategories = new ConcurrentHashMap<>();
 
 	private String prefix = "/";
-	
+
 	private boolean welcomeEnabled = true;
 	private String welcomeMessage = "Server: {server} ; User: {user} ; Mention: {user.mention}";
 	private long welcomeChannel = -1L;
@@ -40,6 +41,9 @@ public class DataGuild extends DataObject<Guild>
 	private boolean ccEnabled = false;
 	private long ccActive = -1L;
 	private long ccArchive = -1L;
+
+	public boolean inBackup = false;
+	private HashMap<String, JSONObject> backups = new HashMap<>();
 
 	{
 		this.getDataMember(this.getEntity().getOwner().block()).getPermissions().add(Permission.bot.get("server.owner"));
@@ -202,7 +206,7 @@ public class DataGuild extends DataObject<Guild>
 		json.putOpt("categories", json_categories);
 
 		json.putOpt("prefix", prefix);
-		
+
 		JSONObject welcome = new JSONObject();
 		welcome.putOpt("enabled", welcomeEnabled);
 		welcome.putOpt("message", welcomeMessage);
@@ -214,6 +218,8 @@ public class DataGuild extends DataObject<Guild>
 		cc.putOpt("active", ccActive);
 		cc.putOpt("archive", ccArchive);
 		json.put("cchannel", cc);
+
+		json.putOpt("backups", backups);
 
 		return json;
 	}
@@ -338,7 +344,7 @@ public class DataGuild extends DataObject<Guild>
 		}
 
 		prefix = json.optString("prefix", prefix);
-		
+
 		JSONObject welcome = json.optJSONObject("welcome"); if (welcome == null) welcome = new JSONObject();
 		welcomeEnabled = welcome.optBoolean("enabled", welcomeEnabled);
 		welcomeMessage = welcome.optString("message", welcomeMessage);
@@ -348,10 +354,13 @@ public class DataGuild extends DataObject<Guild>
 		ccEnabled = cc.getBoolean("enabled");
 		ccActive = cc.getLong("active");
 		ccArchive = cc.getLong("archive");
+
+		JSONObject json_backups = json.optJSONObject("backups");
+		if(json_backups != null) for(String backup_name:json_backups.keySet()) backups.put(backup_name, json_backups.getJSONObject(backup_name));
 	}
 
 	public String getPrefix() { return prefix; }
-	
+
 	public boolean isWelcomeEnabled() { return welcomeEnabled; }
 	public String getWelcomeMessage() { return welcomeMessage; }
 	public long getWelcomeChannel() { return welcomeChannel; }
@@ -361,7 +370,7 @@ public class DataGuild extends DataObject<Guild>
 	public long getCCArchive() { return ccArchive; }
 
 	public void setPrefix(String prefix) { this.prefix = prefix; }
-	
+
 	public void setWelcomeEnable(boolean enable) { this.welcomeEnabled = enable; }
 	public void setWelcomeMessage(String msg) { this.welcomeMessage = msg; }
 	public void setWelcomeChannel(long channel) { this.welcomeChannel = channel; }
@@ -369,4 +378,6 @@ public class DataGuild extends DataObject<Guild>
 	public void setCCEnable(boolean enable) { this.ccEnabled = enable; }
 	public void setCCActive(long c) { this.ccActive = c; }
 	public void setCCArchive(long c) { this.ccArchive = c; }
+
+	public void addBackup(String backup_name, JSONObject json_datas) { this.backups.put(backup_name, json_datas); }
 }

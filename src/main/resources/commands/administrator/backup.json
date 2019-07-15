@@ -1,0 +1,60 @@
+{
+	"backup": 
+	{
+		"description": "Backup all discord data",
+		"permissions": ["discord.administrator"],
+		"arguments": 
+		[
+			{
+				"type": "string",
+				"tag": "launch",
+				"matches": "launch",
+				"execute": "defaultBackup",
+				"arguments":
+				[
+					{
+						"type": "string",
+						"tag": "name",
+						"keep_value": true,
+						"execute": "namedBackup"
+					}
+				]
+			},
+			{
+				"type": "string",
+				"tag": "restore",
+				"matches": "restore",
+				"arguments":
+				[
+					{
+						"type": "string",
+						"tag": "name",
+						"keep_value": true,
+						"execute": "restoreBackup"
+					}
+				]
+			},
+			{
+				"type": "string",
+				"tag": "list",
+				"matches": "list",
+				"execute": "listBackup"
+			},
+			{
+				"type": "string",
+				"tag": "remove",
+				"matches": "remove",
+				"arguments":
+				[
+					{
+						"type": "string",
+						"tag": "name",
+						"keep_value": true,
+						"execute": "removeBackup"
+					}
+				]
+			}
+		]
+		
+	}
+}
