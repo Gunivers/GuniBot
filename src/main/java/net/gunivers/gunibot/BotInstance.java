@@ -1,7 +1,6 @@
 package net.gunivers.gunibot;
 
 import java.time.Duration;
-import java.util.concurrent.LinkedBlockingQueue;
 
 import discord4j.core.DiscordClient;
 import discord4j.core.DiscordClientBuilder;
@@ -21,7 +20,6 @@ import reactor.core.scheduler.Schedulers;
 public class BotInstance {
 
 	private DataCenter dataCenter; // Système controlant toute les données du bot
-	private LinkedBlockingQueue<GuildCreateEvent> guildQueue; // File d'attente des serveurs à charger
 	private DiscordClient botClient;
 	private BotConfig config;
 
@@ -32,48 +30,36 @@ public class BotInstance {
 	 */
 	public BotInstance(BotConfig config) {
 		this.config = config;
-		guildQueue = new LinkedBlockingQueue<>();
 
 		if (config.token == null) {
 			throw new IllegalArgumentException("Vous devez indiquez votre token en argument !");
 		} else {
-			System.out.println("Liste des commandes chargées :");
-			Command.loadCommands();
-			System.out.println("Nombre de commandes chargées : " + Command.commands.size());
+
+			System.out.println("Build Discord Client...");
 			DiscordClientBuilder builder = new DiscordClientBuilder(config.token);
 			builder.setRetryOptions(new RetryOptions(Duration.ofSeconds(30), Duration.ofMinutes(1), 1000, Schedulers.single())); // En cas de déconnection imprévue, tente de se reconnecter à l'infini
 			builder.setInitialPresence(Presence.doNotDisturb(Activity.watching("Démarrage...")));
 			botClient = builder.build();
 
+			System.out.println("Initialize Data Center...");
+			dataCenter = new DataCenter(this);
+
+			System.out.println("Loading commands...");
+			System.out.println("Liste des commandes chargées :");
+			Command.loadCommands();
+			System.out.println("Nombre de commandes chargées : " + Command.commands.size());
+
 			EventDispatcher dispatcher = botClient.getEventDispatcher();
 
 			// Initializing Events (nécessaire pour l'initialisation du bots et de ses données)
 			dispatcher.on(ReadyEvent.class).take(1).subscribe(event -> { //code éxécuté qu'une seule fois lorsque le bot est connecté à discord
-				dataCenter = new DataCenter(event, this);
-				while (guildQueue.size() > 0) {
-					try {
-						dataCenter.addGuild(guildQueue.take().getGuild());
-					} catch (InterruptedException e) {
-						System.err.println("Guild queue is empty and interrupted !");
-					}
-				}
-				botClient.updatePresence(Presence.online(Activity.listening("/help"))).subscribe();
+				System.out.println("Initialize Events...");
+				botClient.updatePresence(Presence.idle(Activity.listening("Initializing events..."))).subscribe();
 				Events.initialize(event);
+				botClient.updatePresence(Presence.online(Activity.listening("/help"))).subscribe();
 			});
 
-			dispatcher.on(GuildCreateEvent.class).subscribe(event ->
-			{
-				if (dataCenter == null)
-				{
-					try { guildQueue.put(event); } catch (InterruptedException e)
-					{
-						System.err.println("Guild queue is full and interrupted ! Skipping guild event !");
-					}
-				}
-				else
-					dataCenter.addGuild(event.getGuild());
-			});
-
+			dispatcher.on(GuildCreateEvent.class).subscribe(event -> dataCenter.addGuild(event.getGuild()));
 			VoiceChannelCreator.init(botClient);
 		}
 	}

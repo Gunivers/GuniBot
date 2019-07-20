@@ -1,6 +1,5 @@
 package net.gunivers.gunibot.datas;
 
-import java.util.HashMap;
 import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
@@ -8,7 +7,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.json.JSONObject;
 
 import discord4j.core.DiscordClient;
-import discord4j.core.event.domain.lifecycle.ReadyEvent;
 import discord4j.core.object.entity.Guild;
 import discord4j.core.object.entity.Member;
 import discord4j.core.object.entity.User;
@@ -44,18 +42,17 @@ public class DataCenter {
 	/**
 	 * Contient la liste des systèmes/objets sauvegardable (appelés par la fonction save, gèrent eux même leurs structures de données)
 	 */
-	private HashMap<String, Restorable> dataSystems;
+	private ConcurrentHashMap<String, Restorable> dataSystems;
 
 	private SQLClient sql;
 
-	public DataCenter(ReadyEvent event, BotInstance bot_instance) {
+	public DataCenter(BotInstance bot_instance) {
 		botInstance = bot_instance;
-		botClient = event.getClient();
-		botClient.updatePresence(Presence.idle(Activity.watching("Loading Data Control..."))).subscribe();
+		botClient = bot_instance.getBotClient();
 
 		dataGuilds = new ConcurrentHashMap<>();
 		dataUsers = new ConcurrentHashMap<>(128);
-		dataSystems = new HashMap<>();
+		dataSystems = new ConcurrentHashMap<>();
 
 		sql = new SQLClient(new SQLConfig(botInstance.getConfig()), true);
 	}
