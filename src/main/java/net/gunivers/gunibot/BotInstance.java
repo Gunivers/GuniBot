@@ -43,6 +43,8 @@ public class BotInstance {
 
 			System.out.println("Initialize Data Center...");
 			dataCenter = new DataCenter(this);
+			//enregistrement de systèmes ?
+			dataCenter.loadSystems();
 
 			System.out.println("Loading commands...");
 			System.out.println("Liste des commandes chargées :");

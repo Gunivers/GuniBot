@@ -153,6 +153,20 @@ public class DataCenter {
 	}
 
 	/**
+	 * Récupère les données du système indiqué.
+	 * @param String id du système.
+	 * @return Les données, formatés en json.
+	 */
+	public JSONObject getDataSaveSystem(String system_id) {
+		Restorable system_datas = dataSystems.get(system_id);
+		if(system_datas != null) {
+			return system_datas.save().toJson();
+		} else {
+			throw new IllegalArgumentException(String.format("The system '%s' is not registered!", system_id));
+		}
+	}
+
+	/**
 	 * Supprime du cache toutes les données de serveur qui ne sont pas enregistré.
 	 */
 	public void clearDataGuildsCache() {

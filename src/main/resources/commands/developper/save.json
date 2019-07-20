@@ -1,0 +1,40 @@
+{
+	"save": 
+	{
+		"description": "Save internal data of the guild/user/system",
+		"permissions": ["bot.dev"],
+		"arguments":
+		[
+			{
+				"type": "string",
+				"tag": "guild",
+				"matches": "guild",
+				"execute": "saveGuild"
+			},
+			{
+				"type": "string",
+				"tag": "user",
+				"matches": "user",
+				"arguments": 
+				[{
+					"type": "string",
+					"tag": "user",
+					"keep_value": true,
+					"execute": "saveUser"
+				}]
+			},
+			{
+				"type": "string",
+				"tag": "system",
+				"matches": "system",
+				"arguments" :
+				[{
+					"type": "string",
+					"tag": "system_id",
+					"keep_value": true,
+					"execute": "saveSystem"
+				}]
+			}
+		]
+	}
+}

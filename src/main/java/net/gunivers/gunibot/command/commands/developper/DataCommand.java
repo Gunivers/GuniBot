@@ -1,4 +1,4 @@
-package net.gunivers.gunibot.command.commands.administrator;
+package net.gunivers.gunibot.command.commands.developper;
 
 import java.awt.Color;
 import java.io.ByteArrayInputStream;
@@ -21,7 +21,7 @@ public class DataCommand extends Command {
 
 	@Override
 	public String getSyntaxFile() {
-		return "administrator/data.json";
+		return "developper/data.json";
 	}
 
 	public void displayGuildData(MessageCreateEvent event) {
@@ -65,8 +65,18 @@ public class DataCommand extends Command {
 				embed_spec.setDescription(e.getMessage());
 			})).subscribe();
 		}
+	}
 
+	public void displaySystemData(MessageCreateEvent event, List<String> args) {
+		String system_id = args.get(0);
+		Message message = event.getMessage();
+		message.getChannel().flatMap(channel -> channel.createMessage(spec -> {
+			JSONObject json = Main.getBotInstance().getDataCenter().getDataSaveSystem(system_id);
 
+			String content = String.format("**Data Report** for system **%s**\n```json\n%s\n```", system_id, json.toString(4));
+			if (content.length() > 2000) spec .addFile("output.txt", new ByteArrayInputStream(content.getBytes(StandardCharsets.UTF_8)));
+			else spec.setContent(content);
+		})).subscribe();
 	}
 
 }
