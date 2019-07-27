@@ -382,6 +382,7 @@ public class DataGuild extends DataObject<Guild>
 	public void setCCArchive(long c) { this.ccArchive = c; }
 
 	public void addBackup(String backup_name, JSONObject json_datas) { this.backups.put(backup_name, json_datas); }
+	public boolean hasBackup(String backup_name) { return this.backups.containsKey(backup_name); }
 	public JSONObject getBackup(String backup_name) { return this.backups.get(backup_name); }
 	public Set<String> listBackup() { return new HashSet<>(this.backups.keySet()); }
 	public void removeBackup(String backup_name) { this.backups.remove(backup_name); }

@@ -6,6 +6,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.json.JSONArray;
@@ -638,11 +639,78 @@ public class BackupCommand extends Command {
 	}
 
 	public void listBackup(MessageCreateEvent event) {
+		Message message = event.getMessage();
+		TextChannel channel = message.getChannel().ofType(TextChannel.class).block();
+		User user_bot = event.getClient().getSelf().block();
+		User author = event.getMember().get();
+		Guild guild = event.getGuild().block();
 
+		Set<String> backups = Main.getBotInstance().getDataCenter().getDataGuild(guild).listBackup();
+
+		if(backups.size()>0) {
+			channel.createEmbed(spec -> {
+				spec.setAuthor(user_bot.getUsername(), null, user_bot.getAvatarUrl());
+				spec.setColor(Color.ORANGE);
+				spec.setFooter("Lançé par "+author.getUsername(), author.getAvatarUrl());
+				spec.setTimestamp(message.getTimestamp());
+
+				spec.addField("Liste des backups", String.join("\n", backups), false);
+			}).subscribe();
+		} else {
+			channel.createEmbed(spec -> {
+				spec.setAuthor(user_bot.getUsername(), null, user_bot.getAvatarUrl());
+				spec.setColor(Color.ORANGE);
+				spec.setFooter("Lançé par "+author.getUsername(), author.getAvatarUrl());
+				spec.setTimestamp(message.getTimestamp());
+
+				spec.setDescription("Aucune backup enregistré !");
+			}).subscribe();
+		}
 	}
 
 	public void removeBackup(MessageCreateEvent event, List<String> args) {
+		Message message = event.getMessage();
+		TextChannel channel = message.getChannel().ofType(TextChannel.class).block();
+		User user_bot = event.getClient().getSelf().block();
+		User author = event.getMember().get();
+		Guild guild = event.getGuild().block();
 
+		String backup_name = args.get(0);
+
+		if((backup_name == null) || backup_name.isEmpty()) {
+			channel.createEmbed(spec -> {
+				spec.setAuthor(user_bot.getUsername(), null, user_bot.getAvatarUrl());
+				spec.setColor(Color.ORANGE);
+				spec.setFooter("Lançé par "+author.getUsername(), author.getAvatarUrl());
+				spec.setTimestamp(message.getTimestamp());
+
+				spec.addField("Syntaxe incorrect !", "le nom doit être valide !", false);
+			}).subscribe();
+		} else {
+
+			DataGuild data_guild = Main.getBotInstance().getDataCenter().getDataGuild(guild);
+
+			if(data_guild.hasBackup(backup_name)) {
+				data_guild.removeBackup(backup_name);
+				channel.createEmbed(spec -> {
+					spec.setAuthor(user_bot.getUsername(), null, user_bot.getAvatarUrl());
+					spec.setColor(Color.ORANGE);
+					spec.setFooter("Lançé par "+author.getUsername(), author.getAvatarUrl());
+					spec.setTimestamp(message.getTimestamp());
+
+					spec.addField("Backup supprimé !", "Nom de la backup supprimé : **"+backup_name+"**", false);
+				}).subscribe();
+			} else {
+				channel.createEmbed(spec -> {
+					spec.setAuthor(user_bot.getUsername(), null, user_bot.getAvatarUrl());
+					spec.setColor(Color.ORANGE);
+					spec.setFooter("Lançé par "+author.getUsername(), author.getAvatarUrl());
+					spec.setTimestamp(message.getTimestamp());
+
+					spec.setDescription("Aucune backup enregistré avec ce nom : **"+backup_name+"**");
+				}).subscribe();
+			}
+		}
 	}
 
 }
