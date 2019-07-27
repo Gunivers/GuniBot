@@ -12,5 +12,5 @@ bin/
 /bin-default/
 /.classpath
 /config
-/src/main/java/command/commands/TestCommand.java
-/src/main/ressources/commands/test.json
+src/main/java/net/gunivers/gunibot/command/commands/TestCommand.java
+src/main/resources/commands/test.json

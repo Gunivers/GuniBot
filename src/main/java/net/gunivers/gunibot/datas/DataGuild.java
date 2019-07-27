@@ -1,8 +1,10 @@
 package net.gunivers.gunibot.datas;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map.Entry;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.json.JSONObject;
@@ -42,7 +44,7 @@ public class DataGuild extends DataObject<Guild>
 	private long ccActive = -1L;
 	private long ccArchive = -1L;
 
-	public boolean inBackup = false;
+	public boolean inBigTask = false;
 	private HashMap<String, JSONObject> backups = new HashMap<>();
 
 	{
@@ -380,4 +382,7 @@ public class DataGuild extends DataObject<Guild>
 	public void setCCArchive(long c) { this.ccArchive = c; }
 
 	public void addBackup(String backup_name, JSONObject json_datas) { this.backups.put(backup_name, json_datas); }
+	public JSONObject getBackup(String backup_name) { return this.backups.get(backup_name); }
+	public Set<String> listBackup() { return new HashSet<>(this.backups.keySet()); }
+	public void removeBackup(String backup_name) { this.backups.remove(backup_name); }
 }
