@@ -18,7 +18,6 @@ public abstract class DataObject<E extends Entity> {
 
 	private E entity;
 	private HashMap<String,JSONObject> wrappedDatas;
-	//TODO Future system : Wrapped Data
 
 	/**
 	 * Créer l'objet Data et enregistre Entity.
