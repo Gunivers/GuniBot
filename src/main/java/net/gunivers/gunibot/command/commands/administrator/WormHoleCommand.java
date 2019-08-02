@@ -4,7 +4,6 @@ import java.time.Duration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import discord4j.core.event.domain.message.MessageCreateEvent;
@@ -17,6 +16,8 @@ import discord4j.core.object.util.Snowflake;
 import net.gunivers.gunibot.Main;
 import net.gunivers.gunibot.core.BotUtils;
 import net.gunivers.gunibot.core.command.Command;
+import net.gunivers.gunibot.datas.serialize.Restorable;
+import net.gunivers.gunibot.datas.serialize.Serializer;
 import net.gunivers.gunibot.event.Events;
 import net.gunivers.gunibot.utils.tuple.Tuple;
 import net.gunivers.gunibot.utils.tuple.Tuple2;
@@ -25,12 +26,37 @@ import reactor.core.Disposable;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-public class WarmHoleCommand extends Command {
+public class WormHoleCommand extends Command {
+	
+	private static class Memory implements Restorable {
+		private HashMap<Tuple2<Snowflake, Snowflake>, Set<Tuple2<Snowflake, Snowflake>>> linkedChannels = new HashMap<>();
 
+		@Override
+		public Serializer save() {
+			Serializer s = new Serializer();
+			s.put("wormhole", linkedChannels);
+			return s;
+		}
+		@SuppressWarnings("unchecked")
+		@Override
+		public void load(Serializer serializer) {
+			linkedChannels = (HashMap<Tuple2<Snowflake, Snowflake>, Set<Tuple2<Snowflake, Snowflake>>>)serializer.get("wormhole");
+			if(linkedChannels == null)
+				linkedChannels = new HashMap<>();
+		}
+	}
+	
 	private final static int TIME = 60000;
 	//Stock les les channels associés et leur Guild respectif
-	private Map<Tuple2<Snowflake, Snowflake>, Set<Tuple2<Snowflake, Snowflake>>> linkedChannels = new HashMap<>();
 	private Tuple5<GuildChannel, GuildChannel, Snowflake, Message, Disposable> buffer;
+	private Memory memory;
+	
+	{
+		memory = new Memory();
+		System.out.println(Main.getBotInstance());
+		dataCenter.registerSystem("wormhole", memory);
+	}
+
 	
 	public void link(MessageCreateEvent e, List<String> args) {
 		Flux<GuildChannel> channels = Main.getBotInstance().getBotClient()
@@ -62,10 +88,10 @@ public class WarmHoleCommand extends Command {
 				buffer._5.dispose();
 				buffer._4.delete().subscribe();
 				e.getMessage().block().getChannel().block().createMessage("Specified channels linked!").subscribe();
-				Set<Tuple2<Snowflake, Snowflake>> values = linkedChannels.getOrDefault(Tuple.newTuple(buffer._1.getId(), buffer._1.getGuildId()), new HashSet<>());
+				Set<Tuple2<Snowflake, Snowflake>> values = memory.linkedChannels.getOrDefault(Tuple.newTuple(buffer._1.getId(), buffer._1.getGuildId()), new HashSet<>());
 				values.add(Tuple.newTuple(buffer._2.getId(), buffer._2.getGuildId()));
-				linkedChannels.put(Tuple.newTuple(buffer._1.getId(), buffer._1.getGuildId()), values);
-				Flux<?> test = e.getClient().getEventDispatcher().on(MessageCreateEvent.class).filter(mce ->  
+				memory.linkedChannels.put(Tuple.newTuple(buffer._1.getId(), buffer._1.getGuildId()), values);
+				e.getClient().getEventDispatcher().on(MessageCreateEvent.class).filter(mce ->  
 				mce.getMessage()
 				.getChannelId()
 				.equals(buffer._1.getId()));
@@ -80,7 +106,8 @@ public class WarmHoleCommand extends Command {
 	}
 	
 	private void copyMessage(MessageCreateEvent e) {
-		Set<Tuple2<Snowflake, Snowflake>> values = linkedChannels.get(Tuple.newTuple(e.getMessage().getChannelId(), e.getGuildId()));
+		Set<Tuple2<Snowflake, Snowflake>> values = memory.linkedChannels.get(memory.linkedChannels.keySet().stream().filter(t -> t.equals(Tuple.newTuple(e.getMessage().getChannelId(), e.getGuildId().get()))).findFirst().get());
+		System.out.println(values);
 		values.forEach(channel -> {
 			if(BotUtils.returnOptional(e.getClient().getGuildById(channel._2).block().getChannelById(channel._1)).isPresent())
 				BotUtils.sendMessageWithIdentity(e.getMember().get(), (MessageChannel) e.getClient().getGuildById(channel._2).block().getChannelById(channel._1).block(), e.getMessage().getContent().get());
@@ -89,7 +116,7 @@ public class WarmHoleCommand extends Command {
 	
 	@Override
 	public String getSyntaxFile() {
-		return "administrator/warmhole.json";
+		return "administrator/wormhole.json";
 	}
 
 }

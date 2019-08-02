@@ -1,5 +1,5 @@
 {
-	"warmhole": {
+	"wormhole": {
 		"description": "Link two MessageChannels",
 		"permissions": ["discord.administrator"],
 		"arguments": [

@@ -16,6 +16,7 @@ import discord4j.core.event.domain.message.MessageCreateEvent;
 import net.gunivers.gunibot.command.permissions.Permission;
 import net.gunivers.gunibot.core.command.nodes.Node;
 import net.gunivers.gunibot.core.command.nodes.NodeRoot;
+import net.gunivers.gunibot.datas.DataCenter;
 import net.gunivers.gunibot.utils.tuple.Tuple2;
 
 public abstract class Command {
@@ -27,7 +28,8 @@ public abstract class Command {
 	private Set<Permission> permissions = new HashSet<>();
 	private Set<String> aliases = new HashSet<>();
 	private Map<String, Node> idReference = new HashMap<>();
-
+	protected static DataCenter dataCenter;
+	
 	public String getDescription() {
 		return description;
 	}
@@ -104,7 +106,8 @@ public abstract class Command {
 	 * Permet de charger toutes les commandes du Package
 	 * net.gunivers.gunibot.command.commands
 	 */
-	public static void loadCommands() {
+	public static void loadCommands(DataCenter dc) {
+		dataCenter = dc;
 		Reflections reflections = new Reflections("net.gunivers.gunibot.command.commands");
 		Set<Class<? extends Command>> allCommands = reflections.getSubTypesOf(Command.class);
 		allCommands.forEach(cmd -> {
