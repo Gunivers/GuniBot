@@ -33,6 +33,7 @@ import discord4j.core.object.util.Image;
 import discord4j.core.object.util.Image.Format;
 import discord4j.core.object.util.PermissionSet;
 import discord4j.core.object.util.Snowflake;
+import discord4j.rest.http.client.ClientException;
 import net.gunivers.gunibot.Main;
 import net.gunivers.gunibot.core.BotUtils;
 import net.gunivers.gunibot.core.command.Command;
@@ -283,7 +284,7 @@ public class BackupCommand extends Command {
 					spec.setDefaultMessageNotificationsLevel(NotificationLevel.of(json_guild.getInt("notification")));
 					spec.setOwnerId(Snowflake.of(json_guild.getString("owner")));
 					spec.setRegion(guild.getClient().getRegions().filter(region -> region.getId().equals(json_guild.getString("region"))).blockFirst());
-					if(json_guild.has("region")) spec.setSplash(Image.ofUrl(json_guild.getString("splash")).block());
+					if(json_guild.has("splash")) spec.setSplash(Image.ofUrl(json_guild.getString("splash")).block());
 					spec.setVerificationLevel(VerificationLevel.of(json_guild.getInt("verification")));
 
 					spec.setReason("backup Restoring !");
@@ -334,7 +335,11 @@ public class BackupCommand extends Command {
 							spec.setPermissions(PermissionSet.of(json_role.getLong("permissions")));
 
 							spec.setReason("restore role");
-						}).block();
+						}).doOnError(ClientException.class, e -> {
+							if (e.getStatus().code() == 403) {
+								System.err.println("No permission for edit and restore the role '"+role.getName()+"' ("+role.getId().asString()+")");
+							}
+						}).onErrorReturn(role).block();
 						role.changePosition(json_role.getInt("position")).subscribe();
 					} else {
 						Role role = guild.createRole(spec -> {
