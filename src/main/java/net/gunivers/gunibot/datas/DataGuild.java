@@ -353,9 +353,9 @@ public class DataGuild extends DataObject<Guild>
 		welcomeChannel = welcome.optLong("channel", welcomeChannel);
 
 		JSONObject cc = json.optJSONObject("cchannel"); if (cc == null) cc = new JSONObject();
-		ccEnabled = cc.getBoolean("enabled");
-		ccActive = cc.getLong("active");
-		ccArchive = cc.getLong("archive");
+		ccEnabled = cc.optBoolean("enabled", false);
+		ccActive = cc.optLong("active", -1L);
+		ccArchive = cc.optLong("archive", -1L);
 
 		JSONObject json_backups = json.optJSONObject("backups");
 		if(json_backups != null) for(String backup_name:json_backups.keySet()) backups.put(backup_name, json_backups.getJSONObject(backup_name));

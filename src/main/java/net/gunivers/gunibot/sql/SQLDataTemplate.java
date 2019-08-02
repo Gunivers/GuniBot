@@ -57,7 +57,7 @@ public final class SQLDataTemplate {
 
 	public static String createSystemsTable() {
 		return "CREATE TABLE IF NOT EXISTS systems "
-				+ "(id VARCHAR NOT NULL PRIMARY KEY, "
+				+ "(id VARCHAR(256) NOT NULL PRIMARY KEY, "
 				+ "json JSON);";
 	}
 
