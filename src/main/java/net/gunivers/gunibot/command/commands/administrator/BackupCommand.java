@@ -94,7 +94,9 @@ public class BackupCommand extends Command {
 				json_guild.put("name", guild.getName());
 				if(guild.getAfkChannelId().isPresent()) json_guild.put("afk_id", guild.getAfkChannelId().get().asString());
 				json_guild.put("afk_timeout", guild.getAfkTimeout());
-				if(guild.getBannerUrl(Format.GIF).isPresent()) json_guild.put("banner", guild.getBannerUrl(Format.GIF).get());
+
+				if(guild.getBannerUrl(Format.GIF).isPresent() && (BotUtils.testHTTPCodeResponse(guild.getBannerUrl(Format.GIF).get()) == 200)) json_guild.put("banner", guild.getBannerUrl(Format.GIF).get());
+				else if(guild.getBannerUrl(Format.PNG).isPresent() && (BotUtils.testHTTPCodeResponse(guild.getBannerUrl(Format.PNG).get()) == 200)) json_guild.put("banner", guild.getBannerUrl(Format.PNG).get());
 
 				JSONArray json_bans = new JSONArray();
 				for(Ban ban:guild.getBans().toIterable()) {
@@ -119,11 +121,16 @@ public class BackupCommand extends Command {
 				}
 				json_guild.put("emojis", json_emojis);
 
-				if(guild.getIconUrl(Format.GIF).isPresent()) json_guild.put("icon", guild.getIconUrl(Format.GIF).get());
+				if(guild.getIconUrl(Format.GIF).isPresent() && (BotUtils.testHTTPCodeResponse(guild.getIconUrl(Format.GIF).get()) == 200)) json_guild.put("icon", guild.getIconUrl(Format.GIF).get());
+				else if(guild.getIconUrl(Format.PNG).isPresent() && (BotUtils.testHTTPCodeResponse(guild.getIconUrl(Format.PNG).get()) == 200)) json_guild.put("icon", guild.getIconUrl(Format.PNG).get());
+
 				json_guild.put("notification", guild.getNotificationLevel().getValue());
 				json_guild.put("owner", guild.getOwnerId().asString());
 				json_guild.put("region", guild.getRegionId());
-				if(guild.getSplashUrl(Format.GIF).isPresent()) json_guild.put("splash", guild.getSplashUrl(Format.GIF).get());
+
+				if(guild.getSplashUrl(Format.GIF).isPresent() && (BotUtils.testHTTPCodeResponse(guild.getSplashUrl(Format.GIF).get()) == 200)) json_guild.put("splash", guild.getSplashUrl(Format.GIF).get());
+				else if(guild.getSplashUrl(Format.PNG).isPresent() && (BotUtils.testHTTPCodeResponse(guild.getSplashUrl(Format.PNG).get()) == 200)) json_guild.put("splash", guild.getSplashUrl(Format.PNG).get());
+
 				json_guild.put("verification", guild.getVerificationLevel().getValue());
 
 				json_datas.put("guild", json_guild);

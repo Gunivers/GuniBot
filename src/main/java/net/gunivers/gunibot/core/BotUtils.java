@@ -19,6 +19,7 @@ import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 import reactor.core.publisher.Mono;
+import reactor.netty.http.client.HttpClient;
 
 public class BotUtils {
 
@@ -55,7 +56,7 @@ public class BotUtils {
 			e.printStackTrace();
 		}
 
-	
+
 	}
 
 	/**
@@ -78,6 +79,15 @@ public class BotUtils {
 				throw e;
 			}
 		}
+	}
+
+	/**
+	 * test and return the HTTP code for a default request to the provided URI
+	 * @param uri the URI to test
+	 * @return the response code
+	 */
+	public static int testHTTPCodeResponse(String uri) {
+		return HttpClient.create().post().uri(uri).response().block().status().code();
 	}
 
 	/**
