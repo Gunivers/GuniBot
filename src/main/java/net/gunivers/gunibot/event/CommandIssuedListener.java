@@ -29,6 +29,7 @@ public class CommandIssuedListener extends Events<MessageCreateEvent>
 	@Override
 	protected boolean precondition(MessageCreateEvent event)
 	{
+		if (!event.getMember().isPresent()) return false;
 		DataGuild g = Main.getBotInstance().getDataCenter().getDataGuild(event.getGuild().block());
 		
 		java.util.Optional<String> msg = event.getMessage().getContent();
