@@ -17,7 +17,7 @@ import discord4j.core.object.entity.TextChannel;
 import discord4j.core.object.entity.VoiceChannel;
 import discord4j.core.object.util.Snowflake;
 import net.gunivers.gunibot.command.permissions.Permission;
-import net.gunivers.gunibot.core.BotUtils;
+import net.gunivers.gunibot.core.utils.BotUtils;
 
 /**
  * Classe de donnée pour les objets Guild.

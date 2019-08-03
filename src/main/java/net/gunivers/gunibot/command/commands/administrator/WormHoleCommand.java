@@ -14,8 +14,8 @@ import discord4j.core.object.entity.MessageChannel;
 import discord4j.core.object.reaction.ReactionEmoji;
 import discord4j.core.object.util.Snowflake;
 import net.gunivers.gunibot.Main;
-import net.gunivers.gunibot.core.BotUtils;
 import net.gunivers.gunibot.core.command.Command;
+import net.gunivers.gunibot.core.utils.BotUtils;
 import net.gunivers.gunibot.datas.serialize.Restorable;
 import net.gunivers.gunibot.datas.serialize.Serializer;
 import net.gunivers.gunibot.event.Events;
@@ -107,9 +107,8 @@ public class WormHoleCommand extends Command {
 	
 	private void copyMessage(MessageCreateEvent e) {
 		Set<Tuple2<Snowflake, Snowflake>> values = memory.linkedChannels.get(memory.linkedChannels.keySet().stream().filter(t -> t.equals(Tuple.newTuple(e.getMessage().getChannelId(), e.getGuildId().get()))).findFirst().get());
-		System.out.println(values);
 		values.forEach(channel -> {
-			if(BotUtils.returnOptional(e.getClient().getGuildById(channel._2).block().getChannelById(channel._1)).isPresent())
+			if(BotUtils.returnOptional(e.getClient().getGuildById(channel._2).block().getChannelById(channel._1)).isPresent() && e.getMessage().getContent().isPresent())
 				BotUtils.sendMessageWithIdentity(e.getMember().get(), (MessageChannel) e.getClient().getGuildById(channel._2).block().getChannelById(channel._1).block(), e.getMessage().getContent().get());
 		});
 	}

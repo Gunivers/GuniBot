@@ -10,11 +10,11 @@ import discord4j.core.event.domain.lifecycle.ReadyEvent;
 import discord4j.core.object.presence.Activity;
 import discord4j.core.object.presence.Presence;
 import discord4j.gateway.retry.RetryOptions;
-import net.gunivers.gunibot.auto_vocal_channel.VoiceChannelCreator;
 import net.gunivers.gunibot.core.command.Command;
 import net.gunivers.gunibot.core.main_parser.BotConfig;
 import net.gunivers.gunibot.datas.DataCenter;
 import net.gunivers.gunibot.event.Events;
+import net.gunivers.gunibot.feature.auto_vocal_channel.VoiceChannelCreator;
 import reactor.core.scheduler.Schedulers;
 
 public class BotInstance {

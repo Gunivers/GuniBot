@@ -8,7 +8,7 @@ import java.util.stream.Collectors;
 import discord4j.core.event.domain.message.ReactionAddEvent;
 import discord4j.core.object.entity.Message;
 import discord4j.core.object.reaction.ReactionEmoji;
-import net.gunivers.gunibot.core.BotUtils;
+import net.gunivers.gunibot.core.utils.BotUtils;
 import net.gunivers.gunibot.utils.tuple.Tuple;
 import net.gunivers.gunibot.utils.tuple.Tuple3;
 
