@@ -189,7 +189,7 @@ public class SQLClient {
 		checkConnection();
 
 		try {
-			for(String line:SQLDataTemplate.insertSystemData(system_id, datas).split("\n")) sqlConnection.createStatement().execute(line);
+			sqlConnection.createStatement().execute(SQLDataTemplate.insertSystemData(system_id, datas));
 		} catch (SQLException e) {
 			throw new RuntimeException(e);
 		}
