@@ -14,3 +14,7 @@ bin/
 /config
 src/main/java/net/gunivers/gunibot/command/commands/TestCommand.java
 src/main/resources/commands/test.json
+
+# Ignore Eclipse
+.settings
+.project
