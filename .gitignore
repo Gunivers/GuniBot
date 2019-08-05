@@ -18,3 +18,7 @@ src/main/resources/commands/test.json
 # Ignore Eclipse
 .settings
 .project
+
+# Ignore Test
+.vscode
+TestCommand.java
