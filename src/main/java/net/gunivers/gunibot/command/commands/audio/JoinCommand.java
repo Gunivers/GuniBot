@@ -1,7 +1,5 @@
 package net.gunivers.gunibot.command.commands.audio;
 
-import java.util.List;
-
 import discord4j.core.event.domain.message.MessageCreateEvent;
 import discord4j.core.object.VoiceState;
 import discord4j.core.object.entity.Member;
@@ -16,7 +14,7 @@ public class JoinCommand extends Command {
 		return "audio/join.json";
 	}
 	
-	public void join(MessageCreateEvent e, List<String> args) {
+	public void join(MessageCreateEvent e) {
 		final Member member = e.getMember().orElse(null);
 	    if (member != null) {
 	        final VoiceState voiceState = member.getVoiceState().block();

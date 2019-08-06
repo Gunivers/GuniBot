@@ -20,6 +20,7 @@ public class Audio {
 	 * Initialize audio providers and url parsers.
 	 */
 	public static void init() {
+		System.out.println("[Audio] Intianilizing...");
 		playerManager = new DefaultAudioPlayerManager();
 		playerManager.getConfiguration().setFrameBufferFactory(NonAllocatingAudioFrameBuffer::new);
 		
@@ -29,5 +30,6 @@ public class Audio {
 		
 		provider = new LavaPlayerAudioProvider(player);
 		scheduler = new TrackScheduler(player);
+		System.out.println("[Audio] Intianilized!");
 	}
 }

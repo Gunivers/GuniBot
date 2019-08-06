@@ -13,7 +13,7 @@ public class PlayCommand extends Command {
 		return "audio/play.json";
 	}
 	
-	public void join(MessageCreateEvent e, List<String> args) {
+	public void play(MessageCreateEvent e, List<String> args) {
 		if (!args.isEmpty()) {
 			Audio.playerManager.loadItem(args.get(0), Audio.scheduler);
 		}
