@@ -1,4 +1,4 @@
-package net.gunivers.gunibot.auto_vocal_channel;
+package net.gunivers.gunibot.feature.auto_vocal_channel;
 
 import java.io.IOException;
 import java.net.URISyntaxException;

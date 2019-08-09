@@ -10,11 +10,12 @@ import discord4j.core.event.domain.lifecycle.ReadyEvent;
 import discord4j.core.object.presence.Activity;
 import discord4j.core.object.presence.Presence;
 import discord4j.gateway.retry.RetryOptions;
-import net.gunivers.gunibot.auto_vocal_channel.VoiceChannelCreator;
+import net.gunivers.gunibot.audio.Audio;
 import net.gunivers.gunibot.core.command.Command;
 import net.gunivers.gunibot.core.main_parser.BotConfig;
 import net.gunivers.gunibot.datas.DataCenter;
 import net.gunivers.gunibot.event.Events;
+import net.gunivers.gunibot.feature.auto_vocal_channel.VoiceChannelCreator;
 import reactor.core.scheduler.Schedulers;
 
 public class BotInstance {
@@ -34,7 +35,9 @@ public class BotInstance {
 		if (config.token == null) {
 			throw new IllegalArgumentException("Vous devez indiquez votre token en argument !");
 		} else {
-
+			
+			Audio.init();
+			
 			System.out.println("Build Discord Client...");
 			DiscordClientBuilder builder = new DiscordClientBuilder(config.token);
 			builder.setRetryOptions(new RetryOptions(Duration.ofSeconds(30), Duration.ofMinutes(1), 1000, Schedulers.single())); // En cas de déconnection imprévue, tente de se reconnecter à l'infini

@@ -4,8 +4,8 @@ import java.util.List;
 
 import discord4j.core.event.domain.message.MessageCreateEvent;
 import discord4j.core.object.entity.Member;
-import net.gunivers.gunibot.core.BotUtils;
 import net.gunivers.gunibot.core.command.Command;
+import net.gunivers.gunibot.core.utils.BotUtils;
 
 public class ImitateCommand extends Command {
 

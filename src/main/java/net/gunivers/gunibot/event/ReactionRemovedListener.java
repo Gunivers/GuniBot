@@ -1,5 +1,7 @@
 package net.gunivers.gunibot.event;
 
+import static net.gunivers.gunibot.core.utils.BotUtils.emojiToId;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
@@ -8,8 +10,6 @@ import java.util.stream.Collectors;
 import discord4j.core.event.domain.message.ReactionRemoveEvent;
 import discord4j.core.object.entity.Message;
 import discord4j.core.object.reaction.ReactionEmoji;
-
-import static net.gunivers.gunibot.core.BotUtils.emojiToId;
 import net.gunivers.gunibot.utils.tuple.Tuple;
 import net.gunivers.gunibot.utils.tuple.Tuple3;
 

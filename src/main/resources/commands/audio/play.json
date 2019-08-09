@@ -1,0 +1,16 @@
+{
+	"play": 
+	{
+		"description": "Plays the sound from the url",
+		"permissions": ["bot.dev"],
+		"arguments": 
+		[
+			{
+				"type": "string",
+				"tag": "url",
+				"execute": "play",
+				"keep_value": true
+			}
+		]
+	}
+}

@@ -1,4 +1,4 @@
-package net.gunivers.gunibot.core;
+package net.gunivers.gunibot.core.utils;
 
 import java.io.IOException;
 import java.net.URL;

@@ -1,0 +1,8 @@
+{
+	"join": 
+	{
+		"description": "The bot joins the channel the command sender is in.",
+		"permissions": ["bot.dev"],
+		"execute": "join"
+	}
+}
