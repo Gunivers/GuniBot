@@ -58,6 +58,10 @@ public class DataCenter {
 		sqlRestorerSystem.unregisterSystem(system_id);
 	}
 
+	public boolean isRegisteredSystem(String system_id) {
+		return sqlRestorerSystem.isRegistered(system_id);
+	}
+
 	/**
 	 * Charge les données du serveur, si existant.
 	 * @param guild le serveur à chargé.
@@ -143,6 +147,10 @@ public class DataCenter {
 			dataUsers.put(user.getId(), data_user);
 			return data_user;
 		}
+	}
+
+	public RestorableSystem getSystem(String id) {
+		return sqlRestorerSystem.getSystem(id);
 	}
 
 	/**
