@@ -270,7 +270,7 @@ public final class SQLDataTemplate {
 	}
 
 	public static String insertSystemData(String system_id, JSONObject datas) {
-		return "REPLACE INTO systems (id,json) VALUE ("+system_id+",'"+datas.toString()+"');";
+		return "REPLACE INTO systems (id,json) VALUE ('"+system_id+"','"+datas.toString()+"');";
 	}
 
 }

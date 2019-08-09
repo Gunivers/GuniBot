@@ -5,7 +5,7 @@ import java.io.IOException;
 
 public class BotConfig {
 
-	private static final String SQL_URL_FORMAT = "jdbc:mysql://%s?serverTimezone=Europe/Paris";
+	public static final String SQL_URL_FORMAT = "jdbc:mysql://%s?serverTimezone=Europe/Paris&autoReconnect=true&failOverReadOnly=false&maxReconnects=3";
 
 	public final String token;
 	public final String sql_url;

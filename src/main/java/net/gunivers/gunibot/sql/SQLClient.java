@@ -20,10 +20,7 @@ public class SQLClient {
 		public final String sqlDb;
 
 		public SQLConfig(BotConfig config) {
-			sqlUrl = config.sql_url;
-			sqlUser = config.sql_user;
-			sqlPassword = config.sql_pwd;
-			sqlDb = config.sql_db;
+			this(config.sql_url, config.sql_user, config.sql_pwd, config.sql_db);
 		}
 
 		private SQLConfig(String sql_url, String sql_user, String sql_pwd, String sql_db) {
@@ -34,7 +31,7 @@ public class SQLClient {
 		}
 	}
 
-	public static final SQLConfig TEST_CONFIG = new SQLConfig("jdbc:mysql://172.17.228.152?serverTimezone=Europe/Paris", "gunibot", "gunibot", "gunibot");
+	//public static final SQLConfig TEST_CONFIG = new SQLConfig(String.format(BotConfig.SQL_URL_FORMAT, "localhost"), "gunibot", "gunibot", "gunibot");
 
 	private Connection sqlConnection;
 	private boolean isDisable;
@@ -65,7 +62,7 @@ public class SQLClient {
 		try {
 			return DriverManager.getConnection(config.sqlUrl, config.sqlUser, config.sqlPassword);
 		} catch (SQLException e) {
-			throw new RuntimeException("Error on database access !", e);
+			throw new RuntimeException(String.format("Error on database access!\nURL = %s", config.sqlUrl), e);
 		}
 	}
 
@@ -189,6 +186,7 @@ public class SQLClient {
 		checkConnection();
 
 		try {
+			//System.out.println(SQLDataTemplate.insertSystemData(system_id, datas));
 			sqlConnection.createStatement().execute(SQLDataTemplate.insertSystemData(system_id, datas));
 		} catch (SQLException e) {
 			throw new RuntimeException(e);
