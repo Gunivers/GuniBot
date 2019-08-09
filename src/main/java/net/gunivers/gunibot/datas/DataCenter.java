@@ -14,10 +14,9 @@ import discord4j.core.object.presence.Activity;
 import discord4j.core.object.presence.Presence;
 import discord4j.core.object.util.Snowflake;
 import net.gunivers.gunibot.BotInstance;
-import net.gunivers.gunibot.datas.serialize.Restorable;
-import net.gunivers.gunibot.datas.serialize.Serializer;
-import net.gunivers.gunibot.sql.SQLClient;
-import net.gunivers.gunibot.sql.SQLClient.SQLConfig;
+import net.gunivers.gunibot.core.system.RestorableSystem;
+import net.gunivers.gunibot.sql.SQLRestorerSystem;
+import net.gunivers.gunibot.sql.SQLRestorerSystem.SQLConfig;
 
 /**
  * Centre de contrôle des données du bot.
@@ -39,12 +38,7 @@ public class DataCenter {
 	 */
 	private ConcurrentHashMap<Snowflake, DataUser> dataUsers;
 
-	/**
-	 * Contient la liste des systèmes/objets sauvegardable (appelés par la fonction save, gèrent eux même leurs structures de données)
-	 */
-	private ConcurrentHashMap<String, Restorable> dataSystems;
-
-	private SQLClient sql;
+	private SQLRestorerSystem sqlRestorerSystem;
 
 	public DataCenter(BotInstance bot_instance) {
 		botInstance = bot_instance;
@@ -52,17 +46,16 @@ public class DataCenter {
 
 		dataGuilds = new ConcurrentHashMap<>();
 		dataUsers = new ConcurrentHashMap<>(128);
-		dataSystems = new ConcurrentHashMap<>();
 
-		sql = new SQLClient(new SQLConfig(botInstance.getConfig()), true);
+		sqlRestorerSystem = new SQLRestorerSystem(new SQLConfig(botInstance.getConfig()));
 	}
 
-	public void registerSystem(String system_id, Restorable system) {
-		dataSystems.put(system_id, system);
+	public void registerSystem(String system_id, RestorableSystem system) {
+		sqlRestorerSystem.registerSystem(system_id, system);
 	}
 
 	public void unregisterSystem(String system_id) {
-		dataSystems.remove(system_id);
+		sqlRestorerSystem.unregisterSystem(system_id);
 	}
 
 	/**
@@ -72,13 +65,13 @@ public class DataCenter {
 	public void addGuild(Guild guild) {
 		if(hasRegisteredData(guild)) {
 			DataGuild data_guild = new DataGuild(guild);
-			data_guild.load(sql.loadGuildData(guild.getId().asLong()));
+			data_guild.load(sqlRestorerSystem.loadGuildData(guild.getId().asLong()));
 			dataGuilds.put(guild.getId(), data_guild);
 		}
 		for (Member user:guild.getMembers().toIterable()) {
 			if(hasRegisteredData(user) && !dataUsers.containsKey(user.getId())) {
 				DataUser data_user = new DataUser(user);
-				data_user.load(sql.loadUserData(user.getId().asLong()));
+				data_user.load(sqlRestorerSystem.loadUserData(user.getId().asLong()));
 				dataUsers.put(user.getId(), data_user);
 			}
 		}
@@ -122,7 +115,7 @@ public class DataCenter {
 			DataGuild data_guild;
 			if(hasRegisteredData(guild)) {
 				data_guild = new DataGuild(guild);
-				data_guild.load(sql.loadGuildData(guild.getId().asLong()));
+				data_guild.load(sqlRestorerSystem.loadGuildData(guild.getId().asLong()));
 			} else {
 				data_guild = new DataGuild(guild);
 			}
@@ -143,26 +136,12 @@ public class DataCenter {
 			DataUser data_user;
 			if(hasRegisteredData(user)) {
 				data_user = new DataUser(user);
-				data_user.load(sql.loadUserData(user.getId().asLong()));
+				data_user.load(sqlRestorerSystem.loadUserData(user.getId().asLong()));
 			} else {
 				data_user = new DataUser(user);
 			}
 			dataUsers.put(user.getId(), data_user);
 			return data_user;
-		}
-	}
-
-	/**
-	 * Récupère les données du système indiqué.
-	 * @param String id du système.
-	 * @return Les données, formatés en json.
-	 */
-	public JSONObject getDataSaveSystem(String system_id) {
-		Restorable system_datas = dataSystems.get(system_id);
-		if(system_datas != null) {
-			return system_datas.save().toJson();
-		} else {
-			throw new IllegalArgumentException(String.format("The system '%s' is not registered!", system_id));
 		}
 	}
 
@@ -202,7 +181,7 @@ public class DataCenter {
 	 * @return {@code true} si le serveur possède des données dans la base de donnée, {@code false} sinon.
 	 */
 	private boolean hasRegisteredData(Guild guild) {
-		return sql.hasGuildData(guild.getId().asLong());
+		return sqlRestorerSystem.hasGuildData(guild.getId().asLong());
 	}
 
 	/**
@@ -211,7 +190,7 @@ public class DataCenter {
 	 * @return {@code true} si l'utilisateur possède des données dans la base de donnée, {@code false} sinon.
 	 */
 	private boolean hasRegisteredData(User user) {
-		return sql.hasUserData(user.getId().asLong());
+		return sqlRestorerSystem.hasUserData(user.getId().asLong());
 	}
 
 	/**
@@ -220,7 +199,7 @@ public class DataCenter {
 	 * @return {@code true} si ce système possède des données dans la base de donnée, {@code false} sinon.
 	 */
 	private boolean hasRegisteredData(String system_id) {
-		return sql.hasSystemData(system_id);
+		return sqlRestorerSystem.hasSystemData(system_id);
 	}
 
 	/**
@@ -228,7 +207,7 @@ public class DataCenter {
 	 * @param guild le serveur a supprimmé de la base de donnée.
 	 */
 	private void removeRegisteredData(Guild guild) {
-		sql.removeGuildData(guild.getId().asLong());
+		sqlRestorerSystem.removeGuildData(guild.getId().asLong());
 	}
 
 	/**
@@ -236,7 +215,7 @@ public class DataCenter {
 	 * @param user l'utilisateur a supprimmé de la base de donnée.
 	 */
 	private void removeRegisteredData(User user) {
-		sql.removeUserData(user.getId().asLong());
+		sqlRestorerSystem.removeUserData(user.getId().asLong());
 	}
 
 	//	/**
@@ -255,7 +234,7 @@ public class DataCenter {
 	public void saveGuild(Guild guild) {
 		DataGuild dataGuild = dataGuilds.get(guild.getId());
 		if(dataGuild != null) {
-			sql.saveGuildData(guild.getId().asLong(), dataGuild.save());
+			sqlRestorerSystem.saveGuildData(guild.getId().asLong(), dataGuild.save());
 			//dataGuild.clearAllCache();
 		} else {
 			System.err.println(String.format("The guild '%s' (%s) has no data object to save!", guild.getName(), guild.getId().asString()));
@@ -270,7 +249,7 @@ public class DataCenter {
 	public void saveUser(User user) {
 		DataUser dataUser = dataUsers.get(user.getId());
 		if(dataUser != null) {
-			sql.saveUserData(user.getId().asLong(), dataUser.save());
+			sqlRestorerSystem.saveUserData(user.getId().asLong(), dataUser.save());
 			//dataGuild.clearAllCache();
 		} else {
 			System.err.println(String.format("The user '%s' (%s) has no data object to save!", user.getUsername(), user.getId().asString()));
@@ -282,9 +261,8 @@ public class DataCenter {
 	 * @param String id du système à sauvegarder.
 	 */
 	public void saveSystem(String system_id) {
-		Restorable system_datas = dataSystems.get(system_id);
-		if(system_datas != null) {
-			sql.saveSystemData(system_id, system_datas.save().toJson());
+		if(sqlRestorerSystem.isRegistered(system_id)) {
+			sqlRestorerSystem.saveSystem(system_id);
 		} else {
 			System.err.println(String.format("The system '%s' is not registered!", system_id));
 		}
@@ -297,7 +275,7 @@ public class DataCenter {
 	public void loadGuild(Guild guild) {
 		if (hasRegisteredData(guild)) {
 			Snowflake id = guild.getId();
-			JSONObject json = sql.loadGuildData(id.asLong());
+			JSONObject json = sqlRestorerSystem.loadGuildData(id.asLong());
 			if (dataGuilds.containsKey(id)) {
 				dataGuilds.get(id).load(json);
 			} else {
@@ -317,7 +295,7 @@ public class DataCenter {
 	public void loadUser(User user) {
 		if (hasRegisteredData(user)) {
 			Snowflake id = user.getId();
-			JSONObject json = sql.loadUserData(id.asLong());
+			JSONObject json = sqlRestorerSystem.loadUserData(id.asLong());
 			if (dataUsers.containsKey(id)) {
 				dataUsers.get(id).load(json);
 			} else {
@@ -335,9 +313,9 @@ public class DataCenter {
 	 * @param String l'id du système à charger.
 	 */
 	public void loadSystem(String system_id) {
-		if (dataSystems.containsKey(system_id)) {
+		if (sqlRestorerSystem.isRegistered(system_id)) {
 			if (hasRegisteredData(system_id)) {
-				dataSystems.get(system_id).load(Serializer.from(sql.loadSystemData(system_id)));
+				sqlRestorerSystem.loadSystem(system_id);
 			} else {
 				System.err.println(String.format("The system '%s' ha no data to load!", system_id));
 			}
@@ -353,7 +331,7 @@ public class DataCenter {
 	 */
 	public void saveGuilds() {
 		for(Entry<Snowflake, DataGuild> guild_entry:dataGuilds.entrySet()) {
-			sql.saveGuildData(guild_entry.getKey().asLong(), guild_entry.getValue().save());
+			sqlRestorerSystem.saveGuildData(guild_entry.getKey().asLong(), guild_entry.getValue().save());
 		}
 		clearDataGuildsCache();
 	}
@@ -364,7 +342,7 @@ public class DataCenter {
 	 */
 	public void saveUsers() {
 		for(Entry<Snowflake, DataUser> user_entry:dataUsers.entrySet()) {
-			sql.saveUserData(user_entry.getKey().asLong(), user_entry.getValue().save());
+			sqlRestorerSystem.saveUserData(user_entry.getKey().asLong(), user_entry.getValue().save());
 		}
 		clearDataUsersCache();
 	}
@@ -373,8 +351,8 @@ public class DataCenter {
 	 * Sauvegarde les données de tout les systèmes dans la base de donnée.
 	 */
 	public void saveSystems() {
-		for(Entry<String, Restorable> system_entry:dataSystems.entrySet()) {
-			sql.saveSystemData(system_entry.getKey(), system_entry.getValue().save().toJson());
+		for(Entry<String, RestorableSystem> system_entry:sqlRestorerSystem.getSystems()) {
+			sqlRestorerSystem.saveSystem(system_entry.getKey());
 		}
 	}
 
@@ -382,7 +360,7 @@ public class DataCenter {
 	 * Charge les données de tout les serveurs enregistrés dans la base de donnée.
 	 */
 	public void loadGuilds() {
-		for(Entry<Long, JSONObject> entry:sql.getAllDataGuilds().entrySet()) {
+		for(Entry<Long, JSONObject> entry:sqlRestorerSystem.getAllDataGuilds().entrySet()) {
 			Snowflake id = Snowflake.of(entry.getKey());
 			Optional<Guild> opt_guild = botClient.getGuildById(id).blockOptional();
 
@@ -404,7 +382,7 @@ public class DataCenter {
 	 * Charge les données de tout les utilisateurs enregistrés dans la base de donnée.
 	 */
 	public void loadUsers() {
-		for(Entry<Long, JSONObject> entry:sql.getAllDataUsers().entrySet()) {
+		for(Entry<Long, JSONObject> entry:sqlRestorerSystem.getAllDataUsers().entrySet()) {
 			Snowflake id = Snowflake.of(entry.getKey());
 			Optional<User> opt_user = botClient.getUserById(id).blockOptional();
 
@@ -426,13 +404,8 @@ public class DataCenter {
 	 * Charge les données de tout les systèmes enregistrés dans la base de donnée.
 	 */
 	public void loadSystems() {
-		for(Entry<String, JSONObject> entry:sql.getAllDataSystems().entrySet()) {
-
-			if(dataSystems.containsKey(entry.getKey())) {
-				dataSystems.get(entry.getKey()).load(Serializer.from(entry.getValue()));
-			} else {
-				System.err.println(String.format("The system id '%s' is not registered! Skipping loading of this system!", entry.getKey()));
-			}
+		for(Entry<String, RestorableSystem> entry:sqlRestorerSystem.getSystems()) {
+			sqlRestorerSystem.loadSystem(entry.getKey());
 		}
 	}
 

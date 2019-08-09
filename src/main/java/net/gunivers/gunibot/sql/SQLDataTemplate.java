@@ -55,16 +55,6 @@ public final class SQLDataTemplate {
 				+ "json JSON);";
 	}
 
-	public static String createSystemsTable() {
-		return "CREATE TABLE IF NOT EXISTS systems "
-				+ "(id VARCHAR(256) NOT NULL PRIMARY KEY, "
-				+ "json JSON);";
-	}
-
-	public static String useDatabase(String db) {
-		return "USE "+db+";";
-	}
-
 	// Check Tables
 
 	public static String checkGuildsTable() {
@@ -143,10 +133,6 @@ public final class SQLDataTemplate {
 		return "SELECT id,json FROM users WHERE id="+id;
 	}
 
-	public static String getSystemData(String id) {
-		return "SELECT id,json FROM systems WHERE id="+id;
-	}
-
 	public static String getGuildsId() {
 		return "SELECT id FROM guilds;";
 	}
@@ -165,10 +151,6 @@ public final class SQLDataTemplate {
 
 	public static String getUsersData() {
 		return "SELECT id,json FROM users;";
-	}
-
-	public static String getSystemsData() {
-		return "SELECT id,json FROM systems;";
 	}
 
 	// remove Datas
