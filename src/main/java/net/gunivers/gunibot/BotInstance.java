@@ -50,6 +50,7 @@ public class BotInstance {
 			System.out.println("Loading commands...");
 			System.out.println("Liste des commandes chargées :");
 			Command.loadCommands(dataCenter);
+			dataCenter.loadSystems();
 			System.out.println("Nombre de commandes chargées : " + Command.commands.size());
 
 			EventDispatcher dispatcher = botClient.getEventDispatcher();

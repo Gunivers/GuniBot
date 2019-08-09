@@ -13,7 +13,7 @@ import net.gunivers.gunibot.core.utils.ImageUtils;
 public class NumberToReaction {
 
 	private final static int SIZE = 1024;
-	private final static Color COLOR = new Color(235, 138, 28);
+	private final static Color COLOR = new Color(255, 87, 34);
 	private final static Font FONT = new Font("Comic Sans MS", Font.BOLD, 600);
 	
 	public static void convertNumberToReaction(int i, Message m) {
