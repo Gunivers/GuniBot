@@ -2,6 +2,7 @@ package net.gunivers.gunibot.datas;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.json.JSONObject;
 
@@ -12,10 +13,10 @@ public class DataMember extends DataObject<Member>
 {
 	private Set<Permission> perms = new HashSet<>();
 
-	public DataMember(Member member) {
+	public DataMember(Member member)
+	{
 		super(member);
 	}
-
 
 	public Set<Permission> getPermissions() { return perms; }
 
@@ -23,7 +24,7 @@ public class DataMember extends DataObject<Member>
 	public JSONObject save()
 	{
 		JSONObject json = super.save();
-		json.put("permissions", perms.stream().collect(HashSet::new, (set, perm) -> set.add(perm.getName()), Set::addAll));
+		json.put("permissions", perms.stream().map(Permission::getName).collect(Collectors.toSet()));
 		return json;
 	}
 
@@ -31,7 +32,7 @@ public class DataMember extends DataObject<Member>
 	public void load(JSONObject json)
 	{
 		super.load(json);
-		perms = json.getJSONArray("permissions").toList().stream()
-				.collect(HashSet::new, (s, p) -> s.addAll(Permission.getByName((String) p)), Set::addAll);
+		perms = json.getJSONArray("permissions").toList().stream().map(Object::toString).map(Permission::getByName)
+				.collect(HashSet::new, Set::addAll, Set::addAll);
 	}
 }
