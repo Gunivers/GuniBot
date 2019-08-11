@@ -35,9 +35,9 @@ public class BotInstance {
 		if (config.token == null) {
 			throw new IllegalArgumentException("Vous devez indiquez votre token en argument !");
 		} else {
-			
+
 			Audio.init();
-			
+
 			System.out.println("Build Discord Client...");
 			DiscordClientBuilder builder = new DiscordClientBuilder(config.token);
 			builder.setRetryOptions(new RetryOptions(Duration.ofSeconds(30), Duration.ofMinutes(1), 1000, Schedulers.single())); // En cas de déconnection imprévue, tente de se reconnecter à l'infini
@@ -64,6 +64,8 @@ public class BotInstance {
 
 			dispatcher.on(GuildCreateEvent.class).subscribe(event -> dataCenter.addGuild(event.getGuild()));
 			VoiceChannelCreator.init(botClient);
+
+			dataCenter.loadSystems();
 		}
 	}
 
