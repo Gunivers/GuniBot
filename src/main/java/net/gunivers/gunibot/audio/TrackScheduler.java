@@ -29,9 +29,13 @@ public final class TrackScheduler implements AudioLoadResultHandler {
     @Override
     public void playlistLoaded(final AudioPlaylist playlist) {
     	System.out.println("[Audio] Multiple audio track.");
+    	split(playlist);
     }
     
-    /**
+    private void split(AudioPlaylist playlist) {		
+	}
+
+	/**
      * No audio to extract.
      */
     @Override
