@@ -6,7 +6,6 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import discord4j.core.event.domain.message.MessageCreateEvent;
-import discord4j.core.object.entity.Role;
 import net.gunivers.gunibot.Main;
 import net.gunivers.gunibot.command.permissions.Permission;
 import net.gunivers.gunibot.core.command.Command;
@@ -37,14 +36,6 @@ public class PermissionCommand extends Command
 		Field bot = new Field("Bot Customized");
 		bot.setValue(Permission.bot.values().stream().sorted((a,b) -> a.higherThan(b) ? 1 : 0).map(Permission::getName).reduce("", (r,s) -> r += s + '\n'));
 		builder.addField(bot);
-
-		DataGuild guild = Main.getBotInstance().getDataCenter().getDataGuild(event.getGuild().block());
-		for (Role role : event.getGuild().block().getRoles().toIterable())
-		{
-			Field f = new Field(role.getName());
-			f.setValue(guild.getDataRole(role).getPermissions().stream().map(Permission::getName).reduce("", (r,s) -> r += s + '\n'));
-			builder.addField(f);
-		}
 
 		builder.buildAndSend();
 	}
