@@ -144,7 +144,7 @@ public final class SQLDataTemplate {
 	}
 
 	public static String getSystemData(String id) {
-		return "SELECT id,json FROM systems WHERE id='"+id + "'";
+		return "SELECT id,json FROM systems WHERE id='"+id+"'";
 	}
 
 	public static String getGuildsId() {
