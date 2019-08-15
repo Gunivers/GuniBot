@@ -26,7 +26,7 @@ public class EmbedBuilder
 	public static final short FOOTER_LIMIT = discord4j.core.object.Embed.Footer.MAX_TEXT_LENGTH;
 	public static final short AUTHOR_NAME_LIMIT = discord4j.core.object.Embed.Author.MAX_NAME_LENGTH;
 	
-	private final MessageChannel channel;
+	private MessageChannel channel;
 	
 	private String title = null;
 	private String url = null;
@@ -50,35 +50,27 @@ public class EmbedBuilder
 	private Flux<Message> messages = null;
 	
 	public EmbedBuilder(MessageChannel channel) {
-		this.channel = channel;
-	}
+		this.channel = channel; }
 	
 	public EmbedBuilder(MessageChannel channel, String title, String titleURL) {
-		this(channel, title, titleURL, null, null, null, null, null, null, null, null);
-	}
+		this(channel, title, titleURL, null, null, null, null, null, null, null, null); }
 	
 	public EmbedBuilder(MessageChannel channel, Member author, String authorURL, Color color, String imageURL) {
-		this(channel, null, null, author, authorURL, color, imageURL);
-	}
+		this(channel, null, null, author, authorURL, color, imageURL); }
 	
 	public EmbedBuilder(MessageChannel channel, String description, String footer, String footerURL, String thumbnail) {
-		this(channel, null, null, description, footer, footerURL, thumbnail);
-	}
+		this(channel, null, null, description, footer, footerURL, thumbnail); }
 	
-	public EmbedBuilder(MessageChannel channel, String title, String titleURL, Member author, String authorURL, Color color, String imageURL)
-	{
-		this(channel, title, titleURL, author, authorURL, color, imageURL, null, null, null, null);
-	}
+	public EmbedBuilder(MessageChannel channel, String title, String titleURL, Member author, String authorURL, Color color, String imageURL) {
+		this(channel, title, titleURL, author, authorURL, color, imageURL, null, null, null, null); }
 	
 	public EmbedBuilder(MessageChannel channel, String title, String titleURL, String description, String footer, String footerURL,
 			String thumbnail) {
-		this(channel, title, titleURL, null, null, null, null, description, footer, footerURL, thumbnail);
-	}
+		this(channel, title, titleURL, null, null, null, null, description, footer, footerURL, thumbnail); }
 	
 	public EmbedBuilder(MessageChannel channel, Member author, String authorURL, Color color, String imageURL, String desc, String footer,
 			String footerURL, String thumbnail) {
-		this(channel, null, null, author, authorURL, color, imageURL, desc, footer, footerURL, thumbnail);
-	}
+		this(channel, null, null, author, authorURL, color, imageURL, desc, footer, footerURL, thumbnail); }
 
 	public EmbedBuilder(MessageChannel channel, String title, String titleURL, Member author, String authorURL, Color color, String imageURL,
 			String description, String footer, String footerURL, String thumbnail)
@@ -241,18 +233,20 @@ public class EmbedBuilder
 	public String getFooterImageURL() { return footerURL; }
 	public String getThumbnail() { return thumbnail; }
 	
-	public void setTitle(String title) { this.title = title; }
-	public void setTitleURL(String url) { this.url = url; }
+	public EmbedBuilder setChannel(MessageChannel channel) { this.channel = channel; return this; }
 	
-	public void setAuthor(Member author) { this.author = author; }
-	public void setAuthorURL(String url) { this.authorURL = url; }
-	public void setColor(Color color) { this.color = color; }
-	public void setImage(String url) { this.image = url; this.displayImage = image != null;}
+	public EmbedBuilder setTitle(String title) { this.title = title; return this; }
+	public EmbedBuilder setTitleURL(String url) { this.url = url; return this; }
 	
-	public void setDescription(String desc) { this.description = desc; }
-	public void setFooter(String footer) { this.footer = footer; this.displayFooter = footer != null; }
-	public void setFooterImageURL(String url) { this.footerURL = url; }
-	public void setThumbnail(String thumbnail) { this.thumbnail = thumbnail; }
+	public EmbedBuilder setAuthor(Member author) { this.author = author; return this; }
+	public EmbedBuilder setAuthorURL(String url) { this.authorURL = url; return this; }
+	public EmbedBuilder setColor(Color color) { this.color = color; return this; }
+	public EmbedBuilder setImage(String url) { this.image = url; this.displayImage = image != null; return this; }
+	
+	public EmbedBuilder setDescription(String desc) { this.description = desc; return this; }
+	public EmbedBuilder setFooter(String footer) { this.footer = footer; this.displayFooter = footer != null; return this; }
+	public EmbedBuilder setFooterImageURL(String url) { this.footerURL = url; return this; }
+	public EmbedBuilder setThumbnail(String thumbnail) { this.thumbnail = thumbnail; return this; }
 	
 
 	public static class Field
@@ -321,7 +315,8 @@ public class EmbedBuilder
 		 * @param field
 		 * @return true if the name, value, and inline properties are similar themselves.
 		 */
-		public boolean isSimilar(Field field) {
+		public boolean isSimilar(Field field)
+		{
 			return field.name.equals(name) && field.value.toString().equals(value.toString()) && field.inline == inline;
 		}
 	}

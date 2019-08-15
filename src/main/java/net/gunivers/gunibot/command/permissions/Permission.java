@@ -46,6 +46,43 @@ public class Permission
 	private final String name;
 	private int level;
 
+	public static Permission getHighestPermission(Member member)
+	{
+		DataGuild guild = Main.getBotInstance().getDataCenter().getDataGuild(member.getGuild().block());
+		Permission p = Permission.bot.get("other.everyone");
+
+		for (Permission perm : guild.getDataMember(member).getPermissions()) if (perm.higherThan(p)) p = perm;
+
+		for (Role role : member.getRoles().toIterable())
+			for (Permission perm : guild.getDataRole(role).getPermissions()) if (perm.higherThan(p)) p = perm;
+
+		return p;
+	}
+
+	public static Set<Permission> getByName(String name)
+	{
+		boolean multiple = '*' == name.charAt(name.length() -1);
+		if (!name.matches("([a-z_]+\\.)+" + (multiple ? "\\*" : "[a-z_]+"))) return new HashSet<>();
+
+		return all.stream().filter(p -> (multiple && p.getName().matches(name.substring(0, name.length() -2) + "(\\.[a-z_]+)+"))
+				|| p.getName().equals(name)).collect(Collectors.toSet());
+	}
+
+	public static discord4j.core.object.util.Permission get(Permission perm)
+	{
+		Optional<Entry<discord4j.core.object.util.Permission,Permission>> p = discord.entrySet().stream().filter(e -> e.getValue() == perm)
+				.findFirst();
+
+		if (p.isPresent()) return p.get().getKey();
+		return null;
+	}
+
+	public static boolean hasPermissions(Member member, Set<Permission> perms)
+	{
+		for (Permission perm : perms) if (!perm.hasPermission(member)) return false;
+		return true;
+	}
+
 	/**
 	 * @param level of permission, where:
 	 * <ol>
@@ -93,54 +130,15 @@ public class Permission
 
 	public boolean higherThan(Permission perm)
 	{
-		if (this.isFromDiscord() && this != discord.get(discord4j.core.object.util.Permission.ADMINISTRATOR)) return false;
+		if (this.isFromDiscord()) return false;
 		return this.level > perm.level;
 	}
-
 
 	public boolean isFromBot() { return bot.values().contains(this); }
 	public boolean isFromDiscord() { return discord.values().contains(this); }
 
 	public String getName() { return this.name; }
 	public int getLevel() { return level; }
-
-
-	public static Permission getHighestPermission(Member member)
-	{
-		DataGuild guild = Main.getBotInstance().getDataCenter().getDataGuild(member.getGuild().block());
-		Permission p = Permission.bot.get("other.everyone");
-
-		for (Permission perm : guild.getDataMember(member).getPermissions()) if (perm.higherThan(p)) p = perm;
-
-		for (Role role : member.getRoles().toIterable())
-			for (Permission perm : guild.getDataRole(role).getPermissions()) if (perm.higherThan(p)) p = perm;
-
-		return p;
-	}
-
-	public static Set<Permission> getByName(String name)
-	{
-		boolean multiple = '*' == name.charAt(name.length() -1);
-		if (!name.matches("([a-z_]+\\.)+" + (multiple ? "\\*" : "[a-z_]+"))) return new HashSet<>();
-
-		return all.stream().filter(p -> (multiple && p.getName().matches(name.substring(0, name.length() -2) + "(\\.[a-z_]+)+"))
-				|| p.getName().equals(name)).collect(Collectors.toSet());
-	}
-
-	public static discord4j.core.object.util.Permission get(Permission perm)
-	{
-		Optional<Entry<discord4j.core.object.util.Permission,Permission>> p = discord.entrySet().stream().filter(e -> e.getValue() == perm)
-				.findFirst();
-
-		if (p.isPresent()) return p.get().getKey();
-		return null;
-	}
-
-	public static boolean hasPermissions(Member member, Set<Permission> perms)
-	{
-		for (Permission perm : perms) if (!perm.hasPermission(member)) return false;
-		return true;
-	}
 
 	@Override
 	public boolean equals(Object perm)
