@@ -49,7 +49,7 @@ public class BotInstance {
 
 			System.out.println("Loading commands...");
 			System.out.println("Liste des commandes chargées :");
-			Command.loadCommands(dataCenter);
+			Command.loadCommands(dataCenter, botClient);
 			dataCenter.loadSystems();
 			System.out.println("Nombre de commandes chargées : " + Command.commands.size());
 
