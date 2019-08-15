@@ -2,6 +2,12 @@ package net.gunivers.gunibot.core.main_parser;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import discord4j.core.object.util.Snowflake;
 
 public class BotConfig {
 
@@ -12,6 +18,7 @@ public class BotConfig {
 	public final String sql_user;
 	public final String sql_pwd;
 	public final String sql_db;
+	public final List<Snowflake> dev_ids;
 
 	public BotConfig(ArgumentParser arg_parser) {
 		File conf_file = new File(arg_parser.getDefaultArguments("f", "./config"));
@@ -21,6 +28,7 @@ public class BotConfig {
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}
+		dev_ids = new ArrayList<>();
 
 		token = arg_parser.getDefaultArguments("t", config.getDefaultArguments("token", ""));
 		if(token.isEmpty()) throw new IllegalArgumentException("Aucun token n'as été donné !");
@@ -37,6 +45,11 @@ public class BotConfig {
 		sql_pwd = arg_parser.getDefaultArguments("sql_pwd", config.getDefaultArguments("sql_password", ""));
 		if(sql_pwd.isEmpty()) System.err.println("Aucun mot de passe précisé pour la base de données ! La base de données ne fonctionnera pas sans un mot de passe !");
 		sql_db = arg_parser.getDefaultArguments("sql_db", config.getDefaultArguments("sql_database", "gunibot"));
+
+		String str_dev_ids = config.getDefaultArguments("developpers_ids", "") ;
+		if (!str_dev_ids.isEmpty()) dev_ids.addAll(Arrays.asList(str_dev_ids.split(",")).stream().map(Snowflake::of).collect(Collectors.toList()));
+		str_dev_ids = arg_parser.getDefaultArguments("dev_ids", "") ;
+		if(!str_dev_ids.isEmpty()) dev_ids.addAll(Arrays.asList(str_dev_ids.split(",")).stream().map(Snowflake::of).collect(Collectors.toList()));
 	}
 
 }
