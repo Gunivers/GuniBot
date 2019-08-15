@@ -7,6 +7,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import org.json.JSONArray;
@@ -23,6 +24,7 @@ import discord4j.core.object.entity.Guild.NotificationLevel;
 import discord4j.core.object.entity.Guild.VerificationLevel;
 import discord4j.core.object.entity.GuildChannel;
 import discord4j.core.object.entity.GuildEmoji;
+import discord4j.core.object.entity.Member;
 import discord4j.core.object.entity.Message;
 import discord4j.core.object.entity.Role;
 import discord4j.core.object.entity.TextChannel;
@@ -201,6 +203,17 @@ public class BackupCommand extends Command {
 				}
 
 				json_datas.put("channels", json_channels);
+				// Members
+				JSONObject json_members = new JSONObject();
+				for(Member member:guild.getMembers().toIterable()) {
+					JSONObject json_member = new JSONObject();
+
+					json_member.put("roles", member.getRoleIds().stream().map(s -> s.asString()).collect(Collectors.toList()));
+					if(member.getNickname().isPresent()) json_member.put("nickname", member.getNickname().get());
+					json_members.put(member.getId().asString(), json_member);
+				}
+
+				json_datas.put("members", json_members);
 				// Webhook
 				JSONObject json_webhooks = new JSONObject();
 
@@ -277,7 +290,7 @@ public class BackupCommand extends Command {
 					spec.setDescription("Restauration en cours...");
 				}).subscribe();
 
-				//Begin backup
+				//Begin restore
 
 				// Guild
 				JSONObject json_guild = json_backup.getJSONObject("guild");
@@ -342,11 +355,13 @@ public class BackupCommand extends Command {
 							spec.setPermissions(PermissionSet.of(json_role.getLong("permissions")));
 
 							spec.setReason("restore role");
-						}).doOnError(ClientException.class, e -> {
-							if (e.getStatus().code() == 403) {
+						}).onErrorReturn((Predicate<? super Throwable>) e -> {
+							if (e.getClass().getName().equals(ClientException.class.getName()) && ((ClientException) e).getStatus().code() == 403) {
 								System.err.println("No permission for edit and restore the role '"+role.getName()+"' ("+role.getId().asString()+")");
+								return true;
 							}
-						}).onErrorReturn(role).block();
+							else return false;
+						}, role).block();
 						role.changePosition(json_role.getInt("position")).subscribe();
 					} else {
 						Role role = guild.createRole(spec -> {
@@ -597,6 +612,40 @@ public class BackupCommand extends Command {
 					}
 				}
 
+				// Members
+				JSONObject json_members = json_backup.getJSONObject("members");
+				for(String s_member_id:json_members.keySet()) {
+					JSONObject json_member = json_members.getJSONObject(s_member_id);
+
+					Snowflake member_id = Snowflake.of(s_member_id);
+					Optional<Member> opt_member = BotUtils.returnOptional(guild.getMemberById(member_id));
+
+					if (opt_member.isPresent()) {
+
+						try {
+							opt_member.get().edit(spec -> {
+								JSONArray roles_array = json_member.getJSONArray("roles");
+								HashSet<Snowflake> roles_id = new HashSet<>(roles_array.length());
+								for(int i=0; i<roles_array.length(); i++) {
+									roles_id.add(Snowflake.of(roles_array.getString(i)));
+								}
+								spec.setRoles(roles_id);
+								if (json_member.has("nickname")) spec.setNickname(json_member.getString("nickname"));
+
+								spec.setReason("restore member");
+							}).block();
+						} catch (ClientException e) {
+							if ((e != null) && e.getClass().getName().equals(ClientException.class.getName()) && e.getStatus().code() == 403) {
+								System.err.println("No permission for edit and restore the member '"+opt_member.get().getUsername()+"' ("+opt_member.get().getId().asString()+")");
+							}
+							else throw e;
+						}
+
+					} else {
+						System.err.println(String.format("[Backup] The backup member id '%s' is not in the guild!", s_member_id));
+					}
+				}
+
 				// Webhook
 				JSONObject json_webhooks = json_backup.getJSONObject("webhooks");
 
@@ -610,7 +659,7 @@ public class BackupCommand extends Command {
 
 						webhook.edit(spec -> {
 							if(json_webhook.has("name")) spec.setName(json_webhook.getString("name"));
-							if(json_webhook.has("avatar")) spec.setAvatar(Image.ofUrl(json_webhook.getString("avatar")).block());
+							//if(json_webhook.has("avatar")) spec.setAvatar(Image.ofRaw(json_webhook.getString("avatar").getBytes(), Format.PNG));
 
 							spec.setReason("Restore Webhook");
 						}).block();
@@ -619,7 +668,7 @@ public class BackupCommand extends Command {
 
 						text_channel.createWebhook(spec -> {
 							if(json_webhook.has("name")) spec.setName(json_webhook.getString("name"));
-							if(json_webhook.has("avatar")) spec.setAvatar(Image.ofUrl(json_webhook.getString("avatar")).block());
+							//if(json_webhook.has("avatar")) spec.setAvatar(Image.ofRaw(json_webhook.getString("avatar").getBytes(), Format.PNG));
 
 							spec.setReason("Restore Webhook");
 						}).block();
