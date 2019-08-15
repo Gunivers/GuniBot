@@ -43,9 +43,12 @@ public class PermissionCommand extends Command
 	public void get(MessageCreateEvent event, List<String> args)
 	{
 		DataGuild g = Main.getBotInstance().getDataCenter().getDataGuild(event.getGuild().block());
-		Flux<DataMember> members = Parser.parseMember(args.get(0), g.getEntity()).map(g::getDataMember);
-		Flux<DataRole> roles = Parser.parseRole(args.get(0), g.getEntity()).map(g::getDataRole);
-
+		Flux<DataMember> members = Parser.parseMember(args.get(0), g.getEntity()).filter(m -> m != null).map(g::getDataMember)
+				.doOnEach(s -> { if (s.get() != null) s.get().recalculatePermissions(); });
+		
+		Flux<DataRole> roles = Parser.parseRole(args.get(0), g.getEntity()).filter(r -> r != null).map(g::getDataRole)
+				.doOnEach(s -> { if (s.get() != null) s.get().recalculatePermissions(); });
+		
 		if (members.blockFirst() == null && roles.blockFirst() == null) {
 			event.getMessage().getChannel().flatMap(c -> c.createMessage(args.get(0) + " did not match for any user nor role.")).subscribe();
 			return;
@@ -84,7 +87,7 @@ public class PermissionCommand extends Command
 		int level = Permission.getHighestPermission(event.getMember().get()).getLevel();
 		for (Permission p : perms) if (p.getLevel() > level) {
 			event.getMessage().getChannel().flatMap(c -> c.createMessage("The permission '"+ p.getName() +"' is of level "+ p.getLevel()
-			+ "\nYou may not access permissions of higher level than "+ level)).subscribe();
+				+ "\nYou may not access permissions of higher level than "+ level)).subscribe();
 			return;
 		}
 

@@ -15,6 +15,7 @@ import discord4j.core.object.entity.Role;
 import net.gunivers.gunibot.Main;
 import net.gunivers.gunibot.datas.DataGuild;
 import net.gunivers.gunibot.datas.DataMember;
+import net.gunivers.gunibot.datas.DataRole;
 
 public class Permission
 {
@@ -22,19 +23,17 @@ public class Permission
 	public static final HashMap<String, Permission> bot = new HashMap<>();
 	public static final HashMap<discord4j.core.object.util.Permission, Permission> discord = new HashMap<>();
 
+	public static final Permission EVERYONE			= new Permission("perm.everyone", 1);
+	public static final Permission SERVER_MODERATOR	= new Permission("server.moderator", 3);
+	public static final Permission SERVER_TRUSTED	= new Permission("server.trusted", 5);
+	public static final Permission SERVER_OWNER		= new Permission("server.owner", 6);
+	public static final Permission BOT_TRUSTED		= new Permission("bot.trusted", 8);
+	public static final Permission BOT_DEV			= new Permission("bot.dev", 10);
+	
 	static
 	{
 		Arrays.asList(discord4j.core.object.util.Permission.values()).forEach(perm ->
-		new Permission(perm.name().toLowerCase(), perm));
-
-		new Permission("other.everyone", 1);
-		new Permission("other.average", 2);
-		new Permission("server.moderator", 3);
-		new Permission("server.trusted", 5);
-		new Permission("server.owner", 6);
-		new Permission("bot.trusted", 7);
-		new Permission("bot.trainee", 8);
-		new Permission("bot.dev", 9);
+			new Permission(perm.name().toLowerCase(), perm));
 
 		discord.get(discord4j.core.object.util.Permission.ADMINISTRATOR).level = 4;
 	}
@@ -49,12 +48,21 @@ public class Permission
 	public static Permission getHighestPermission(Member member)
 	{
 		DataGuild guild = Main.getBotInstance().getDataCenter().getDataGuild(member.getGuild().block());
-		Permission p = Permission.bot.get("other.everyone");
-
-		for (Permission perm : guild.getDataMember(member).getPermissions()) if (perm.higherThan(p)) p = perm;
+		Permission p = new Permission(0, "you.should.not.see.this");
+		
+		DataMember dm = guild.getDataMember(member);
+		dm.recalculatePermissions();
+		
+		for (Permission perm : dm.getPermissions()) if (perm.higherThan(p)) p = perm;
 
 		for (Role role : member.getRoles().toIterable())
-			for (Permission perm : guild.getDataRole(role).getPermissions()) if (perm.higherThan(p)) p = perm;
+		{
+			DataRole dr = guild.getDataRole(role);
+			dr.recalculatePermissions();
+			
+			for (Permission perm : dr.getPermissions())
+				if (perm.higherThan(p)) p = perm;
+		}
 
 		return p;
 	}
@@ -99,13 +107,13 @@ public class Permission
 	 */
 	public Permission(String name, int level)
 	{
-		this(-1, name);
-		bot.put(name, this);
+		this(level, name);
+		bot.putIfAbsent(name, this);
 	}
 
 	private Permission(String name, discord4j.core.object.util.Permission perm)
 	{
-		this(10, "discord." + name);
+		this(9, "discord." + name);
 		discord.putIfAbsent(perm, this);
 	}
 
@@ -117,7 +125,6 @@ public class Permission
 		this.name = name;
 		this.level = level;
 	}
-
 
 	public boolean hasPermission(Member user)
 	{

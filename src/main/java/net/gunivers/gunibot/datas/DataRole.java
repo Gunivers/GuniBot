@@ -1,5 +1,6 @@
 package net.gunivers.gunibot.datas;
 
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -7,9 +8,10 @@ import java.util.stream.Collectors;
 import org.json.JSONObject;
 
 import discord4j.core.object.entity.Role;
+import net.gunivers.gunibot.command.permissions.Permissible;
 import net.gunivers.gunibot.command.permissions.Permission;
 
-public class DataRole extends DataObject<Role>
+public class DataRole extends DataObject<Role> implements Permissible
 {
 	private Set<Permission> perms = new HashSet<>();
 
@@ -18,8 +20,17 @@ public class DataRole extends DataObject<Role>
 		super(role);
 	}
 
-	public Set<Permission> getPermissions() { return perms; }
-
+	@Override public Set<Permission> getPermissions() { return perms; }
+	@Override public void setPermissions(Collection<Permission> perms) { this.perms = new HashSet<>(perms); this.recalculatePermissions(); }
+	
+	@Override
+	public void recalculatePermissions()
+	{
+		perms.remove(Permission.SERVER_OWNER);
+		perms.remove(Permission.BOT_DEV);
+		perms.removeAll(perms.stream().filter(Permission::isFromDiscord).collect(Collectors.toSet()));
+	}
+	
 	@Override
 	public JSONObject save()
 	{
