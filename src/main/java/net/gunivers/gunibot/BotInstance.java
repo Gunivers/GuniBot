@@ -12,7 +12,6 @@ import discord4j.core.object.presence.Presence;
 import discord4j.gateway.retry.RetryOptions;
 import net.gunivers.gunibot.audio.Audio;
 import net.gunivers.gunibot.core.command.Command;
-import net.gunivers.gunibot.core.main_parser.BotConfig;
 import net.gunivers.gunibot.datas.DataCenter;
 import net.gunivers.gunibot.event.Events;
 import net.gunivers.gunibot.feature.auto_vocal_channel.VoiceChannelCreator;

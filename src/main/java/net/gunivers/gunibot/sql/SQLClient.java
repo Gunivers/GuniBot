@@ -9,7 +9,7 @@ import java.util.HashMap;
 
 import org.json.JSONObject;
 
-import net.gunivers.gunibot.core.main_parser.BotConfig;
+import net.gunivers.gunibot.BotConfig;
 
 public class SQLClient {
 

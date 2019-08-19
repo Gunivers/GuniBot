@@ -1,4 +1,4 @@
-package net.gunivers.gunibot.core.main_parser;
+package net.gunivers.gunibot;
 
 import java.io.File;
 import java.io.IOException;
@@ -8,6 +8,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import discord4j.core.object.util.Snowflake;
+import fr.syl2010.utils.io.parser.UnixCommandLineParser;
+import fr.syl2010.utils.io.parser.UnixConfigParser;
 
 public class BotConfig {
 
@@ -20,11 +22,11 @@ public class BotConfig {
 	public final String sql_db;
 	public final List<Snowflake> dev_ids;
 
-	public BotConfig(ArgumentParser arg_parser) {
+	public BotConfig(UnixCommandLineParser arg_parser) {
 		File conf_file = new File(arg_parser.getDefaultArguments("f", "./config"));
-		ConfigParser config;
+		UnixConfigParser config;
 		try {
-			config = new ConfigParser(conf_file);
+			config = new UnixConfigParser(conf_file);
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}
