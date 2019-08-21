@@ -106,11 +106,11 @@ public final class SQLDataTemplate {
 	}
 
 	public static String hasOldSerializerData(String id) {
-		return "SELECT id FROM serializer WHERE id="+id+" LIMIT 1;";
+		return "SELECT id FROM serializer WHERE id='"+id+"' LIMIT 1;";
 	}
 
 	public static String hasSystemData(String id) {
-		return "SELECT id FROM systems WHERE id="+id+" LIMIT 1;";
+		return "SELECT id FROM systems WHERE id='"+id+"' LIMIT 1;";
 	}
 
 	// get Datas
