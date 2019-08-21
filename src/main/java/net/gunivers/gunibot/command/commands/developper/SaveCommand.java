@@ -95,4 +95,23 @@ public class SaveCommand extends Command {
 		})).subscribe();
 	}
 
+	public void saveOldSerializer(MessageCreateEvent event, List<String> args) {
+		Message message = event.getMessage();
+		String system_id = args.get(0);
+		Main.getBotInstance().getDataCenter().saveOldSerializer(system_id);
+
+		message.getChannel().flatMap(channel -> channel.createEmbed(spec -> {
+			Member author = event.getMember().get();
+			User user_bot = event.getClient().getSelf().block();
+
+			spec.setTitle("Data saving");
+			spec.setAuthor(user_bot.getUsername(), null, user_bot.getAvatarUrl());
+			spec.setColor(Color.ORANGE);
+			spec.setFooter("Lançé par "+author.getUsername(), author.getAvatarUrl());
+			spec.setTimestamp(message.getTimestamp());
+
+			spec.setDescription("All datas of the old serializer "+system_id+" has been saved!");
+		})).subscribe();
+	}
+
 }

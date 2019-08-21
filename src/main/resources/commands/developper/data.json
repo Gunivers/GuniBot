@@ -34,6 +34,18 @@
 					"keep_value": true,
 					"execute": "displaySystemData"
 				}]
+			},
+			{
+				"type": "string",
+				"tag": "serializer",
+				"matches": "serializer",
+				"arguments" :
+				[{
+					"type": "string",
+					"tag": "serializer_id",
+					"keep_value": true,
+					"execute": "displayOldSerializerData"
+				}]
 			}
 		]
 	}

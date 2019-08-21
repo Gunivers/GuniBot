@@ -65,6 +65,10 @@ public class DataCenter {
 		oldDataSystems.remove(system_id);
 	}
 
+	public boolean isRegisteredOldSerializer(String system_id) {
+		return sqlRestorerSystem.hasOldSerializerData(system_id);
+	}
+
 	public void registerSystem(String system_id, RestorableSystem system) {
 		sqlRestorerSystem.registerSystem(system_id, system);
 	}
@@ -477,7 +481,7 @@ public class DataCenter {
 			if(oldDataSystems.containsKey(entry.getKey())) {
 				oldDataSystems.get(entry.getKey()).load(OldSerializer.from(entry.getValue()));
 			} else {
-				System.err.println(String.format("The system id '%s' is not registered! Skipping loading of this system!", entry.getKey()));
+				System.err.println(String.format("The old serializer id '%s' is not registered! Skipping loading of this serializer!", entry.getKey()));
 			}
 		}
 	}
@@ -496,6 +500,7 @@ public class DataCenter {
 		saveGuilds();
 		saveUsers();
 		saveSystems();
+		saveOldSerializer();
 		botClient.logout().subscribe();
 	}
 
