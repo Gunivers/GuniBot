@@ -40,6 +40,7 @@ public class Serializer extends HashMap<String, Serializable> {
 	public static Serializer from(JSONObject json) {
 		Map<String, Object> data_map = new HashMap<>();
 		for(Entry<String, Object> entry : json.toMap().entrySet()) {
+			//System.out.println("key = "+entry.getKey().toString()+" | value = "+entry.getValue().toString());
 			ArrayList<Integer> buffer = (ArrayList<Integer>) entry.getValue();
 			byte[] array = new byte[buffer.size()];
 			for(int i = 0; i < buffer.size(); ++i)
