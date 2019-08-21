@@ -9,8 +9,8 @@ import java.util.HashMap;
 
 import org.json.JSONObject;
 
+import net.gunivers.gunibot.BotConfig;
 import net.gunivers.gunibot.core.JsonObjectV2;
-import net.gunivers.gunibot.core.main_parser.BotConfig;
 import net.gunivers.gunibot.core.system.AbstractRestorerSystem;
 import net.gunivers.gunibot.core.system.RestorableSystem;
 

@@ -1,23 +1,64 @@
-{
-	"wormhole": {
-		"description": "Link two MessageChannels",
-		"permissions": ["discord.administrator"],
-		"arguments": [
-			{
-				"type": "string",
-				"matches": "\\d+",
-				"tag": "MessageChannelId",
-				"keep_value": true,
-				"arguments": [
-					{
-						"type": "string",
-						"matches": "\\d+",
-						"tag": "MessageChannelId",
-						"keep_value": true,
-						"execute": "link"
-					}
-				]
-			}
-		]
-	}
+{  
+   "wormhole":{  
+      "description":"Link two MessageChannels",
+      "permissions":["discord.administrator"],
+      "arguments":[  
+         {  
+            "type":"string",
+            "matches":"remove",
+            "arguments":[  
+               {  
+                  "type":"string",
+                  "matches":"\\d+",
+                  "tag":"MessageChannelId",
+                  "keep_value":true,
+                  "arguments":[  
+                     {  
+                        "type":"string",
+                        "matches":"\\d+",
+                        "tag":"MessageChannelId",
+                        "keep_value":true,
+                        "execute":"remove"
+                     }
+                  ]
+               }
+            ]
+         },
+         {  
+            "type":"string",
+            "matches":"list",
+            "execute":"list",
+            "arguments":[  
+               {  
+                  "type":"integer",
+                  "matches":"0..",
+                  "tag":"id",
+                  "keep_value":true,
+                  "execute":"subList"
+               }
+            ]
+         },
+         {  
+            "type":"string",
+            "matches":"create",
+            "arguments":[  
+               {  
+                  "type":"string",
+                  "matches":"\\d+",
+                  "tag":"MessageChannelId",
+                  "keep_value":true,
+                  "arguments":[  
+                     {  
+                        "type":"string",
+                        "matches":"\\d+",
+                        "tag":"MessageChannelId",
+                        "keep_value":true,
+                        "execute":"link"
+                     }
+                  ]
+               }
+            ]
+         }
+      ]
+   }
 }

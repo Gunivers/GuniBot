@@ -255,14 +255,6 @@ public class DataCenter {
 		sqlRestorerSystem.removeUserData(user.getId().asLong());
 	}
 
-	//	/**
-	//	 * Supprime les données du système indiqué de la base de donnée.
-	//	 * @param String l'id du système a supprimmé de la base de donnée.
-	//	 */
-	//	private void removeRegisteredData(String system_id) {
-	//		sql.removeSystemData(system_id);
-	//	}
-
 	/**
 	 * Sauvegarde les données du serveur indiqué dans la base de donnée.
 	 * Après sauvegarde, les données en cache dans cet objet de données sont supprimés (en réflexion).

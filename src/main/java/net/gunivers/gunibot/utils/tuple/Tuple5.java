@@ -1,9 +1,11 @@
 package net.gunivers.gunibot.utils.tuple;
 
-public class Tuple5<A, B, C, D, E> extends Tuple {
-	
-	private static final long serialVersionUID = 6L;
+import java.io.Serializable;
 
+public class Tuple5<A, B, C, D, E> extends Tuple implements Serializable {
+	
+	private static final long serialVersionUID = -1376976129640882320L;
+	
 	public final A _1;
 	public final B _2;
 	public final C _3;

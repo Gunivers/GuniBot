@@ -144,7 +144,7 @@ public final class SQLDataTemplate {
 	}
 
 	public static String getOldSerializerData(String id) {
-		return "SELECT id,json FROM serializer WHERE id="+id;
+		return "SELECT id,json FROM serializer WHERE id='"+id+"'";
 	}
 
 	public static String getGuildsId() {

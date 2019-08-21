@@ -12,6 +12,7 @@ import java.util.stream.Collectors;
 
 import org.reflections.Reflections;
 
+import discord4j.core.DiscordClient;
 import discord4j.core.event.domain.message.MessageCreateEvent;
 import net.gunivers.gunibot.command.permissions.Permission;
 import net.gunivers.gunibot.core.command.nodes.Node;
@@ -29,6 +30,7 @@ public abstract class Command {
 	private Set<String> aliases = new HashSet<>();
 	private Map<String, Node> idReference = new HashMap<>();
 	protected static DataCenter dataCenter;
+	protected static DiscordClient discordClient;
 	
 	public String getDescription() {
 		return description;
@@ -106,8 +108,9 @@ public abstract class Command {
 	 * Permet de charger toutes les commandes du Package
 	 * net.gunivers.gunibot.command.commands
 	 */
-	public static void loadCommands(DataCenter dc) {
+	public static void loadCommands(DataCenter dc, DiscordClient dcl) {
 		dataCenter = dc;
+		discordClient = dcl;
 		Reflections reflections = new Reflections("net.gunivers.gunibot.command.commands");
 		Set<Class<? extends Command>> allCommands = reflections.getSubTypesOf(Command.class);
 		allCommands.forEach(cmd -> {
