@@ -64,9 +64,11 @@ public class BotInstance {
 			});
 
 			dispatcher.on(GuildCreateEvent.class).subscribe(event -> dataCenter.addGuild(event.getGuild()));
-			VoiceChannelCreator.init(botClient);
 
-			dataCenter.loadSystems();
+			//debug
+			//dispatcher.on(MessageCreateEvent.class).map(MessageCreateEvent::getMessage).subscribe(msg -> {System.out.println("Message Received : "+msg.getContent().orElse("NO_CONTENT"));});
+
+			VoiceChannelCreator.init(botClient);
 		}
 	}
 

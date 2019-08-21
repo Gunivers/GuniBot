@@ -53,6 +53,7 @@ public class DataCenter {
 
 		dataGuilds = new ConcurrentHashMap<>();
 		dataUsers = new ConcurrentHashMap<>(128);
+		oldDataSystems = new ConcurrentHashMap<>();
 
 		sqlRestorerSystem = new SQLRestorerSystem(new SQLConfig(botInstance.getConfig()));
 	}

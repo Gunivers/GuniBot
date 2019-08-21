@@ -56,7 +56,7 @@ public final class SQLDataTemplate {
 	}
 
 	public static String createOldSerializerTable() {
-		return "CREATE TABLE IF NOT EXISTS systems "
+		return "CREATE TABLE IF NOT EXISTS serializer "
 				+ "(id VARCHAR(256) NOT NULL PRIMARY KEY, "
 				+ "json JSON);";
 	}
