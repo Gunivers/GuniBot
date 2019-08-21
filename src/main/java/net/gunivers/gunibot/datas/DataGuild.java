@@ -234,6 +234,10 @@ public class DataGuild extends DataObject<Guild>
 	@Override
 	public void load(JSONObject json) {
 		super.load(json);
+
+		//debug
+		System.out.println(json.toString());
+
 		JSONObject json_members = json.optJSONObject("members");
 		JSONObject json_text_channels = json.optJSONObject("text_channels");
 		JSONObject json_roles = json.optJSONObject("roles");

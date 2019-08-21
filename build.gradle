@@ -9,7 +9,7 @@ sourceCompatibility = "8"
 compileJava.options.encoding = "UTF-8"
 eclipse.classpath.defaultOutputDir = file("bin/default")
 
-ext.version_json = "20180813"
+ext.version_json = "20190722"
 
 repositories
 {

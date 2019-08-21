@@ -78,7 +78,7 @@ public class JsonObjectV2 extends JSONObject {
 	public JsonObjectV2 optJSONObject(String key) {
 		JSONObject value = super.optJSONObject(key);
 		if(value==null) return null;
-		else return new JsonObjectV2(value);
+		else return new JsonObjectV2(value.toString());
 	}
 
 	@Override
