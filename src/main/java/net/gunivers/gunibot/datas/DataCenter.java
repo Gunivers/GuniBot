@@ -15,6 +15,8 @@ import discord4j.core.object.presence.Presence;
 import discord4j.core.object.util.Snowflake;
 import net.gunivers.gunibot.BotInstance;
 import net.gunivers.gunibot.core.system.RestorableSystem;
+import net.gunivers.gunibot.datas.serialize.OldRestorable;
+import net.gunivers.gunibot.datas.serialize.OldSerializer;
 import net.gunivers.gunibot.sql.SQLRestorerSystem;
 import net.gunivers.gunibot.sql.SQLRestorerSystem.SQLConfig;
 
@@ -38,6 +40,11 @@ public class DataCenter {
 	 */
 	private ConcurrentHashMap<Snowflake, DataUser> dataUsers;
 
+	/**
+	 * Contient la liste des anciens systèmes/objets sauvegardable (appelés par la fonction save, gèrent eux même leurs structures de données)
+	 */
+	private ConcurrentHashMap<String, OldRestorable> oldDataSystems;
+
 	private SQLRestorerSystem sqlRestorerSystem;
 
 	public DataCenter(BotInstance bot_instance) {
@@ -48,6 +55,14 @@ public class DataCenter {
 		dataUsers = new ConcurrentHashMap<>(128);
 
 		sqlRestorerSystem = new SQLRestorerSystem(new SQLConfig(botInstance.getConfig()));
+	}
+
+	public void registerOldSerializer(String system_id, OldRestorable system) {
+		oldDataSystems.put(system_id, system);
+	}
+
+	public void unregisterOldSerializer(String system_id) {
+		oldDataSystems.remove(system_id);
 	}
 
 	public void registerSystem(String system_id, RestorableSystem system) {
@@ -146,6 +161,20 @@ public class DataCenter {
 			}
 			dataUsers.put(user.getId(), data_user);
 			return data_user;
+		}
+	}
+
+	/**
+	 * Récupère les données de l'ancien système indiqué.
+	 * @param String id du système.
+	 * @return Les données, formatés en json.
+	 */
+	public JSONObject getDataSerializer(String system_id) {
+		OldRestorable system_datas = oldDataSystems.get(system_id);
+		if(system_datas != null) {
+			return system_datas.save().toJson();
+		} else {
+			throw new IllegalArgumentException(String.format("The old system '%s' is not registered!", system_id));
 		}
 	}
 
@@ -268,6 +297,19 @@ public class DataCenter {
 	 * Sauvegarde les données du système indiqué dans la base de donnée.
 	 * @param String id du système à sauvegarder.
 	 */
+	public void saveOldSerializer(String system_id) {
+		OldRestorable system_datas = oldDataSystems.get(system_id);
+		if(system_datas != null) {
+			sqlRestorerSystem.saveOldSerializerData(system_id, system_datas.save().toJson());
+		} else {
+			System.err.println(String.format("The system '%s' is not registered!", system_id));
+		}
+	}
+
+	/**
+	 * Sauvegarde les données du système indiqué dans la base de donnée.
+	 * @param String id du système à sauvegarder.
+	 */
 	public void saveSystem(String system_id) {
 		if(sqlRestorerSystem.isRegistered(system_id)) {
 			sqlRestorerSystem.saveSystem(system_id);
@@ -320,6 +362,23 @@ public class DataCenter {
 	 * Charge les données du système indiqué depuis la base de donnée.
 	 * @param String l'id du système à charger.
 	 */
+	public void loadOldSerializer(String system_id) {
+		if (oldDataSystems.containsKey(system_id)) {
+			if (hasRegisteredData(system_id)) {
+				oldDataSystems.get(system_id).load(OldSerializer.from(sqlRestorerSystem.loadOldSerializerData(system_id)));
+			} else {
+				System.err.println(String.format("The system '%s' ha no data to load!", system_id));
+			}
+		} else {
+			System.err.println(String.format("The system '%s' is not registered!", system_id));
+		}
+
+	}
+
+	/**
+	 * Charge les données du système indiqué depuis la base de donnée.
+	 * @param String l'id du système à charger.
+	 */
 	public void loadSystem(String system_id) {
 		if (sqlRestorerSystem.isRegistered(system_id)) {
 			if (hasRegisteredData(system_id)) {
@@ -353,6 +412,15 @@ public class DataCenter {
 			sqlRestorerSystem.saveUserData(user_entry.getKey().asLong(), user_entry.getValue().save());
 		}
 		clearDataUsersCache();
+	}
+
+	/**
+	 * Sauvegarde les données de tout les systèmes dans la base de donnée.
+	 */
+	public void saveOldSerializer() {
+		for(Entry<String, OldRestorable> system_entry:oldDataSystems.entrySet()) {
+			sqlRestorerSystem.saveOldSerializerData(system_entry.getKey(), system_entry.getValue().save().toJson());
+		}
 	}
 
 	/**
@@ -404,6 +472,20 @@ public class DataCenter {
 				}
 			} else {
 				System.err.println(String.format("The user id '%s' is not reachable! Skipping loading of this user!", id.asString()));
+			}
+		}
+	}
+
+	/**
+	 * Charge les données de tout les systèmes enregistrés dans la base de donnée.
+	 */
+	public void loadOldSerializer() {
+		for(Entry<String, JSONObject> entry:sqlRestorerSystem.getAllOldDataSerializer().entrySet()) {
+
+			if(oldDataSystems.containsKey(entry.getKey())) {
+				oldDataSystems.get(entry.getKey()).load(OldSerializer.from(entry.getValue()));
+			} else {
+				System.err.println(String.format("The system id '%s' is not registered! Skipping loading of this system!", entry.getKey()));
 			}
 		}
 	}

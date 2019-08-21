@@ -6,8 +6,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.json.JSONObject;
-
 import discord4j.core.event.domain.message.MessageCreateEvent;
 import discord4j.core.event.domain.message.ReactionAddEvent;
 import discord4j.core.object.entity.GuildChannel;
@@ -17,8 +15,9 @@ import discord4j.core.object.reaction.ReactionEmoji;
 import discord4j.core.object.util.Snowflake;
 import net.gunivers.gunibot.Main;
 import net.gunivers.gunibot.core.command.Command;
-import net.gunivers.gunibot.core.system.RestorableSystem;
 import net.gunivers.gunibot.core.utils.BotUtils;
+import net.gunivers.gunibot.datas.serialize.OldRestorable;
+import net.gunivers.gunibot.datas.serialize.OldSerializer;
 import net.gunivers.gunibot.event.Events;
 import net.gunivers.gunibot.utils.tuple.Tuple;
 import net.gunivers.gunibot.utils.tuple.Tuple2;
@@ -29,31 +28,21 @@ import reactor.core.publisher.Mono;
 
 public class WormHoleCommand extends Command {
 
-	private static class Memory implements RestorableSystem {
+	private static class Memory implements OldRestorable {
 		private HashMap<Tuple2<Snowflake, Snowflake>, Set<Tuple2<Snowflake, Snowflake>>> linkedChannels = new HashMap<>();
 
 		@Override
-		public JSONObject save() {
-			JSONObject j = new JSONObject();
-			j.put("wormhole", linkedChannels);
-			return j;
+		public OldSerializer save() {
+			OldSerializer s = new OldSerializer();
+			s.put("wormhole", linkedChannels);
+			return s;
 		}
 		@SuppressWarnings("unchecked")
 		@Override
-		public void load(JSONObject json) {
-			linkedChannels = (HashMap<Tuple2<Snowflake, Snowflake>, Set<Tuple2<Snowflake, Snowflake>>>)json.get("wormhole");
+		public void load(OldSerializer serializer) {
+			linkedChannels = (HashMap<Tuple2<Snowflake, Snowflake>, Set<Tuple2<Snowflake, Snowflake>>>)serializer.get("wormhole");
 			if(linkedChannels == null)
 				linkedChannels = new HashMap<>();
-		}
-		@Override
-		public void enable() {}
-
-		@Override
-		public void disable() {}
-
-		@Override
-		public boolean isEnabled() {
-			return true;
 		}
 	}
 
@@ -65,7 +54,7 @@ public class WormHoleCommand extends Command {
 	{
 		memory = new Memory();
 		System.out.println(Main.getBotInstance());
-		dataCenter.registerSystem("wormhole", memory);
+		dataCenter.registerOldSerializer("wormhole", memory);
 	}
 
 

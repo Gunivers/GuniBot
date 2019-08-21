@@ -55,6 +55,12 @@ public final class SQLDataTemplate {
 				+ "json JSON);";
 	}
 
+	public static String createOldSerializerTable() {
+		return "CREATE TABLE IF NOT EXISTS systems "
+				+ "(id VARCHAR(256) NOT NULL PRIMARY KEY, "
+				+ "json JSON);";
+	}
+
 	// Check Tables
 
 	public static String checkGuildsTable() {
@@ -99,6 +105,10 @@ public final class SQLDataTemplate {
 		return "SELECT id FROM users WHERE id="+id+" LIMIT 1;";
 	}
 
+	public static String hasOldSerializerData(String id) {
+		return "SELECT id FROM serializer WHERE id="+id+" LIMIT 1;";
+	}
+
 	public static String hasSystemData(String id) {
 		return "SELECT id FROM systems WHERE id="+id+" LIMIT 1;";
 	}
@@ -133,12 +143,20 @@ public final class SQLDataTemplate {
 		return "SELECT id,json FROM users WHERE id="+id;
 	}
 
+	public static String getOldSerializerData(String id) {
+		return "SELECT id,json FROM serializer WHERE id="+id;
+	}
+
 	public static String getGuildsId() {
 		return "SELECT id FROM guilds;";
 	}
 
 	public static String getUsersId() {
 		return "SELECT id FROM users;";
+	}
+
+	public static String getOldSerializerId() {
+		return "SELECT id FROM serializer;";
 	}
 
 	public static String getSystemsId() {
@@ -153,6 +171,10 @@ public final class SQLDataTemplate {
 		return "SELECT id,json FROM users;";
 	}
 
+	public static String getOldSerializerData() {
+		return "SELECT id,json FROM serializer;";
+	}
+
 	// remove Datas
 
 	public static String removeGuildData(long id) {
@@ -161,6 +183,10 @@ public final class SQLDataTemplate {
 
 	public static String removeUserData(long id) {
 		return "DELETE FROM users WHERE id="+id+";";
+	}
+
+	public static String removeOldSerializerData(String id) {
+		return "DELETE FROM serializer WHERE id="+id+";";
 	}
 
 	public static String removeSystemData(String id) {
@@ -249,6 +275,10 @@ public final class SQLDataTemplate {
 
 	public static String insertUserData(long user_id, JSONObject datas) {
 		return "REPLACE INTO users (id,json) VALUE ("+user_id+",'"+datas.toString()+"');";
+	}
+
+	public static String insertOldSerializerData(String system_id, JSONObject datas) {
+		return "REPLACE INTO serializer (id,json) VALUE ('"+system_id+"','"+datas.toString()+"');";
 	}
 
 	public static String insertSystemData(String system_id, JSONObject datas) {

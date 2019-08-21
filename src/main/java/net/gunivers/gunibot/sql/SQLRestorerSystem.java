@@ -84,6 +84,7 @@ public class SQLRestorerSystem extends AbstractRestorerSystem {
 			sqlConnection.createStatement().execute(SQLDataTemplate.createVoiceChannelsTable());
 			sqlConnection.createStatement().execute(SQLDataTemplate.createCategoriesTable());
 			sqlConnection.createStatement().execute(SQLDataTemplate.createUsersTable());
+			sqlConnection.createStatement().execute(SQLDataTemplate.createOldSerializerTable());
 		} catch (SQLException e) {
 			throw new RuntimeException("Error on table creation !", e);
 		}
@@ -129,10 +130,6 @@ public class SQLRestorerSystem extends AbstractRestorerSystem {
 		}
 	}
 
-	public static String formatJDBCUrl(String ip, String db) {
-		return String.format("jdbc:mysql://%s/%s?serverTimezone=Europe/Paris", ip, db);
-	}
-
 	public boolean hasGuildData(long guild_id) {
 		if(isDisable) {
 			System.err.println("SQL system is currently disable!");
@@ -156,6 +153,17 @@ public class SQLRestorerSystem extends AbstractRestorerSystem {
 
 		try {
 			return sqlConnection.createStatement().execute(SQLDataTemplate.hasUserData(user_id));
+		} catch (SQLException e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	public boolean hasOldSerializerData(String system_id) {
+		if(isDisable) return false;
+		checkConnection();
+
+		try {
+			return sqlConnection.createStatement().execute(SQLDataTemplate.hasOldSerializerData(system_id));
 		} catch (SQLException e) {
 			throw new RuntimeException(e);
 		}
@@ -203,6 +211,17 @@ public class SQLRestorerSystem extends AbstractRestorerSystem {
 		}
 	}
 
+	public void removeOldSerializerData(String system_id) {
+		if(isDisable) return;
+		checkConnection();
+
+		try {
+			sqlConnection.createStatement().execute(SQLDataTemplate.removeOldSerializerData(system_id));
+		} catch (SQLException e) {
+			throw new RuntimeException(e);
+		}
+	}
+
 	public void removeSystemData(String system_id) {
 		if(isDisable) {
 			System.err.println("SQL system is currently disable!");
@@ -240,6 +259,18 @@ public class SQLRestorerSystem extends AbstractRestorerSystem {
 
 		try {
 			sqlConnection.createStatement().execute(SQLDataTemplate.insertUserData(user_id, datas));
+		} catch (SQLException e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	public void saveOldSerializerData(String system_id, JSONObject datas) {
+		if(isDisable) return;
+		checkConnection();
+
+		try {
+			//System.out.println(SQLDataTemplate.insertOldSerializerData(system_id, datas));
+			sqlConnection.createStatement().execute(SQLDataTemplate.insertOldSerializerData(system_id, datas));
 		} catch (SQLException e) {
 			throw new RuntimeException(e);
 		}
@@ -344,6 +375,24 @@ public class SQLRestorerSystem extends AbstractRestorerSystem {
 		}
 	}
 
+	public JSONObject loadOldSerializerData(String id) {
+		if(isDisable) return new JSONObject();
+		checkConnection();
+
+		try {
+			Statement system_statement = sqlConnection.createStatement();
+			system_statement.execute(SQLDataTemplate.getOldSerializerData(id));
+			ResultSet system_result = system_statement.getResultSet();
+			if(system_result.next()) {
+				return new JSONObject(system_result.getString("json"));
+			} else {
+				return new JSONObject();
+			}
+		} catch (SQLException e) {
+			throw new RuntimeException(e);
+		}
+	}
+
 	public HashMap<Long,JSONObject> getAllDataGuilds() {
 		if(isDisable) {
 			System.err.println("SQL system is currently disable!");
@@ -384,6 +433,27 @@ public class SQLRestorerSystem extends AbstractRestorerSystem {
 			while(users_result.next()) {
 				long user_id = users_result.getLong("id");
 				output.put(user_id, loadUserData(user_id));
+			}
+
+			return output;
+		} catch (SQLException e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	public HashMap<String,JSONObject> getAllOldDataSerializer() {
+		if(isDisable) return new HashMap<>();
+		checkConnection();
+
+		try {
+			Statement systems_statement = sqlConnection.createStatement();
+			systems_statement.execute(SQLDataTemplate.getOldSerializerId());
+			ResultSet systems_result = systems_statement.getResultSet();
+
+			HashMap<String, JSONObject> output = new HashMap<>(systems_result.getFetchSize());
+			while(systems_result.next()) {
+				String system_id = systems_result.getString("id");
+				output.put(system_id, loadOldSerializerData(system_id));
 			}
 
 			return output;
