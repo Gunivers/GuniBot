@@ -7,6 +7,7 @@ import discord4j.core.DiscordClientBuilder;
 import discord4j.core.event.EventDispatcher;
 import discord4j.core.event.domain.guild.GuildCreateEvent;
 import discord4j.core.event.domain.lifecycle.ReadyEvent;
+import discord4j.core.event.domain.message.MessageCreateEvent;
 import discord4j.core.object.presence.Activity;
 import discord4j.core.object.presence.Presence;
 import discord4j.gateway.retry.RetryOptions;
@@ -66,7 +67,7 @@ public class BotInstance {
 			dispatcher.on(GuildCreateEvent.class).subscribe(event -> dataCenter.addGuild(event.getGuild()));
 
 			//debug
-			//dispatcher.on(MessageCreateEvent.class).map(MessageCreateEvent::getMessage).subscribe(msg -> {System.out.println("Message Received : "+msg.getContent().orElse("NO_CONTENT"));});
+			dispatcher.on(MessageCreateEvent.class).map(MessageCreateEvent::getMessage).subscribe(msg -> {System.out.println("Message Received : "+msg.getContent().orElse("NO_CONTENT"));});
 
 			VoiceChannelCreator.init(botClient);
 		}

@@ -46,7 +46,7 @@ public class SQLRestorerSystem extends AbstractRestorerSystem {
 		} catch(Exception e) {
 			if(OPTIONAL) {
 				System.err.println("[SQLClient] Connection failed : " + e.getMessage());
-				System.err.println("[SQLClient] Optional option activated, database disable !");
+				System.err.println("[SQLClient] Optional option activated, database disabled !");
 				isDisable = true;
 			} else {
 				throw new RuntimeException("Error on database initialization !", e);
@@ -93,7 +93,7 @@ public class SQLRestorerSystem extends AbstractRestorerSystem {
 	@Override
 	public void saveSystem(String id) {
 		if(isDisable) {
-			System.err.println("SQL system is currently disable!");
+			System.err.println("SQL system is currently disabled!");
 			return;
 		}
 		checkConnection();
@@ -108,7 +108,7 @@ public class SQLRestorerSystem extends AbstractRestorerSystem {
 	@Override
 	public void loadSystem(String id) {
 		if(isDisable) {
-			System.err.println("SQL system is currently disable!");
+			System.err.println("SQL system is currently disabled!");
 			return;
 		}
 		checkConnection();
@@ -132,7 +132,7 @@ public class SQLRestorerSystem extends AbstractRestorerSystem {
 
 	public boolean hasGuildData(long guild_id) {
 		if(isDisable) {
-			System.err.println("SQL system is currently disable!");
+			System.err.println("SQL system is currently disabled!");
 			return false;
 		}
 		checkConnection();
@@ -146,7 +146,7 @@ public class SQLRestorerSystem extends AbstractRestorerSystem {
 
 	public boolean hasUserData(long user_id) {
 		if(isDisable) {
-			System.err.println("SQL system is currently disable!");
+			System.err.println("SQL system is currently disabled!");
 			return false;
 		}
 		checkConnection();
@@ -159,7 +159,10 @@ public class SQLRestorerSystem extends AbstractRestorerSystem {
 	}
 
 	public boolean hasOldSerializerData(String system_id) {
-		if(isDisable) return false;
+		if(isDisable) {
+			System.err.println("SQL system is currently disabled!");
+			return false;
+		}
 		checkConnection();
 
 		try {
@@ -171,7 +174,7 @@ public class SQLRestorerSystem extends AbstractRestorerSystem {
 
 	public boolean hasSystemData(String system_id) {
 		if(isDisable) {
-			System.err.println("SQL system is currently disable!");
+			System.err.println("SQL system is currently disabled!");
 			return false;
 		}
 		checkConnection();
@@ -185,7 +188,7 @@ public class SQLRestorerSystem extends AbstractRestorerSystem {
 
 	public void removeGuildData(long guild_id) {
 		if(isDisable) {
-			System.err.println("SQL system is currently disable!");
+			System.err.println("SQL system is currently disabled!");
 			return;
 		}
 		checkConnection();
@@ -199,7 +202,7 @@ public class SQLRestorerSystem extends AbstractRestorerSystem {
 
 	public void removeUserData(long user_id) {
 		if(isDisable) {
-			System.err.println("SQL system is currently disable!");
+			System.err.println("SQL system is currently disabled!");
 			return;
 		}
 		checkConnection();
@@ -212,7 +215,10 @@ public class SQLRestorerSystem extends AbstractRestorerSystem {
 	}
 
 	public void removeOldSerializerData(String system_id) {
-		if(isDisable) return;
+		if(isDisable) {
+			System.err.println("SQL system is currently disabled!");
+			return;
+		}
 		checkConnection();
 
 		try {
@@ -224,7 +230,7 @@ public class SQLRestorerSystem extends AbstractRestorerSystem {
 
 	public void removeSystemData(String system_id) {
 		if(isDisable) {
-			System.err.println("SQL system is currently disable!");
+			System.err.println("SQL system is currently disabled!");
 			return;
 		}
 		checkConnection();
@@ -238,7 +244,7 @@ public class SQLRestorerSystem extends AbstractRestorerSystem {
 
 	public void saveGuildData(long guild_id, JSONObject datas) {
 		if(isDisable) {
-			System.err.println("SQL system is currently disable!");
+			System.err.println("SQL system is currently disabled!");
 			return;
 		}
 		checkConnection();
@@ -252,7 +258,7 @@ public class SQLRestorerSystem extends AbstractRestorerSystem {
 
 	public void saveUserData(long user_id, JSONObject datas) {
 		if(isDisable) {
-			System.err.println("SQL system is currently disable!");
+			System.err.println("SQL system is currently disabled!");
 			return;
 		}
 		checkConnection();
@@ -265,7 +271,10 @@ public class SQLRestorerSystem extends AbstractRestorerSystem {
 	}
 
 	public void saveOldSerializerData(String system_id, JSONObject datas) {
-		if(isDisable) return;
+		if(isDisable) {
+			System.err.println("SQL system is currently disabled!");
+			return;
+		}
 		checkConnection();
 
 		try {
@@ -278,7 +287,7 @@ public class SQLRestorerSystem extends AbstractRestorerSystem {
 
 	public JsonObjectV2 loadGuildData(long guild_id) {
 		if(isDisable) {
-			System.err.println("SQL system is currently disable!");
+			System.err.println("SQL system is currently disabled!");
 			return new JsonObjectV2();
 		}
 		checkConnection();
@@ -356,7 +365,7 @@ public class SQLRestorerSystem extends AbstractRestorerSystem {
 
 	public JsonObjectV2 loadUserData(long id) {
 		if(isDisable) {
-			System.err.println("SQL system is currently disable!");
+			System.err.println("SQL system is currently disabled!");
 			return new JsonObjectV2();
 		}
 		checkConnection();
@@ -376,7 +385,10 @@ public class SQLRestorerSystem extends AbstractRestorerSystem {
 	}
 
 	public JSONObject loadOldSerializerData(String id) {
-		if(isDisable) return new JSONObject();
+		if(isDisable) {
+			System.err.println("SQL system is currently disabled!");
+			return new JsonObjectV2();
+		}
 		checkConnection();
 
 		try {
@@ -395,7 +407,7 @@ public class SQLRestorerSystem extends AbstractRestorerSystem {
 
 	public HashMap<Long,JSONObject> getAllDataGuilds() {
 		if(isDisable) {
-			System.err.println("SQL system is currently disable!");
+			System.err.println("SQL system is currently disabled!");
 			return new HashMap<>();
 		}
 		checkConnection();
@@ -419,7 +431,7 @@ public class SQLRestorerSystem extends AbstractRestorerSystem {
 
 	public HashMap<Long,JSONObject> getAllDataUsers() {
 		if(isDisable) {
-			System.err.println("SQL system is currently disable!");
+			System.err.println("SQL system is currently disabled!");
 			return new HashMap<>();
 		}
 		checkConnection();
@@ -442,7 +454,10 @@ public class SQLRestorerSystem extends AbstractRestorerSystem {
 	}
 
 	public HashMap<String,JSONObject> getAllOldDataSerializer() {
-		if(isDisable) return new HashMap<>();
+		if(isDisable) {
+			System.err.println("SQL system is currently disabled!");
+			return new HashMap<>();
+		}
 		checkConnection();
 
 		try {
