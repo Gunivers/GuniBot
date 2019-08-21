@@ -16,7 +16,6 @@ import discord4j.core.object.entity.Role;
 import discord4j.core.object.entity.TextChannel;
 import discord4j.core.object.entity.VoiceChannel;
 import discord4j.core.object.util.Snowflake;
-import net.gunivers.gunibot.command.permissions.Permission;
 import net.gunivers.gunibot.core.utils.BotUtils;
 
 /**
@@ -46,10 +45,6 @@ public class DataGuild extends DataObject<Guild>
 
 	public boolean inBigTask = false;
 	private HashMap<String, JSONObject> backups = new HashMap<>();
-
-	{
-		this.getDataMember(this.getEntity().getOwner().block()).getPermissions().add(Permission.bot.get("server.owner"));
-	}
 
 	/**
 	 * Créer cet objet lié à ce guild.
