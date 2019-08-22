@@ -2,17 +2,14 @@ package net.gunivers.gunibot.datas;
 
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.BiFunction;
-import java.util.function.Function;
 
 import org.json.JSONObject;
 
 import discord4j.core.object.entity.Category;
-import discord4j.core.object.entity.Entity;
 import discord4j.core.object.entity.Guild;
 import discord4j.core.object.entity.Member;
 import discord4j.core.object.entity.Role;
@@ -20,13 +17,13 @@ import discord4j.core.object.entity.TextChannel;
 import discord4j.core.object.entity.VoiceChannel;
 import discord4j.core.object.util.Snowflake;
 import net.gunivers.gunibot.core.utils.BotUtils;
-import reactor.core.publisher.Mono;
 
 /**
  * Classe de donnée pour les objets Guild.
  * S'occupe également du chargement et de la sauvegarde de la plupart des objets discord contenu dans ce guild.
  * 
  * @author Syl2010
+ *
  */
 public class DataGuild extends DataObject<Guild>
 {
@@ -63,15 +60,14 @@ public class DataGuild extends DataObject<Guild>
 	 * @return l'objet de donnée du membre.
 	 */
 	public DataMember getDataMember(Member member) {
-		return this.getData(this.dataMembers, DataMember::new, member);
-		/*DataMember data_member = dataMembers.get(member.getId());
+		DataMember data_member = dataMembers.get(member.getId());
 		if(data_member != null) {
 			return data_member;
 		} else {
 			data_member = new DataMember(member);
 			dataMembers.put(member.getId(), data_member);
 			return data_member;
-		}*/
+		}
 	}
 
 	/**
@@ -80,15 +76,14 @@ public class DataGuild extends DataObject<Guild>
 	 * @return l'objet de donnée du channel textuel.
 	 */
 	public DataTextChannel getDataTextChannel(TextChannel text_channel) {
-		return this.getData(this.dataTextChannels, DataTextChannel::new, text_channel);
-		/*DataTextChannel data_text_channel = dataTextChannels.get(text_channel.getId());
+		DataTextChannel data_text_channel = dataTextChannels.get(text_channel.getId());
 		if(data_text_channel != null) {
 			return data_text_channel;
 		} else {
 			data_text_channel = new DataTextChannel(text_channel);
 			dataTextChannels.put(text_channel.getId(), data_text_channel);
 			return data_text_channel;
-		}*/
+		}
 	}
 
 	/**
@@ -97,15 +92,14 @@ public class DataGuild extends DataObject<Guild>
 	 * @return l'objet de donnée du role.
 	 */
 	public DataRole getDataRole(Role role) {
-		return this.getData(this.dataRoles, DataRole::new, role);
-		/*DataRole data_role = dataRoles.get(role.getId());
+		DataRole data_role = dataRoles.get(role.getId());
 		if(data_role != null) {
 			return data_role;
 		} else {
 			data_role = new DataRole(role);
 			dataRoles.put(role.getId(), data_role);
 			return data_role;
-		}*/
+		}
 	}
 
 	/**
@@ -114,15 +108,14 @@ public class DataGuild extends DataObject<Guild>
 	 * @return l'objet de donnée du channel vocal.
 	 */
 	public DataVoiceChannel getDataVoiceChannel(VoiceChannel voice_channel) {
-		return this.getData(this.dataVoiceChannels, DataVoiceChannel::new, voice_channel);
-		/*DataVoiceChannel data_voice_channel = dataVoiceChannels.get(voice_channel.getId());
+		DataVoiceChannel data_voice_channel = dataVoiceChannels.get(voice_channel.getId());
 		if(data_voice_channel != null) {
 			return data_voice_channel;
 		} else {
 			data_voice_channel = new DataVoiceChannel(voice_channel);
 			dataVoiceChannels.put(voice_channel.getId(), data_voice_channel);
 			return data_voice_channel;
-		}*/
+		}
 	}
 
 	/**
@@ -131,27 +124,16 @@ public class DataGuild extends DataObject<Guild>
 	 * @return l'objet de donnée de la catégorie.
 	 */
 	public DataCategory getDataCategory(Category category) {
-		return this.getData(this.dataCategories, DataCategory::new, category);
-		/*DataCategory data_category = dataCategories.get(category.getId());
+		DataCategory data_category = dataCategories.get(category.getId());
 		if(data_category != null) {
 			return data_category;
 		} else {
 			data_category = new DataCategory(category);
 			dataCategories.put(category.getId(), data_category);
 			return data_category;
-		}*/
+		}
 	}
-	
-	private <E extends Entity, D extends DataObject<E>> D getData(Map<Snowflake,D> datas, Function<E,D> provider, E entity)
-	{
-	    D data = datas.get(entity.getId());
-	    if (data != null) return data;
 
-	    data = provider.apply(entity);
-	    datas.put(entity.getId(), data);
-	    return data;
-	}
-	
 	//	//En réflexion
 	//	public void clearDataMembersCache() {
 	//		dataMembers.clear();
@@ -190,13 +172,6 @@ public class DataGuild extends DataObject<Guild>
 	public JSONObject save() {
 		JSONObject json = super.save();
 
-		json.putOpt("members", this.toJSONObject(dataMembers));
-		json.putOpt("roles", this.toJSONObject(dataRoles));
-		json.putOpt("text_channels", this.toJSONObject(dataTextChannels));
-		json.putOpt("voice_channels", this.toJSONObject(dataVoiceChannels));
-		json.putOpt("categories", this.toJSONObject(dataCategories));
-		
-		/*
 		JSONObject json_members = new JSONObject();
 		for(Entry<Snowflake, DataMember> member_entry:dataMembers.entrySet()) {
 			json_members.putOpt(member_entry.getKey().asString(), member_entry.getValue().save());
@@ -226,8 +201,7 @@ public class DataGuild extends DataObject<Guild>
 			json_categories.putOpt(category_entry.getKey().asString(), category_entry.getValue().save());
 		}
 		json.putOpt("categories", json_categories);
-		*/
-		
+
 		json.putOpt("prefix", prefix);
 
 		JSONObject welcome = new JSONObject();
@@ -245,13 +219,6 @@ public class DataGuild extends DataObject<Guild>
 		json.putOpt("backups", backups);
 
 		return json;
-	}
-	
-	private <D extends DataObject<?>> JSONObject toJSONObject(Map<Snowflake, D> datas)
-	{
-		JSONObject obj = new JSONObject();
-		datas.forEach((s,d) -> obj.putOpt(s.asString(), d.save()));
-		return obj;
 	}
 
 	/**
@@ -272,13 +239,7 @@ public class DataGuild extends DataObject<Guild>
 		JSONObject json_voice_channels = json.optJSONObject("voice_channels");
 		JSONObject json_categories = json.optJSONObject("categories");
 
-		this.load(this.dataMembers, Guild::getMemberById, DataMember::new, json_members, Member.class);
-		this.load(this.dataRoles, Guild::getRoleById, DataRole::new, json_roles, Role.class);
-		this.load(this.dataTextChannels, Guild::getChannelById, DataTextChannel::new, json_text_channels, TextChannel.class);
-		this.load(this.dataVoiceChannels, Guild::getChannelById, DataVoiceChannel::new, json_voice_channels, VoiceChannel.class);
-		this.load(this.dataCategories, Guild::getChannelById, DataCategory::new, json_categories, Category.class);
-		
-		/*if(json_members != null) {
+		if(json_members != null) {
 			for(String s_member_id:json_members.keySet()) {
 				Snowflake member_id = Snowflake.of(s_member_id);
 				Optional<Member> opt_member = BotUtils.returnOptional(getEntity().getMemberById(member_id));
@@ -381,7 +342,7 @@ public class DataGuild extends DataObject<Guild>
 			}
 		} else {
 			System.out.println(String.format("No categories datas in the guild '%s' (%s)! Skipping loading of the categories!", getEntity().getName(), getEntity().getId().asString()));
-		}*/
+		}
 
 		prefix = json.optString("prefix", prefix);
 
@@ -397,32 +358,6 @@ public class DataGuild extends DataObject<Guild>
 
 		JSONObject json_backups = json.optJSONObject("backups");
 		if(json_backups != null) for(String backup_name:json_backups.keySet()) backups.put(backup_name, json_backups.getJSONObject(backup_name));
-	}
-	
-	private <E extends Entity, D extends DataObject<E>> void load(Map<Snowflake,D> datas, BiFunction<Guild,Snowflake,Mono<? super E>> loader, Function<E,D> provider, JSONObject from, Class<E> type)
-	{
-		if (from != null)
-		{
-			for (String key : from.keySet())
-			{
-				Snowflake id = Snowflake.of(key);
-				Optional<E> opt = BotUtils.returnOptional(loader.apply(this.getEntity(), id).ofType(type));
-				
-				if (opt.isPresent())
-				{
-					if (datas.containsKey(id))
-						datas.get(id).load(from.getJSONObject(key));
-					else
-					{
-						D data = provider.apply(opt.get());
-						data.load(from.getJSONObject(key));
-						datas.put(id, data);
-					}
-				} else
-					System.err.println(String.format("The %s id '%s' in the guild '%s' [%s] is not reachable! Skipping loading of this %s!", type.getSimpleName().toLowerCase(), id.asString(), this.getEntity().getName(), getEntity().getId().asString(), type.getSimpleName().toLowerCase()));
-			}
-		} else
-			System.out.println(String.format("No %s datas in the guild '%s' (%s)! Skipping loading of type: %s", type.getSimpleName().toLowerCase(), this.getEntity().getName(), getEntity().getId().asString(), type.getSimpleName()));
 	}
 
 	public String getPrefix() { return prefix; }
