@@ -20,8 +20,8 @@ public class DataRole extends DataObject<Role> implements Permissible
 		super(role);
 	}
 
-	@Override public Set<Permission> getPermissions() { return perms; }
-	@Override public void setPermissions(Collection<Permission> perms) { this.perms = new HashSet<>(perms); this.recalculatePermissions(); }
+	@Override public Set<Permission> getPermissions() { this.recalculatePermissions(); return perms; }
+	@Override public void setPermissions(Collection<Permission> perms) { this.perms = new HashSet<>(perms); }
 	
 	@Override
 	public void recalculatePermissions()

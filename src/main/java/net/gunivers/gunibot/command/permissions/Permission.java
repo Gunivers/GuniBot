@@ -15,7 +15,6 @@ import discord4j.core.object.entity.Role;
 import net.gunivers.gunibot.Main;
 import net.gunivers.gunibot.datas.DataGuild;
 import net.gunivers.gunibot.datas.DataMember;
-import net.gunivers.gunibot.datas.DataRole;
 
 public class Permission
 {
@@ -50,19 +49,11 @@ public class Permission
 		DataGuild guild = Main.getBotInstance().getDataCenter().getDataGuild(member.getGuild().block());
 		Permission p = new Permission(0, "you.should.not.see.this");
 		
-		DataMember dm = guild.getDataMember(member);
-		dm.recalculatePermissions();
-		
-		for (Permission perm : dm.getPermissions()) if (perm.higherThan(p)) p = perm;
+		for (Permission perm : guild.getDataMember(member).getPermissions()) if (perm.higherThan(p))
+			p = perm;
 
-		for (Role role : member.getRoles().toIterable())
-		{
-			DataRole dr = guild.getDataRole(role);
-			dr.recalculatePermissions();
-			
-			for (Permission perm : dr.getPermissions())
-				if (perm.higherThan(p)) p = perm;
-		}
+		for (Role role : member.getRoles().toIterable()) for (Permission perm : guild.getDataRole(role).getPermissions()) if (perm.higherThan(p))
+			p = perm;
 
 		return p;
 	}

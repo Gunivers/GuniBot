@@ -22,8 +22,8 @@ public class DataMember extends DataObject<Member> implements Permissible
 		super(member);
 	}
 
-	@Override public void setPermissions(Collection<Permission> permissions) { this.perms = new HashSet<>(permissions); recalculatePermissions(); }
-	@Override public Set<Permission> getPermissions() { return perms; }
+	@Override public Set<Permission> getPermissions() { this.recalculatePermissions(); return perms; }
+	@Override public void setPermissions(Collection<Permission> permissions) { this.perms = new HashSet<>(permissions); }
 
 	@Override
 	public void recalculatePermissions()
