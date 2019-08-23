@@ -45,6 +45,9 @@ public class DataCenter {
 	 */
 	private ConcurrentHashMap<String, OldRestorable> oldDataSystems;
 
+	/**
+	 * Système SQL gérant la sauvegarde des autres systèmes et données
+	 */
 	private SQLRestorerSystem sqlRestorerSystem;
 
 	public DataCenter(BotInstance bot_instance) {
@@ -58,26 +61,54 @@ public class DataCenter {
 		sqlRestorerSystem = new SQLRestorerSystem(new SQLConfig(botInstance.getConfig()));
 	}
 
+	/**
+	 * Enregistre un système utilisant l'ancien serializer
+	 * @param system_id l'id du système à utiliser
+	 * @param system le système à enregitrer
+	 */
 	public void registerOldSerializer(String system_id, OldRestorable system) {
 		oldDataSystems.put(system_id, system);
 	}
 
+	/**
+	 * Désenregistre un système utilisant l'ancien serializer
+	 * @param system_id l'id du système à désenregistrer
+	 */
 	public void unregisterOldSerializer(String system_id) {
 		oldDataSystems.remove(system_id);
 	}
 
+	/**
+	 * Vérifie si le système indiqué est enregistré avec l'ancien serializer
+	 * @param system_id l'id du système à vérifier
+	 * @return {@code true} si un système est bien enregistréavec cet id, {@code false} sinon
+	 */
 	public boolean isRegisteredOldSerializer(String system_id) {
 		return sqlRestorerSystem.hasOldSerializerData(system_id);
 	}
 
+	/**
+	 * Enregistre un système
+	 * @param system_id l'id du système
+	 * @param system le système à enregistré
+	 */
 	public void registerSystem(String system_id, RestorableSystem system) {
 		sqlRestorerSystem.registerSystem(system_id, system);
 	}
 
+	/**
+	 * Désenregistre un système
+	 * @param system_id l'id du système à désenregistré
+	 */
 	public void unregisterSystem(String system_id) {
 		sqlRestorerSystem.unregisterSystem(system_id);
 	}
 
+	/**
+	 * Vérifie si un système est enregistré avec cet id
+	 * @param system_id l'id du système à vérifier
+	 * @return {@code true} si ce système est bien enregistré, {@code false} sinon
+	 */
 	public boolean isRegisteredSystem(String system_id) {
 		return sqlRestorerSystem.isRegistered(system_id);
 	}
@@ -183,6 +214,11 @@ public class DataCenter {
 		}
 	}
 
+	/**
+	 * Recupère le système enregistré avec cet id
+	 * @param id l'id du système à récupérer
+	 * @return le système enregistré avec cet id
+	 */
 	public RestorableSystem getSystem(String id) {
 		return sqlRestorerSystem.getSystem(id);
 	}
