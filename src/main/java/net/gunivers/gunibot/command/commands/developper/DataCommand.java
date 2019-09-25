@@ -20,108 +20,124 @@ import net.gunivers.gunibot.datas.DataCenter;
 
 public class DataCommand extends Command {
 
-	@Override
-	public String getSyntaxFile() {
-		return "developper/data.json";
-	}
+    @Override
+    public String getSyntaxFile() {
+	return "developper/data.json";
+    }
 
-	public void displayGuildData(MessageCreateEvent event) {
-		Guild guild = event.getGuild().block();
+    public void displayGuildData(MessageCreateEvent event) {
+	Guild guild = event.getGuild().block();
 
-		Message message = event.getMessage();
-		message.getChannel().flatMap(channel -> channel.createMessage(spec -> {
-			JSONObject json = Main.getBotInstance().getDataCenter().getDataGuild(guild).save();
+	Message message = event.getMessage();
+	message.getChannel().flatMap(channel -> channel.createMessage(spec -> {
+	    JSONObject json = Main.getBotInstance().getDataCenter().getDataGuild(guild).save();
 
-			String content = String.format("**Data Report** for guild **%s**\n```json\n%s\n```", guild.getName(), json.toString(4));
-			if (content.length() > 2000) spec .addFile("output.txt", new ByteArrayInputStream(content.getBytes(StandardCharsets.UTF_8)));
-			else spec.setContent(content);
-		})).subscribe();
-	}
+	    String content = String.format("**Data Report** for guild **%s**\n```json\n%s\n```", guild.getName(),
+		    json.toString(4));
+	    if (content.length() > 2000) {
+		spec.addFile("output.txt", new ByteArrayInputStream(content.getBytes(StandardCharsets.UTF_8)));
+	    } else {
+		spec.setContent(content);
+	    }
+	})).subscribe();
+    }
 
-	public void displayUserData(MessageCreateEvent event, List<String> args) {
-		String s_user = args.get(0);
-		try {
-			User user = Parser.singleEntity(Parser.parseUser(s_user, event.getClient()));
+    public void displayUserData(MessageCreateEvent event, List<String> args) {
+	String strUser = args.get(0);
+	try {
+	    User user = Parser.singleEntity(Parser.parseUser(strUser, event.getClient()));
 
-			Message message = event.getMessage();
-			message.getChannel().flatMap(channel -> channel.createMessage(spec -> {
-				JSONObject json = Main.getBotInstance().getDataCenter().getDataUser(user).save();
+	    Message message = event.getMessage();
+	    message.getChannel().flatMap(channel -> channel.createMessage(spec -> {
+		JSONObject json = Main.getBotInstance().getDataCenter().getDataUser(user).save();
 
-				String content = String.format("**Data Report** for user **%s**\n```json\n%s\n```", user.getUsername(), json.toString(4));
-				if (content.length() > 2000) spec .addFile("output.txt", new ByteArrayInputStream(content.getBytes(StandardCharsets.UTF_8)));
-				else spec.setContent(content);
-			})).subscribe();
-
-		} catch (ObjectParsingException e) {
-			Message message = event.getMessage();
-			message.getChannel().flatMap(channel -> channel.createEmbed(embed_spec -> {
-				Member author = event.getMember().get();
-				User user_bot = event.getClient().getSelf().block();
-
-				embed_spec.setAuthor(user_bot.getUsername(), null, user_bot.getAvatarUrl());
-				embed_spec.setColor(Color.ORANGE);
-				embed_spec.setFooter("Lançé par "+author.getUsername(), author.getAvatarUrl());
-				embed_spec.setTimestamp(message.getTimestamp());
-
-				embed_spec.setDescription(e.getMessage());
-			})).subscribe();
+		String content = String.format("**Data Report** for user **%s**\n```json\n%s\n```", user.getUsername(),
+			json.toString(4));
+		if (content.length() > 2000) {
+		    spec.addFile("output.txt", new ByteArrayInputStream(content.getBytes(StandardCharsets.UTF_8)));
+		} else {
+		    spec.setContent(content);
 		}
+	    })).subscribe();
+
+	} catch (ObjectParsingException e) {
+	    Message message = event.getMessage();
+	    message.getChannel().flatMap(channel -> channel.createEmbed(embedSpec -> {
+		Member author = event.getMember().get();
+		User userBot = event.getClient().getSelf().block();
+
+		embedSpec.setAuthor(userBot.getUsername(), null, userBot.getAvatarUrl());
+		embedSpec.setColor(Color.ORANGE);
+		embedSpec.setFooter("Lançé par " + author.getUsername(), author.getAvatarUrl());
+		embedSpec.setTimestamp(message.getTimestamp());
+
+		embedSpec.setDescription(e.getMessage());
+	    })).subscribe();
 	}
+    }
 
-	public void displaySystemData(MessageCreateEvent event, List<String> args) {
-		String system_id = args.get(0);
-		Message message = event.getMessage();
-		message.getChannel().flatMap(channel -> channel.createMessage(spec -> {
-			DataCenter data_center = Main.getBotInstance().getDataCenter();
-			if(data_center.isRegisteredSystem(system_id)) {
-				JSONObject json = data_center.getSystem(system_id).save();
+    public void displaySystemData(MessageCreateEvent event, List<String> args) {
+	String systemId = args.get(0);
+	Message message = event.getMessage();
+	message.getChannel().flatMap(channel -> channel.createMessage(spec -> {
+	    DataCenter dataCenter = Main.getBotInstance().getDataCenter();
+	    if (dataCenter.isRegisteredSystem(systemId)) {
+		JSONObject json = dataCenter.getSystem(systemId).save();
 
-				String content = String.format("**Data Report** for system **%s**\n```json\n%s\n```", system_id, json.toString(4));
-				if (content.length() > 2000) spec .addFile("output.txt", new ByteArrayInputStream(content.getBytes(StandardCharsets.UTF_8)));
-				else spec.setContent(content);
-			} else {
-				spec.setEmbed(embed_spec -> {
-					Member author = event.getMember().get();
-					User user_bot = event.getClient().getSelf().block();
+		String content = String.format("**Data Report** for system **%s**\n```json\n%s\n```", systemId,
+			json.toString(4));
+		if (content.length() > 2000) {
+		    spec.addFile("output.txt", new ByteArrayInputStream(content.getBytes(StandardCharsets.UTF_8)));
+		} else {
+		    spec.setContent(content);
+		}
+	    } else {
+		spec.setEmbed(embedSpec -> {
+		    Member author = event.getMember().get();
+		    User userBot = event.getClient().getSelf().block();
 
-					embed_spec.setAuthor(user_bot.getUsername(), null, user_bot.getAvatarUrl());
-					embed_spec.setColor(Color.ORANGE);
-					embed_spec.setFooter("Lançé par "+author.getUsername(), author.getAvatarUrl());
-					embed_spec.setTimestamp(message.getTimestamp());
+		    embedSpec.setAuthor(userBot.getUsername(), null, userBot.getAvatarUrl());
+		    embedSpec.setColor(Color.ORANGE);
+		    embedSpec.setFooter("Lançé par " + author.getUsername(), author.getAvatarUrl());
+		    embedSpec.setTimestamp(message.getTimestamp());
 
-					embed_spec.setDescription(String.format("No system '%s' registered!", system_id));
-				});
-			}
+		    embedSpec.setDescription(String.format("No system '%s' registered!", systemId));
+		});
+	    }
 
-		})).subscribe();
-	}
+	})).subscribe();
+    }
 
-	public void displayOldSerializerData(MessageCreateEvent event, List<String> args) {
-		String system_id = args.get(0);
-		Message message = event.getMessage();
-		message.getChannel().flatMap(channel -> channel.createMessage(spec -> {
-			DataCenter data_center = Main.getBotInstance().getDataCenter();
-			if(data_center.isRegisteredOldSerializer(system_id)) {
-				JSONObject json = data_center.getDataSerializer(system_id);
+    public void displayOldSerializerData(MessageCreateEvent event, List<String> args) {
+	String systemId = args.get(0);
+	Message message = event.getMessage();
+	message.getChannel().flatMap(channel -> channel.createMessage(spec -> {
+	    DataCenter dataCenter = Main.getBotInstance().getDataCenter();
+	    if (dataCenter.isRegisteredOldSerializer(systemId)) {
+		JSONObject json = dataCenter.getDataSerializer(systemId);
 
-				String content = String.format("**Data Report** for system **%s**\n```json\n%s\n```", system_id, json.toString(4));
-				if (content.length() > 2000) spec .addFile("output.txt", new ByteArrayInputStream(content.getBytes(StandardCharsets.UTF_8)));
-				else spec.setContent(content);
-			} else {
-				spec.setEmbed(embed_spec -> {
-					Member author = event.getMember().get();
-					User user_bot = event.getClient().getSelf().block();
+		String content = String.format("**Data Report** for system **%s**\n```json\n%s\n```", systemId,
+			json.toString(4));
+		if (content.length() > 2000) {
+		    spec.addFile("output.txt", new ByteArrayInputStream(content.getBytes(StandardCharsets.UTF_8)));
+		} else {
+		    spec.setContent(content);
+		}
+	    } else {
+		spec.setEmbed(embedSpec -> {
+		    Member author = event.getMember().get();
+		    User userBot = event.getClient().getSelf().block();
 
-					embed_spec.setAuthor(user_bot.getUsername(), null, user_bot.getAvatarUrl());
-					embed_spec.setColor(Color.ORANGE);
-					embed_spec.setFooter("Lançé par "+author.getUsername(), author.getAvatarUrl());
-					embed_spec.setTimestamp(message.getTimestamp());
+		    embedSpec.setAuthor(userBot.getUsername(), null, userBot.getAvatarUrl());
+		    embedSpec.setColor(Color.ORANGE);
+		    embedSpec.setFooter("Lançé par " + author.getUsername(), author.getAvatarUrl());
+		    embedSpec.setTimestamp(message.getTimestamp());
 
-					embed_spec.setDescription(String.format("No system '%s' registered!", system_id));
-				});
-			}
+		    embedSpec.setDescription(String.format("No system '%s' registered!", systemId));
+		});
+	    }
 
-		})).subscribe();
-	}
+	})).subscribe();
+    }
 
 }

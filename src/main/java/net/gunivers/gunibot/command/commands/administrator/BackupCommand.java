@@ -44,734 +44,857 @@ import net.gunivers.gunibot.datas.DataGuild;
 
 public class BackupCommand extends Command {
 
-	@Override
-	public String getSyntaxFile() {
-		return "administrator/backup.json";
+    @Override
+    public String getSyntaxFile() {
+	return "administrator/backup.json";
+    }
+
+    public void defaultBackup(MessageCreateEvent event) {
+	namedBackup(event, Arrays.asList(LocalDateTime.now().format(Parser.DateTimePattern())));
+    }
+
+    public void namedBackup(MessageCreateEvent event, List<String> args) {
+	Message message = event.getMessage();
+	TextChannel channel = message.getChannel().ofType(TextChannel.class).block();
+	User userBot = event.getClient().getSelf().block();
+	User author = event.getMember().get();
+
+	String backupName = args.get(0);
+
+	if ((backupName == null) || backupName.isEmpty()) {
+	    channel.createEmbed(spec -> {
+		spec.setAuthor(userBot.getUsername(), null, userBot.getAvatarUrl());
+		spec.setColor(Color.ORANGE);
+		spec.setFooter("Lançé par " + author.getUsername(), author.getAvatarUrl());
+		spec.setTimestamp(message.getTimestamp());
+
+		spec.addField("Syntaxe incorrect !", "le nom doit être valide !", false);
+	    }).subscribe();
+	} else {
+	    Guild guild = event.getGuild().block();
+
+	    DataGuild dataGuild = Main.getBotInstance().getDataCenter().getDataGuild(guild);
+
+	    if (!dataGuild.inBigTask) {
+		dataGuild.inBigTask = true;
+		channel.createEmbed(spec -> {
+		    spec.setAuthor(userBot.getUsername(), null, userBot.getAvatarUrl());
+		    spec.setColor(Color.ORANGE);
+		    spec.setFooter("Lançé par " + author.getUsername(), author.getAvatarUrl());
+		    spec.setTimestamp(message.getTimestamp());
+
+		    spec.setDescription("Backup en cours...");
+		}).subscribe();
+
+		JSONObject jsonDatas = new JSONObject();
+
+		// Begin backup
+
+		// Guild
+		JSONObject jsonGuild = new JSONObject();
+
+		jsonGuild.put("name", guild.getName());
+		if (guild.getAfkChannelId().isPresent()) {
+		    jsonGuild.put("afk_id", guild.getAfkChannelId().get().asString());
+		}
+		jsonGuild.put("afk_timeout", guild.getAfkTimeout());
+
+		if (guild.getBannerUrl(Format.GIF).isPresent()
+			&& (BotUtils.testHTTPCodeResponse(guild.getBannerUrl(Format.GIF).get()) == 200)) {
+		    jsonGuild.put("banner", guild.getBannerUrl(Format.GIF).get());
+		} else if (guild.getBannerUrl(Format.PNG).isPresent()
+			&& (BotUtils.testHTTPCodeResponse(guild.getBannerUrl(Format.PNG).get()) == 200)) {
+		    jsonGuild.put("banner", guild.getBannerUrl(Format.PNG).get());
+		}
+
+		JSONArray jsonBans = new JSONArray();
+		for (Ban ban : guild.getBans().toIterable()) {
+		    JSONObject jsonBan = new JSONObject();
+
+		    jsonBan.put("user", ban.getUser().getId().asString());
+		    if (ban.getReason().isPresent()) {
+			jsonBan.put("reason", ban.getReason().get());
+		    }
+
+		    jsonBans.put(jsonBan);
+		}
+		jsonGuild.put("bans", jsonBans);
+
+		JSONArray jsonEmojis = new JSONArray();
+		for (GuildEmoji emoji : guild.getEmojis().toIterable()) {
+		    JSONObject jsonEmoji = new JSONObject();
+
+		    jsonEmoji.put("name", emoji.getName());
+		    jsonEmoji.put("emoji", emoji.getImageUrl());
+		    jsonEmoji.put("roles",
+			    emoji.getRoleIds().stream().map(Snowflake::asString).collect(Collectors.toList()));
+
+		    jsonEmojis.put(jsonEmoji);
+		}
+		jsonGuild.put("emojis", jsonEmojis);
+
+		if (guild.getIconUrl(Format.GIF).isPresent()
+			&& (BotUtils.testHTTPCodeResponse(guild.getIconUrl(Format.GIF).get()) == 200)) {
+		    jsonGuild.put("icon", guild.getIconUrl(Format.GIF).get());
+		} else if (guild.getIconUrl(Format.PNG).isPresent()
+			&& (BotUtils.testHTTPCodeResponse(guild.getIconUrl(Format.PNG).get()) == 200)) {
+		    jsonGuild.put("icon", guild.getIconUrl(Format.PNG).get());
+		}
+
+		jsonGuild.put("notification", guild.getNotificationLevel().getValue());
+		jsonGuild.put("owner", guild.getOwnerId().asString());
+		jsonGuild.put("region", guild.getRegionId());
+
+		if (guild.getSplashUrl(Format.GIF).isPresent()
+			&& (BotUtils.testHTTPCodeResponse(guild.getSplashUrl(Format.GIF).get()) == 200)) {
+		    jsonGuild.put("splash", guild.getSplashUrl(Format.GIF).get());
+		} else if (guild.getSplashUrl(Format.PNG).isPresent()
+			&& (BotUtils.testHTTPCodeResponse(guild.getSplashUrl(Format.PNG).get()) == 200)) {
+		    jsonGuild.put("splash", guild.getSplashUrl(Format.PNG).get());
+		}
+
+		jsonGuild.put("verification", guild.getVerificationLevel().getValue());
+
+		jsonDatas.put("guild", jsonGuild);
+		// Roles
+		JSONObject jsonRoles = new JSONObject();
+
+		for (Role role : guild.getRoles().toIterable()) {
+		    JSONObject jsonRole = new JSONObject();
+
+		    Snowflake roleId = role.getId();
+		    jsonRole.put("name", role.getName());
+		    jsonRole.put("color", role.getColor().getRGB());
+		    jsonRole.put("position", role.getRawPosition());
+		    jsonRole.put("hoisted", role.isHoisted());
+		    jsonRole.put("mentionable", role.isMentionable());
+		    jsonRole.put("permissions", role.getPermissions().getRawValue());
+
+		    jsonRoles.put(roleId.asString(), jsonRole);
+		}
+
+		jsonDatas.put("roles", jsonRoles);
+		// channels
+		JSONObject jsonChannels = new JSONObject();
+
+		for (GuildChannel guildChannel : guild.getChannels().toIterable()) {
+		    JSONObject jsonChannel = new JSONObject();
+
+		    Snowflake channelId = guildChannel.getId();
+		    jsonChannel.put("name", guildChannel.getName());
+		    jsonChannel.put("position", guildChannel.getRawPosition());
+
+		    JSONArray jsonPermissions = new JSONArray();
+		    for (ExtendedPermissionOverwrite permission : guildChannel.getPermissionOverwrites()) {
+			JSONObject jsonPermission = new JSONObject();
+
+			jsonPermission.put("id", permission.getTargetId().asString());
+			jsonPermission.put("type", permission.getType().getValue());
+			jsonPermission.put("allowed", permission.getAllowed().getRawValue());
+			jsonPermission.put("denied", permission.getDenied().getRawValue());
+
+			jsonPermissions.put(jsonPermission);
+		    }
+		    jsonChannel.put("permissions", jsonPermissions);
+
+		    Channel.Type channelType = guildChannel.getType();
+		    jsonChannel.put("type", channelType.getValue());
+
+		    if (channelType.equals(Channel.Type.GUILD_CATEGORY)) {
+			// Category category = (Category) guildChannel;
+
+		    } else if (channelType.equals(Channel.Type.GUILD_TEXT)) {
+			TextChannel textChannel = (TextChannel) guildChannel;
+
+			if (textChannel.getCategoryId().isPresent()) {
+			    jsonChannel.put("parent_id", textChannel.getCategoryId().get().asString());
+			}
+			jsonChannel.put("slow", textChannel.getRateLimitPerUser());
+			jsonChannel.put("nsfw", textChannel.isNsfw());
+			if (textChannel.getTopic().isPresent()) {
+			    jsonChannel.put("topic", textChannel.getTopic().get());
+			}
+		    } else if (channelType.equals(Channel.Type.GUILD_VOICE)) {
+			VoiceChannel voiceChannel = (VoiceChannel) guildChannel;
+
+			if (voiceChannel.getCategoryId().isPresent()) {
+			    jsonChannel.put("parent_id", voiceChannel.getCategoryId().get().asString());
+			}
+			jsonChannel.put("bitrate", voiceChannel.getBitrate());
+			jsonChannel.put("user_limit", voiceChannel.getUserLimit());
+		    } else {
+			System.err.println("[Backup] A channel type is unsupported and cannot be completely saved : "
+				+ channelType);
+		    }
+		    jsonChannels.put(channelId.asString(), jsonChannel);
+		}
+
+		jsonDatas.put("channels", jsonChannels);
+		// Members
+		JSONObject jsonMembers = new JSONObject();
+		for (Member member : guild.getMembers().toIterable()) {
+		    JSONObject jsonMember = new JSONObject();
+
+		    jsonMember.put("roles",
+			    member.getRoleIds().stream().map(s -> s.asString()).collect(Collectors.toList()));
+		    if (member.getNickname().isPresent()) {
+			jsonMember.put("nickname", member.getNickname().get());
+		    }
+		    jsonMembers.put(member.getId().asString(), jsonMember);
+		}
+
+		jsonDatas.put("members", jsonMembers);
+		// Webhook
+		JSONObject jsonWebhooks = new JSONObject();
+
+		for (Webhook webhook : guild.getWebhooks().toIterable()) {
+		    JSONObject jsonWebhook = new JSONObject();
+
+		    Snowflake webhookId = webhook.getId();
+		    if (webhook.getName().isPresent()) {
+			jsonWebhook.put("name", webhook.getName().get());
+		    }
+		    if (webhook.getAvatar().isPresent()) {
+			jsonWebhook.put("avatar", webhook.getAvatar().get());
+		    }
+		    jsonWebhook.put("channel", webhook.getChannelId().asString());
+
+		    jsonWebhooks.put(webhookId.asString(), jsonWebhook);
+		}
+
+		jsonDatas.put("webhooks", jsonWebhooks);
+		// End backup
+
+		dataGuild.addBackup(backupName, jsonDatas);
+		dataGuild.inBigTask = false;
+		channel.createEmbed(spec -> {
+		    spec.setAuthor(userBot.getUsername(), null, userBot.getAvatarUrl());
+		    spec.setColor(Color.ORANGE);
+		    spec.setFooter("Lançé par " + author.getUsername(), author.getAvatarUrl());
+		    spec.setTimestamp(message.getTimestamp());
+
+		    spec.addField("Backup terminé !", "Nom de la backup : **" + backupName + "**", false);
+		}).subscribe();
+
+	    } else {
+		channel.createEmbed(spec -> {
+		    spec.setAuthor(userBot.getUsername(), null, userBot.getAvatarUrl());
+		    spec.setColor(Color.ORANGE);
+		    spec.setFooter("Lançé par " + author.getUsername(), author.getAvatarUrl());
+		    spec.setTimestamp(message.getTimestamp());
+
+		    spec.addField("Commande refusé !", "Une autre tâche est en cours !", false);
+		}).subscribe();
+	    }
 	}
+    }
 
-	public void defaultBackup(MessageCreateEvent event) {
-		namedBackup(event, Arrays.asList(LocalDateTime.now().format(Parser.DateTimePattern())));
-	}
+    public void restoreBackup(MessageCreateEvent event, List<String> args) {
+	Message message = event.getMessage();
+	TextChannel channel = message.getChannel().ofType(TextChannel.class).block();
+	User userBot = event.getClient().getSelf().block();
+	User author = event.getMember().get();
 
-	public void namedBackup(MessageCreateEvent event, List<String> args) {
-		Message message = event.getMessage();
-		TextChannel channel = message.getChannel().ofType(TextChannel.class).block();
-		User user_bot = event.getClient().getSelf().block();
-		User author = event.getMember().get();
+	String backupName = args.get(0);
 
-		String backup_name = args.get(0);
+	if ((backupName == null) || backupName.isEmpty()) {
+	    channel.createEmbed(spec -> {
+		spec.setAuthor(userBot.getUsername(), null, userBot.getAvatarUrl());
+		spec.setColor(Color.ORANGE);
+		spec.setFooter("Lançé par " + author.getUsername(), author.getAvatarUrl());
+		spec.setTimestamp(message.getTimestamp());
 
-		if((backup_name == null) || backup_name.isEmpty()) {
-			channel.createEmbed(spec -> {
-				spec.setAuthor(user_bot.getUsername(), null, user_bot.getAvatarUrl());
-				spec.setColor(Color.ORANGE);
-				spec.setFooter("Lançé par "+author.getUsername(), author.getAvatarUrl());
-				spec.setTimestamp(message.getTimestamp());
+		spec.addField("Syntaxe incorrect !", "le nom doit être valide !", false);
+	    }).subscribe();
+	} else {
+	    Guild guild = event.getGuild().block();
 
-				spec.addField("Syntaxe incorrect !", "le nom doit être valide !", false);
-			}).subscribe();
-		} else {
-			Guild guild = event.getGuild().block();
+	    DataGuild dataGuild = Main.getBotInstance().getDataCenter().getDataGuild(guild);
 
-			DataGuild data_guild = Main.getBotInstance().getDataCenter().getDataGuild(guild);
+	    if (!dataGuild.inBigTask) {
+		dataGuild.inBigTask = true;
+		JSONObject jsonBackup = dataGuild.getBackup(backupName);
 
-			if(!data_guild.inBigTask) {
-				data_guild.inBigTask = true;
-				channel.createEmbed(spec -> {
-					spec.setAuthor(user_bot.getUsername(), null, user_bot.getAvatarUrl());
-					spec.setColor(Color.ORANGE);
-					spec.setFooter("Lançé par "+author.getUsername(), author.getAvatarUrl());
-					spec.setTimestamp(message.getTimestamp());
+		channel.createEmbed(spec -> {
+		    spec.setAuthor(userBot.getUsername(), null, userBot.getAvatarUrl());
+		    spec.setColor(Color.ORANGE);
+		    spec.setFooter("Lançé par " + author.getUsername(), author.getAvatarUrl());
+		    spec.setTimestamp(message.getTimestamp());
 
-					spec.setDescription("Backup en cours...");
-				}).subscribe();
+		    spec.setDescription("Restauration en cours...");
+		}).subscribe();
 
-				JSONObject json_datas = new JSONObject();
+		// Begin restore
 
-				//Begin backup
+		// Guild
+		JSONObject jsonGuild = jsonBackup.getJSONObject("guild");
 
-				// Guild
-				JSONObject json_guild = new JSONObject();
+		guild.edit(spec -> {
+		    spec.setName(jsonGuild.getString("name"));
+		    if (jsonGuild.has("afk_id")) {
+			spec.setAfkChannelId(Snowflake.of(jsonGuild.getString("afk_id")));
+		    }
+		    spec.setAfkTimeout(jsonGuild.getInt("afk_timeout"));
+		    if (jsonGuild.has("banner")) {
+			spec.setBanner(Image.ofUrl(jsonGuild.getString("banner")).block());
+		    }
+		    if (jsonGuild.has("icon")) {
+			spec.setIcon(Image.ofUrl(jsonGuild.getString("icon")).block());
+		    }
+		    spec.setDefaultMessageNotificationsLevel(NotificationLevel.of(jsonGuild.getInt("notification")));
+		    spec.setOwnerId(Snowflake.of(jsonGuild.getString("owner")));
+		    spec.setRegion(guild.getClient().getRegions()
+			    .filter(region -> region.getId().equals(jsonGuild.getString("region"))).blockFirst());
+		    if (jsonGuild.has("splash")) {
+			spec.setSplash(Image.ofUrl(jsonGuild.getString("splash")).block());
+		    }
+		    spec.setVerificationLevel(VerificationLevel.of(jsonGuild.getInt("verification")));
 
-				json_guild.put("name", guild.getName());
-				if(guild.getAfkChannelId().isPresent()) json_guild.put("afk_id", guild.getAfkChannelId().get().asString());
-				json_guild.put("afk_timeout", guild.getAfkTimeout());
+		    spec.setReason("backup Restoring !");
+		}).block();
 
-				if(guild.getBannerUrl(Format.GIF).isPresent() && (BotUtils.testHTTPCodeResponse(guild.getBannerUrl(Format.GIF).get()) == 200)) json_guild.put("banner", guild.getBannerUrl(Format.GIF).get());
-				else if(guild.getBannerUrl(Format.PNG).isPresent() && (BotUtils.testHTTPCodeResponse(guild.getBannerUrl(Format.PNG).get()) == 200)) json_guild.put("banner", guild.getBannerUrl(Format.PNG).get());
+		JSONArray jsonBans = jsonGuild.getJSONArray("bans");
+		for (int i = 0; i < jsonBans.length(); i++) {
+		    JSONObject jsonBan = jsonBans.getJSONObject(i);
 
-				JSONArray json_bans = new JSONArray();
-				for(Ban ban:guild.getBans().toIterable()) {
-					JSONObject json_ban = new JSONObject();
+		    if (jsonBan.has("reason")) {
+			guild.ban(Snowflake.of(jsonBan.getString("user")),
+				spec -> spec.setReason(jsonBan.getString("reason"))).block();
+		    } else {
+			guild.ban(Snowflake.of(jsonBan.getString("user")), spec -> {
+			}).block();
+		    }
+		}
 
-					json_ban.put("user", ban.getUser().getId().asString());
-					if(ban.getReason().isPresent()) json_ban.put("reason", ban.getReason().get());
+		JSONArray jsonEmojis = jsonGuild.getJSONArray("emojis");
+		for (int i = 0; i < jsonEmojis.length(); i++) {
+		    JSONObject jsonEmoji = jsonEmojis.getJSONObject(i);
 
-					json_bans.put(json_ban);
+		    guild.createEmoji(spec -> {
+			spec.setName(jsonEmoji.getString("name"));
+			spec.setImage(Image.ofUrl(jsonEmoji.getString("emoji")).block());
+
+			JSONArray roleIdList = jsonEmoji.getJSONArray("roles");
+			for (int n = 0; n < roleIdList.length(); n++) {
+			    spec.addRole(Snowflake.of(roleIdList.getString(n)));
+			}
+
+			spec.setReason("Restored Emoji");
+		    }).block();
+		}
+
+		// Roles
+		JSONObject jsonRoles = jsonBackup.getJSONObject("roles");
+
+		for (String strRoleId : jsonRoles.keySet()) {
+		    JSONObject jsonRole = jsonRoles.getJSONObject(strRoleId);
+
+		    Snowflake roleId = Snowflake.of(strRoleId);
+		    Optional<Role> optRole = BotUtils.returnOptional(guild.getRoleById(roleId));
+
+		    if (optRole.isPresent()) {
+			Role role = optRole.get();
+
+			role.edit(spec -> {
+			    spec.setName(jsonRole.getString("name"));
+			    spec.setColor(new Color(jsonRole.getInt("color")));
+			    spec.setHoist(jsonRole.getBoolean("hoisted"));
+			    spec.setMentionable(jsonRole.getBoolean("mentionable"));
+			    spec.setPermissions(PermissionSet.of(jsonRole.getLong("permissions")));
+
+			    spec.setReason("restore role");
+			}).onErrorReturn((Predicate<? super Throwable>) e -> {
+			    if (e.getClass().getName().equals(ClientException.class.getName())
+				    && ((ClientException) e).getStatus().code() == 403) {
+				System.err.println("No permission for edit and restore the role '" + role.getName()
+					+ "' (" + role.getId().asString() + ")");
+				return true;
+			    } else
+				return false;
+			}, role).block();
+			role.changePosition(jsonRole.getInt("position")).subscribe();
+		    } else {
+			Role role = guild.createRole(spec -> {
+			    spec.setName(jsonRole.getString("name"));
+			    spec.setColor(new Color(jsonRole.getInt("color")));
+			    spec.setHoist(jsonRole.getBoolean("hoisted"));
+			    spec.setMentionable(jsonRole.getBoolean("mentionable"));
+			    spec.setPermissions(PermissionSet.of(jsonRole.getLong("permissions")));
+
+			    spec.setReason("restore role");
+			}).block();
+			role.changePosition(jsonRole.getInt("position")).subscribe();
+		    }
+		}
+
+		// channels
+		JSONObject jsonChannels = jsonBackup.getJSONObject("channels");
+
+		for (String strChannelId : jsonChannels.keySet()) {
+		    JSONObject jsonChannel = jsonChannels.getJSONObject(strChannelId);
+
+		    Snowflake channelId = Snowflake.of(strChannelId);
+		    Optional<GuildChannel> channelOpt = BotUtils.returnOptional(guild.getChannelById(channelId));
+
+		    if (channelOpt.isPresent()) {
+			GuildChannel guildChannel = channelOpt.get();
+			Channel.Type channelType = Channel.Type.of(jsonChannel.getInt("type"));
+
+			if (channelType.equals(Channel.Type.GUILD_CATEGORY)) {
+			    Category category = (Category) guildChannel;
+
+			    category.edit(spec -> {
+				spec.setName(jsonChannel.getString("name"));
+				spec.setPosition(jsonChannel.getInt("position"));
+
+				JSONArray jsonPermissions = jsonChannel.getJSONArray("permissions");
+				HashSet<PermissionOverwrite> permissions = new HashSet<>(jsonPermissions.length());
+
+				for (int i = 0; i < jsonPermissions.length(); i++) {
+				    JSONObject jsonPermission = jsonPermissions.getJSONObject(i);
+
+				    Snowflake id = Snowflake.of(jsonPermission.getString("id"));
+				    PermissionOverwrite.Type targetType = PermissionOverwrite.Type
+					    .of(jsonPermission.getString("type"));
+				    PermissionSet allowedPermissions = PermissionSet
+					    .of(jsonPermission.getLong("allowed"));
+				    PermissionSet deniedPermissions = PermissionSet
+					    .of(jsonPermission.getLong("denied"));
+
+				    if (targetType.equals(PermissionOverwrite.Type.MEMBER)) {
+
+					permissions.add(ExtendedPermissionOverwrite.forMember(id, allowedPermissions,
+						deniedPermissions));
+				    } else if (targetType.equals(PermissionOverwrite.Type.ROLE)) {
+
+					permissions.add(ExtendedPermissionOverwrite.forRole(id, allowedPermissions,
+						deniedPermissions));
+				    } else {
+					System.err.println(
+						"[Backup] A permission type is unsupported and cannot be restored : "
+							+ targetType);
+				    }
 				}
-				json_guild.put("bans", json_bans);
+				spec.setPermissionOverwrites(permissions);
 
-				JSONArray json_emojis = new JSONArray();
-				for(GuildEmoji emoji:guild.getEmojis().toIterable()) {
-					JSONObject json_emoji = new JSONObject();
+				spec.setReason("restore category");
+			    }).block();
 
-					json_emoji.put("name", emoji.getName());
-					json_emoji.put("emoji", emoji.getImageUrl());
-					json_emoji.put("roles", emoji.getRoleIds().stream().map(Snowflake::asString).collect(Collectors.toList()));
+			} else if (channelType.equals(Channel.Type.GUILD_TEXT)) {
+			    TextChannel textChannel = (TextChannel) guildChannel;
 
-					json_emojis.put(json_emoji);
+			    textChannel.edit(spec -> {
+				spec.setName(jsonChannel.getString("name"));
+				spec.setPosition(jsonChannel.getInt("position"));
+
+				JSONArray jsonPermissions = jsonChannel.getJSONArray("permissions");
+				HashSet<PermissionOverwrite> permissions = new HashSet<>(jsonPermissions.length());
+
+				for (int i = 0; i < jsonPermissions.length(); i++) {
+				    JSONObject jsonPermission = jsonPermissions.getJSONObject(i);
+
+				    Snowflake id = Snowflake.of(jsonPermission.getString("id"));
+				    PermissionOverwrite.Type targetType = PermissionOverwrite.Type
+					    .of(jsonPermission.getString("type"));
+				    PermissionSet allowedPermissions = PermissionSet
+					    .of(jsonPermission.getLong("allowed"));
+				    PermissionSet deniedPermissions = PermissionSet
+					    .of(jsonPermission.getLong("denied"));
+
+				    if (targetType.equals(PermissionOverwrite.Type.MEMBER)) {
+
+					permissions.add(ExtendedPermissionOverwrite.forMember(id, allowedPermissions,
+						deniedPermissions));
+				    } else if (targetType.equals(PermissionOverwrite.Type.ROLE)) {
+
+					permissions.add(ExtendedPermissionOverwrite.forRole(id, allowedPermissions,
+						deniedPermissions));
+				    } else {
+					System.err.println(
+						"[Backup] A permission type is unsupported and cannot be restored : "
+							+ targetType);
+				    }
 				}
-				json_guild.put("emojis", json_emojis);
+				spec.setPermissionOverwrites(permissions);
 
-				if(guild.getIconUrl(Format.GIF).isPresent() && (BotUtils.testHTTPCodeResponse(guild.getIconUrl(Format.GIF).get()) == 200)) json_guild.put("icon", guild.getIconUrl(Format.GIF).get());
-				else if(guild.getIconUrl(Format.PNG).isPresent() && (BotUtils.testHTTPCodeResponse(guild.getIconUrl(Format.PNG).get()) == 200)) json_guild.put("icon", guild.getIconUrl(Format.PNG).get());
-
-				json_guild.put("notification", guild.getNotificationLevel().getValue());
-				json_guild.put("owner", guild.getOwnerId().asString());
-				json_guild.put("region", guild.getRegionId());
-
-				if(guild.getSplashUrl(Format.GIF).isPresent() && (BotUtils.testHTTPCodeResponse(guild.getSplashUrl(Format.GIF).get()) == 200)) json_guild.put("splash", guild.getSplashUrl(Format.GIF).get());
-				else if(guild.getSplashUrl(Format.PNG).isPresent() && (BotUtils.testHTTPCodeResponse(guild.getSplashUrl(Format.PNG).get()) == 200)) json_guild.put("splash", guild.getSplashUrl(Format.PNG).get());
-
-				json_guild.put("verification", guild.getVerificationLevel().getValue());
-
-				json_datas.put("guild", json_guild);
-				// Roles
-				JSONObject json_roles = new JSONObject();
-
-				for(Role role:guild.getRoles().toIterable()) {
-					JSONObject json_role = new JSONObject();
-
-					Snowflake role_id = role.getId();
-					json_role.put("name", role.getName());
-					json_role.put("color", role.getColor().getRGB());
-					json_role.put("position",role.getRawPosition());
-					json_role.put("hoisted", role.isHoisted());
-					json_role.put("mentionable", role.isMentionable());
-					json_role.put("permissions", role.getPermissions().getRawValue());
-
-					json_roles.put(role_id.asString(), json_role);
+				if (jsonChannel.has("parent_id")) {
+				    spec.setParentId(Snowflake.of(jsonChannel.getString("parent_id")));
 				}
-
-				json_datas.put("roles", json_roles);
-				// channels
-				JSONObject json_channels = new JSONObject();
-
-				for(GuildChannel guild_channel:guild.getChannels().toIterable()) {
-					JSONObject json_channel = new JSONObject();
-
-					Snowflake channel_id = guild_channel.getId();
-					json_channel.put("name", guild_channel.getName());
-					json_channel.put("position", guild_channel.getRawPosition());
-
-					JSONArray json_permissions = new JSONArray();
-					for(ExtendedPermissionOverwrite permission:guild_channel.getPermissionOverwrites()) {
-						JSONObject json_permission = new JSONObject();
-
-						json_permission.put("id", permission.getTargetId().asString());
-						json_permission.put("type", permission.getType().getValue());
-						json_permission.put("allowed", permission.getAllowed().getRawValue());
-						json_permission.put("denied", permission.getDenied().getRawValue());
-
-						json_permissions.put(json_permission);
-					}
-					json_channel.put("permissions", json_permissions);
-
-					Channel.Type channel_type = guild_channel.getType();
-					json_channel.put("type", channel_type.getValue());
-
-					if(channel_type.equals(Channel.Type.GUILD_CATEGORY)) {
-						//Category category = (Category) guild_channel;
-
-					} else if(channel_type.equals(Channel.Type.GUILD_TEXT)) {
-						TextChannel text_channel = (TextChannel) guild_channel;
-
-						if(text_channel.getCategoryId().isPresent()) json_channel.put("parent_id", text_channel.getCategoryId().get().asString());
-						json_channel.put("slow" ,text_channel.getRateLimitPerUser());
-						json_channel.put("nsfw",text_channel.isNsfw());
-						if(text_channel.getTopic().isPresent()) json_channel.put("topic", text_channel.getTopic().get());
-					} else if(channel_type.equals(Channel.Type.GUILD_VOICE)) {
-						VoiceChannel voice_channel = (VoiceChannel) guild_channel;
-
-						if(voice_channel.getCategoryId().isPresent()) json_channel.put("parent_id", voice_channel.getCategoryId().get().asString());
-						json_channel.put("bitrate", voice_channel.getBitrate());
-						json_channel.put("user_limit", voice_channel.getUserLimit());
-					} else {
-						System.err.println("[Backup] A channel type is unsupported and cannot be completely saved : "+channel_type);
-					}
-					json_channels.put(channel_id.asString(), json_channel);
+				spec.setNsfw(jsonChannel.getBoolean("nsfw"));
+				spec.setRateLimitPerUser(jsonChannel.getInt("slow"));
+				if (jsonChannel.has("topic")) {
+				    spec.setTopic(jsonChannel.getString("topic"));
 				}
 
-				json_datas.put("channels", json_channels);
-				// Members
-				JSONObject json_members = new JSONObject();
-				for(Member member:guild.getMembers().toIterable()) {
-					JSONObject json_member = new JSONObject();
+				spec.setReason("restore text channel");
+			    }).block();
 
-					json_member.put("roles", member.getRoleIds().stream().map(s -> s.asString()).collect(Collectors.toList()));
-					if(member.getNickname().isPresent()) json_member.put("nickname", member.getNickname().get());
-					json_members.put(member.getId().asString(), json_member);
+			} else if (channelType.equals(Channel.Type.GUILD_VOICE)) {
+			    VoiceChannel voiceChannel = (VoiceChannel) guildChannel;
+
+			    voiceChannel.edit(spec -> {
+				spec.setName(jsonChannel.getString("name"));
+				spec.setPosition(jsonChannel.getInt("position"));
+
+				JSONArray jsonPermissions = jsonChannel.getJSONArray("permissions");
+				HashSet<PermissionOverwrite> permissions = new HashSet<>(jsonPermissions.length());
+
+				for (int i = 0; i < jsonPermissions.length(); i++) {
+				    JSONObject jsonPermission = jsonPermissions.getJSONObject(i);
+
+				    Snowflake id = Snowflake.of(jsonPermission.getString("id"));
+				    PermissionOverwrite.Type targetType = PermissionOverwrite.Type
+					    .of(jsonPermission.getString("type"));
+				    PermissionSet allowedPermissions = PermissionSet
+					    .of(jsonPermission.getLong("allowed"));
+				    PermissionSet deniedPermissions = PermissionSet
+					    .of(jsonPermission.getLong("denied"));
+
+				    if (targetType.equals(PermissionOverwrite.Type.MEMBER)) {
+
+					permissions.add(ExtendedPermissionOverwrite.forMember(id, allowedPermissions,
+						deniedPermissions));
+				    } else if (targetType.equals(PermissionOverwrite.Type.ROLE)) {
+
+					permissions.add(ExtendedPermissionOverwrite.forRole(id, allowedPermissions,
+						deniedPermissions));
+				    } else {
+					System.err.println(
+						"[Backup] A permission type is unsupported and cannot be restored : "
+							+ targetType);
+				    }
 				}
+				spec.setPermissionOverwrites(permissions);
 
-				json_datas.put("members", json_members);
-				// Webhook
-				JSONObject json_webhooks = new JSONObject();
-
-				for(Webhook webhook:guild.getWebhooks().toIterable()) {
-					JSONObject json_webhook = new JSONObject();
-
-					Snowflake webhook_id = webhook.getId();
-					if(webhook.getName().isPresent()) json_webhook.put("name", webhook.getName().get());
-					if(webhook.getAvatar().isPresent()) json_webhook.put("avatar", webhook.getAvatar().get());
-					json_webhook.put("channel", webhook.getChannelId().asString());
-
-					json_webhooks.put(webhook_id.asString(), json_webhook);
+				if (jsonChannel.has("parent_id")) {
+				    spec.setParentId(Snowflake.of(jsonChannel.getString("parent_id")));
 				}
+				spec.setBitrate(jsonChannel.getInt("bitrate"));
+				spec.setUserLimit(jsonChannel.getInt("user_limit"));
 
-				json_datas.put("webhooks", json_webhooks);
-				//End backup
-
-				data_guild.addBackup(backup_name, json_datas);
-				data_guild.inBigTask = false;
-				channel.createEmbed(spec -> {
-					spec.setAuthor(user_bot.getUsername(), null, user_bot.getAvatarUrl());
-					spec.setColor(Color.ORANGE);
-					spec.setFooter("Lançé par "+author.getUsername(), author.getAvatarUrl());
-					spec.setTimestamp(message.getTimestamp());
-
-					spec.addField("Backup terminé !","Nom de la backup : **"+backup_name+"**", false);
-				}).subscribe();
+				spec.setReason("restore voice channel");
+			    }).block();
 
 			} else {
-				channel.createEmbed(spec -> {
-					spec.setAuthor(user_bot.getUsername(), null, user_bot.getAvatarUrl());
-					spec.setColor(Color.ORANGE);
-					spec.setFooter("Lançé par "+author.getUsername(), author.getAvatarUrl());
-					spec.setTimestamp(message.getTimestamp());
-
-					spec.addField("Commande refusé !", "Une autre tâche est en cours !", false);
-				}).subscribe();
+			    System.err.println(
+				    "[Backup] A channel type is unsupported and cannot be restored : " + channelType);
 			}
-		}
-	}
+		    } else {
+			Channel.Type channelType = Channel.Type.of(jsonChannel.getInt("type"));
 
-	public void restoreBackup(MessageCreateEvent event, List<String> args) {
-		Message message = event.getMessage();
-		TextChannel channel = message.getChannel().ofType(TextChannel.class).block();
-		User user_bot = event.getClient().getSelf().block();
-		User author = event.getMember().get();
+			if (channelType.equals(Channel.Type.GUILD_CATEGORY)) {
+			    guild.createCategory(spec -> {
+				spec.setName(jsonChannel.getString("name"));
+				spec.setPosition(jsonChannel.getInt("position"));
 
-		String backup_name = args.get(0);
+				JSONArray jsonPermissions = jsonChannel.getJSONArray("permissions");
+				HashSet<PermissionOverwrite> permissions = new HashSet<>(jsonPermissions.length());
 
-		if((backup_name == null) || backup_name.isEmpty()) {
-			channel.createEmbed(spec -> {
-				spec.setAuthor(user_bot.getUsername(), null, user_bot.getAvatarUrl());
-				spec.setColor(Color.ORANGE);
-				spec.setFooter("Lançé par "+author.getUsername(), author.getAvatarUrl());
-				spec.setTimestamp(message.getTimestamp());
+				for (int i = 0; i < jsonPermissions.length(); i++) {
+				    JSONObject jsonPermission = jsonPermissions.getJSONObject(i);
 
-				spec.addField("Syntaxe incorrect !", "le nom doit être valide !", false);
-			}).subscribe();
-		} else {
-			Guild guild = event.getGuild().block();
+				    Snowflake id = Snowflake.of(jsonPermission.getString("id"));
+				    PermissionOverwrite.Type targetType = PermissionOverwrite.Type
+					    .of(jsonPermission.getString("type"));
+				    PermissionSet allowedPermissions = PermissionSet
+					    .of(jsonPermission.getLong("allowed"));
+				    PermissionSet deniedPermissions = PermissionSet
+					    .of(jsonPermission.getLong("denied"));
 
-			DataGuild data_guild = Main.getBotInstance().getDataCenter().getDataGuild(guild);
+				    if (targetType.equals(PermissionOverwrite.Type.MEMBER)) {
 
-			if(!data_guild.inBigTask) {
-				data_guild.inBigTask = true;
-				JSONObject json_backup = data_guild.getBackup(backup_name);
+					permissions.add(ExtendedPermissionOverwrite.forMember(id, allowedPermissions,
+						deniedPermissions));
+				    } else if (targetType.equals(PermissionOverwrite.Type.ROLE)) {
 
-				channel.createEmbed(spec -> {
-					spec.setAuthor(user_bot.getUsername(), null, user_bot.getAvatarUrl());
-					spec.setColor(Color.ORANGE);
-					spec.setFooter("Lançé par "+author.getUsername(), author.getAvatarUrl());
-					spec.setTimestamp(message.getTimestamp());
+					permissions.add(ExtendedPermissionOverwrite.forRole(id, allowedPermissions,
+						deniedPermissions));
+				    } else {
+					System.err.println(
+						"[Backup] A permission type is unsupported and cannot be restored : "
+							+ targetType);
+				    }
+				}
+				spec.setPermissionOverwrites(permissions);
 
-					spec.setDescription("Restauration en cours...");
-				}).subscribe();
+				spec.setReason("restore category");
+			    }).block();
 
-				//Begin restore
+			} else if (channelType.equals(Channel.Type.GUILD_TEXT)) {
+			    guild.createTextChannel(spec -> {
+				spec.setName(jsonChannel.getString("name"));
+				spec.setPosition(jsonChannel.getInt("position"));
 
-				// Guild
-				JSONObject json_guild = json_backup.getJSONObject("guild");
+				JSONArray jsonPermissions = jsonChannel.getJSONArray("permissions");
+				HashSet<PermissionOverwrite> permissions = new HashSet<>(jsonPermissions.length());
 
-				guild.edit(spec -> {
-					spec.setName(json_guild.getString("name"));
-					if(json_guild.has("afk_id")) spec.setAfkChannelId(Snowflake.of(json_guild.getString("afk_id")));
-					spec.setAfkTimeout(json_guild.getInt("afk_timeout"));
-					if(json_guild.has("banner")) spec.setBanner(Image.ofUrl(json_guild.getString("banner")).block());
-					if(json_guild.has("icon")) spec.setIcon(Image.ofUrl(json_guild.getString("icon")).block());
-					spec.setDefaultMessageNotificationsLevel(NotificationLevel.of(json_guild.getInt("notification")));
-					spec.setOwnerId(Snowflake.of(json_guild.getString("owner")));
-					spec.setRegion(guild.getClient().getRegions().filter(region -> region.getId().equals(json_guild.getString("region"))).blockFirst());
-					if(json_guild.has("splash")) spec.setSplash(Image.ofUrl(json_guild.getString("splash")).block());
-					spec.setVerificationLevel(VerificationLevel.of(json_guild.getInt("verification")));
+				for (int i = 0; i < jsonPermissions.length(); i++) {
+				    JSONObject jsonPermission = jsonPermissions.getJSONObject(i);
 
-					spec.setReason("backup Restoring !");
-				}).block();
+				    Snowflake id = Snowflake.of(jsonPermission.getString("id"));
+				    PermissionOverwrite.Type targetType = PermissionOverwrite.Type
+					    .of(jsonPermission.getString("type"));
+				    PermissionSet allowedPermissions = PermissionSet
+					    .of(jsonPermission.getLong("allowed"));
+				    PermissionSet deniedPermissions = PermissionSet
+					    .of(jsonPermission.getLong("denied"));
 
-				JSONArray json_bans = json_guild.getJSONArray("bans");
-				for(int i=0; i<json_bans.length(); i++) {
-					JSONObject json_ban = json_bans.getJSONObject(i);
+				    if (targetType.equals(PermissionOverwrite.Type.MEMBER)) {
 
-					if(json_ban.has("reason")) guild.ban(Snowflake.of(json_ban.getString("user")), spec -> spec.setReason(json_ban.getString("reason"))).block();
-					else guild.ban(Snowflake.of(json_ban.getString("user")), spec -> {}).block();
+					permissions.add(ExtendedPermissionOverwrite.forMember(id, allowedPermissions,
+						deniedPermissions));
+				    } else if (targetType.equals(PermissionOverwrite.Type.ROLE)) {
+
+					permissions.add(ExtendedPermissionOverwrite.forRole(id, allowedPermissions,
+						deniedPermissions));
+				    } else {
+					System.err.println(
+						"[Backup] A permission type is unsupported and cannot be restored : "
+							+ targetType);
+				    }
+				}
+				spec.setPermissionOverwrites(permissions);
+
+				if (jsonChannel.has("parent_id")) {
+				    spec.setParentId(Snowflake.of(jsonChannel.getString("parent_id")));
+				}
+				spec.setNsfw(jsonChannel.getBoolean("nsfw"));
+				spec.setRateLimitPerUser(jsonChannel.getInt("slow"));
+				if (jsonChannel.has("topic")) {
+				    spec.setTopic(jsonChannel.getString("topic"));
 				}
 
-				JSONArray json_emojis = json_guild.getJSONArray("emojis");
-				for(int i=0; i<json_emojis.length(); i++) {
-					JSONObject json_emoji = json_emojis.getJSONObject(i);
+				spec.setReason("restore text channel");
+			    }).block();
 
-					guild.createEmoji(spec -> {
-						spec.setName(json_emoji.getString("name"));
-						spec.setImage(Image.ofUrl(json_emoji.getString("emoji")).block());
+			} else if (channelType.equals(Channel.Type.GUILD_VOICE)) {
+			    guild.createVoiceChannel(spec -> {
+				spec.setName(jsonChannel.getString("name"));
+				spec.setPosition(jsonChannel.getInt("position"));
 
-						JSONArray role_id_list = json_emoji.getJSONArray("roles");
-						for(int n=0; n<role_id_list.length(); n++) {
-							spec.addRole(Snowflake.of(role_id_list.getString(n)));
-						}
+				JSONArray jsonPermissions = jsonChannel.getJSONArray("permissions");
+				HashSet<PermissionOverwrite> permissions = new HashSet<>(jsonPermissions.length());
 
-						spec.setReason("Restored Emoji");
-					}).block();
+				for (int i = 0; i < jsonPermissions.length(); i++) {
+				    JSONObject jsonPermission = jsonPermissions.getJSONObject(i);
+
+				    Snowflake id = Snowflake.of(jsonPermission.getString("id"));
+				    PermissionOverwrite.Type targetType = PermissionOverwrite.Type
+					    .of(jsonPermission.getString("type"));
+				    PermissionSet allowedPermissions = PermissionSet
+					    .of(jsonPermission.getLong("allowed"));
+				    PermissionSet deniedPermissions = PermissionSet
+					    .of(jsonPermission.getLong("denied"));
+
+				    if (targetType.equals(PermissionOverwrite.Type.MEMBER)) {
+
+					permissions.add(ExtendedPermissionOverwrite.forMember(id, allowedPermissions,
+						deniedPermissions));
+				    } else if (targetType.equals(PermissionOverwrite.Type.ROLE)) {
+
+					permissions.add(ExtendedPermissionOverwrite.forRole(id, allowedPermissions,
+						deniedPermissions));
+				    } else {
+					System.err.println(
+						"[Backup] A permission type is unsupported and cannot be restored : "
+							+ targetType);
+				    }
 				}
+				spec.setPermissionOverwrites(permissions);
 
-				// Roles
-				JSONObject json_roles = json_backup.getJSONObject("roles");
-
-				for(String s_role_id:json_roles.keySet()) {
-					JSONObject json_role = json_roles.getJSONObject(s_role_id);
-
-					Snowflake role_id = Snowflake.of(s_role_id);
-					Optional<Role> opt_role = BotUtils.returnOptional(guild.getRoleById(role_id));
-
-					if(opt_role.isPresent()) {
-						Role role = opt_role.get();
-
-						role.edit(spec -> {
-							spec.setName(json_role.getString("name"));
-							spec.setColor(new Color(json_role.getInt("color")));
-							spec.setHoist(json_role.getBoolean("hoisted"));
-							spec.setMentionable(json_role.getBoolean("mentionable"));
-							spec.setPermissions(PermissionSet.of(json_role.getLong("permissions")));
-
-							spec.setReason("restore role");
-						}).onErrorReturn((Predicate<? super Throwable>) e -> {
-							if (e.getClass().getName().equals(ClientException.class.getName()) && ((ClientException) e).getStatus().code() == 403) {
-								System.err.println("No permission for edit and restore the role '"+role.getName()+"' ("+role.getId().asString()+")");
-								return true;
-							}
-							else return false;
-						}, role).block();
-						role.changePosition(json_role.getInt("position")).subscribe();
-					} else {
-						Role role = guild.createRole(spec -> {
-							spec.setName(json_role.getString("name"));
-							spec.setColor(new Color(json_role.getInt("color")));
-							spec.setHoist(json_role.getBoolean("hoisted"));
-							spec.setMentionable(json_role.getBoolean("mentionable"));
-							spec.setPermissions(PermissionSet.of(json_role.getLong("permissions")));
-
-							spec.setReason("restore role");
-						}).block();
-						role.changePosition(json_role.getInt("position")).subscribe();
-					}
+				if (jsonChannel.has("parent_id")) {
+				    spec.setParentId(Snowflake.of(jsonChannel.getString("parent_id")));
 				}
-
-				// channels
-				JSONObject json_channels = json_backup.getJSONObject("channels");
-
-				for(String s_channel_id:json_channels.keySet()) {
-					JSONObject json_channel = json_channels.getJSONObject(s_channel_id);
-
-					Snowflake channel_id = Snowflake.of(s_channel_id);
-					Optional<GuildChannel> channel_opt = BotUtils.returnOptional(guild.getChannelById(channel_id));
-
-					if(channel_opt.isPresent()) {
-						GuildChannel guild_channel = channel_opt.get();
-						Channel.Type channel_type = Channel.Type.of(json_channel.getInt("type"));
-
-						if(channel_type.equals(Channel.Type.GUILD_CATEGORY)) {
-							Category category = (Category) guild_channel;
-
-							category.edit(spec -> {
-								spec.setName(json_channel.getString("name"));
-								spec.setPosition(json_channel.getInt("position"));
-
-								JSONArray json_permissions = json_channel.getJSONArray("permissions");
-								HashSet<PermissionOverwrite> permissions = new HashSet<>(json_permissions.length());
-
-								for(int i=0; i<json_permissions.length(); i++) {
-									JSONObject json_permission = json_permissions.getJSONObject(i);
-
-									Snowflake id = Snowflake.of(json_permission.getString("id"));
-									PermissionOverwrite.Type target_type = PermissionOverwrite.Type.of(json_permission.getString("type"));
-									PermissionSet allowed_permissions = PermissionSet.of(json_permission.getLong("allowed"));
-									PermissionSet denied_permissions = PermissionSet.of(json_permission.getLong("denied"));
-
-									if(target_type.equals(PermissionOverwrite.Type.MEMBER)) {
-
-										permissions.add(ExtendedPermissionOverwrite.forMember(id, allowed_permissions, denied_permissions));
-									} else if(target_type.equals(PermissionOverwrite.Type.ROLE)) {
-
-										permissions.add(ExtendedPermissionOverwrite.forRole(id, allowed_permissions, denied_permissions));
-									} else {
-										System.err.println("[Backup] A permission type is unsupported and cannot be restored : "+target_type);
-									}
-								}
-								spec.setPermissionOverwrites(permissions);
-
-								spec.setReason("restore category");
-							}).block();
-
-						} else if(channel_type.equals(Channel.Type.GUILD_TEXT)) {
-							TextChannel text_channel = (TextChannel) guild_channel;
-
-							text_channel.edit(spec -> {
-								spec.setName(json_channel.getString("name"));
-								spec.setPosition(json_channel.getInt("position"));
-
-								JSONArray json_permissions = json_channel.getJSONArray("permissions");
-								HashSet<PermissionOverwrite> permissions = new HashSet<>(json_permissions.length());
-
-								for(int i=0; i<json_permissions.length(); i++) {
-									JSONObject json_permission = json_permissions.getJSONObject(i);
-
-									Snowflake id = Snowflake.of(json_permission.getString("id"));
-									PermissionOverwrite.Type target_type = PermissionOverwrite.Type.of(json_permission.getString("type"));
-									PermissionSet allowed_permissions = PermissionSet.of(json_permission.getLong("allowed"));
-									PermissionSet denied_permissions = PermissionSet.of(json_permission.getLong("denied"));
-
-									if(target_type.equals(PermissionOverwrite.Type.MEMBER)) {
-
-										permissions.add(ExtendedPermissionOverwrite.forMember(id, allowed_permissions, denied_permissions));
-									} else if(target_type.equals(PermissionOverwrite.Type.ROLE)) {
-
-										permissions.add(ExtendedPermissionOverwrite.forRole(id, allowed_permissions, denied_permissions));
-									} else {
-										System.err.println("[Backup] A permission type is unsupported and cannot be restored : "+target_type);
-									}
-								}
-								spec.setPermissionOverwrites(permissions);
-
-								if(json_channel.has("parent_id")) spec.setParentId(Snowflake.of(json_channel.getString("parent_id")));
-								spec.setNsfw(json_channel.getBoolean("nsfw"));
-								spec.setRateLimitPerUser(json_channel.getInt("slow"));
-								if(json_channel.has("topic")) spec.setTopic(json_channel.getString("topic"));
-
-								spec.setReason("restore text channel");
-							}).block();
-
-						} else if(channel_type.equals(Channel.Type.GUILD_VOICE)) {
-							VoiceChannel voice_channel = (VoiceChannel) guild_channel;
-
-							voice_channel.edit(spec -> {
-								spec.setName(json_channel.getString("name"));
-								spec.setPosition(json_channel.getInt("position"));
-
-								JSONArray json_permissions = json_channel.getJSONArray("permissions");
-								HashSet<PermissionOverwrite> permissions = new HashSet<>(json_permissions.length());
-
-								for(int i=0; i<json_permissions.length(); i++) {
-									JSONObject json_permission = json_permissions.getJSONObject(i);
-
-									Snowflake id = Snowflake.of(json_permission.getString("id"));
-									PermissionOverwrite.Type target_type = PermissionOverwrite.Type.of(json_permission.getString("type"));
-									PermissionSet allowed_permissions = PermissionSet.of(json_permission.getLong("allowed"));
-									PermissionSet denied_permissions = PermissionSet.of(json_permission.getLong("denied"));
-
-									if(target_type.equals(PermissionOverwrite.Type.MEMBER)) {
-
-										permissions.add(ExtendedPermissionOverwrite.forMember(id, allowed_permissions, denied_permissions));
-									} else if(target_type.equals(PermissionOverwrite.Type.ROLE)) {
-
-										permissions.add(ExtendedPermissionOverwrite.forRole(id, allowed_permissions, denied_permissions));
-									} else {
-										System.err.println("[Backup] A permission type is unsupported and cannot be restored : "+target_type);
-									}
-								}
-								spec.setPermissionOverwrites(permissions);
-
-								if(json_channel.has("parent_id")) spec.setParentId(Snowflake.of(json_channel.getString("parent_id")));
-								spec.setBitrate(json_channel.getInt("bitrate"));
-								spec.setUserLimit(json_channel.getInt("user_limit"));
-
-								spec.setReason("restore voice channel");
-							}).block();
-
-						} else {
-							System.err.println("[Backup] A channel type is unsupported and cannot be restored : "+channel_type);
-						}
-					} else {
-						Channel.Type channel_type = Channel.Type.of(json_channel.getInt("type"));
-
-						if(channel_type.equals(Channel.Type.GUILD_CATEGORY)) {
-							guild.createCategory(spec -> {
-								spec.setName(json_channel.getString("name"));
-								spec.setPosition(json_channel.getInt("position"));
-
-								JSONArray json_permissions = json_channel.getJSONArray("permissions");
-								HashSet<PermissionOverwrite> permissions = new HashSet<>(json_permissions.length());
-
-								for(int i=0; i<json_permissions.length(); i++) {
-									JSONObject json_permission = json_permissions.getJSONObject(i);
-
-									Snowflake id = Snowflake.of(json_permission.getString("id"));
-									PermissionOverwrite.Type target_type = PermissionOverwrite.Type.of(json_permission.getString("type"));
-									PermissionSet allowed_permissions = PermissionSet.of(json_permission.getLong("allowed"));
-									PermissionSet denied_permissions = PermissionSet.of(json_permission.getLong("denied"));
-
-									if(target_type.equals(PermissionOverwrite.Type.MEMBER)) {
-
-										permissions.add(ExtendedPermissionOverwrite.forMember(id, allowed_permissions, denied_permissions));
-									} else if(target_type.equals(PermissionOverwrite.Type.ROLE)) {
-
-										permissions.add(ExtendedPermissionOverwrite.forRole(id, allowed_permissions, denied_permissions));
-									} else {
-										System.err.println("[Backup] A permission type is unsupported and cannot be restored : "+target_type);
-									}
-								}
-								spec.setPermissionOverwrites(permissions);
-
-								spec.setReason("restore category");
-							}).block();
-
-						} else if(channel_type.equals(Channel.Type.GUILD_TEXT)) {
-							guild.createTextChannel(spec -> {
-								spec.setName(json_channel.getString("name"));
-								spec.setPosition(json_channel.getInt("position"));
-
-								JSONArray json_permissions = json_channel.getJSONArray("permissions");
-								HashSet<PermissionOverwrite> permissions = new HashSet<>(json_permissions.length());
-
-								for(int i=0; i<json_permissions.length(); i++) {
-									JSONObject json_permission = json_permissions.getJSONObject(i);
-
-									Snowflake id = Snowflake.of(json_permission.getString("id"));
-									PermissionOverwrite.Type target_type = PermissionOverwrite.Type.of(json_permission.getString("type"));
-									PermissionSet allowed_permissions = PermissionSet.of(json_permission.getLong("allowed"));
-									PermissionSet denied_permissions = PermissionSet.of(json_permission.getLong("denied"));
-
-									if(target_type.equals(PermissionOverwrite.Type.MEMBER)) {
-
-										permissions.add(ExtendedPermissionOverwrite.forMember(id, allowed_permissions, denied_permissions));
-									} else if(target_type.equals(PermissionOverwrite.Type.ROLE)) {
-
-										permissions.add(ExtendedPermissionOverwrite.forRole(id, allowed_permissions, denied_permissions));
-									} else {
-										System.err.println("[Backup] A permission type is unsupported and cannot be restored : "+target_type);
-									}
-								}
-								spec.setPermissionOverwrites(permissions);
-
-								if(json_channel.has("parent_id")) spec.setParentId(Snowflake.of(json_channel.getString("parent_id")));
-								spec.setNsfw(json_channel.getBoolean("nsfw"));
-								spec.setRateLimitPerUser(json_channel.getInt("slow"));
-								if(json_channel.has("topic")) spec.setTopic(json_channel.getString("topic"));
-
-								spec.setReason("restore text channel");
-							}).block();
-
-						} else if(channel_type.equals(Channel.Type.GUILD_VOICE)) {
-							guild.createVoiceChannel(spec -> {
-								spec.setName(json_channel.getString("name"));
-								spec.setPosition(json_channel.getInt("position"));
-
-								JSONArray json_permissions = json_channel.getJSONArray("permissions");
-								HashSet<PermissionOverwrite> permissions = new HashSet<>(json_permissions.length());
-
-								for(int i=0; i<json_permissions.length(); i++) {
-									JSONObject json_permission = json_permissions.getJSONObject(i);
-
-									Snowflake id = Snowflake.of(json_permission.getString("id"));
-									PermissionOverwrite.Type target_type = PermissionOverwrite.Type.of(json_permission.getString("type"));
-									PermissionSet allowed_permissions = PermissionSet.of(json_permission.getLong("allowed"));
-									PermissionSet denied_permissions = PermissionSet.of(json_permission.getLong("denied"));
-
-									if(target_type.equals(PermissionOverwrite.Type.MEMBER)) {
-
-										permissions.add(ExtendedPermissionOverwrite.forMember(id, allowed_permissions, denied_permissions));
-									} else if(target_type.equals(PermissionOverwrite.Type.ROLE)) {
-
-										permissions.add(ExtendedPermissionOverwrite.forRole(id, allowed_permissions, denied_permissions));
-									} else {
-										System.err.println("[Backup] A permission type is unsupported and cannot be restored : "+target_type);
-									}
-								}
-								spec.setPermissionOverwrites(permissions);
-
-								if(json_channel.has("parent_id")) spec.setParentId(Snowflake.of(json_channel.getString("parent_id")));
-								spec.setBitrate(json_channel.getInt("bitrate"));
-								spec.setUserLimit(json_channel.getInt("user_limit"));
-
-								spec.setReason("restore voice channel");
-							}).block();
-
-						} else {
-							System.err.println("[Backup] A channel type is unsupported and cannot be restored : "+channel_type);
-						}
-					}
-				}
-
-				// Members
-				JSONObject json_members = json_backup.getJSONObject("members");
-				for(String s_member_id:json_members.keySet()) {
-					JSONObject json_member = json_members.getJSONObject(s_member_id);
-
-					Snowflake member_id = Snowflake.of(s_member_id);
-					Optional<Member> opt_member = BotUtils.returnOptional(guild.getMemberById(member_id));
-
-					if (opt_member.isPresent()) {
-
-						try {
-							opt_member.get().edit(spec -> {
-								JSONArray roles_array = json_member.getJSONArray("roles");
-								HashSet<Snowflake> roles_id = new HashSet<>(roles_array.length());
-								for(int i=0; i<roles_array.length(); i++) {
-									roles_id.add(Snowflake.of(roles_array.getString(i)));
-								}
-								spec.setRoles(roles_id);
-								if (json_member.has("nickname")) spec.setNickname(json_member.getString("nickname"));
-
-								spec.setReason("restore member");
-							}).block();
-						} catch (ClientException e) {
-							if ((e != null) && e.getClass().getName().equals(ClientException.class.getName()) && e.getStatus().code() == 403) {
-								System.err.println("No permission for edit and restore the member '"+opt_member.get().getUsername()+"' ("+opt_member.get().getId().asString()+")");
-							}
-							else throw e;
-						}
-
-					} else {
-						System.err.println(String.format("[Backup] The backup member id '%s' is not in the guild!", s_member_id));
-					}
-				}
-
-				// Webhook
-				JSONObject json_webhooks = json_backup.getJSONObject("webhooks");
-
-				for(String s_webhook_id:json_webhooks.keySet()) {
-					JSONObject json_webhook = json_webhooks.getJSONObject(s_webhook_id);
-
-					Snowflake webhook_id = Snowflake.of(s_webhook_id);
-					Optional<Webhook> opt_webhook = BotUtils.returnOptional(guild.getWebhooks().filter(w -> w.getId().equals(webhook_id)).next());
-					if(opt_webhook.isPresent()) {
-						Webhook webhook = opt_webhook.get();
-
-						webhook.edit(spec -> {
-							if(json_webhook.has("name")) spec.setName(json_webhook.getString("name"));
-							//if(json_webhook.has("avatar")) spec.setAvatar(Image.ofRaw(json_webhook.getString("avatar").getBytes(), Format.PNG));
-
-							spec.setReason("Restore Webhook");
-						}).block();
-					} else {
-						TextChannel text_channel = guild.getChannelById(Snowflake.of(json_webhook.getString("channel"))).ofType(TextChannel.class).block();
-
-						text_channel.createWebhook(spec -> {
-							if(json_webhook.has("name")) spec.setName(json_webhook.getString("name"));
-							//if(json_webhook.has("avatar")) spec.setAvatar(Image.ofRaw(json_webhook.getString("avatar").getBytes(), Format.PNG));
-
-							spec.setReason("Restore Webhook");
-						}).block();
-					}
-				}
-				//End backup
-
-				data_guild.inBigTask = false;
-				channel.createEmbed(spec -> {
-					spec.setAuthor(user_bot.getUsername(), null, user_bot.getAvatarUrl());
-					spec.setColor(Color.ORANGE);
-					spec.setFooter("Lançé par "+author.getUsername(), author.getAvatarUrl());
-					spec.setTimestamp(message.getTimestamp());
-
-					spec.addField("Restauration terminé !","Nom de la backup restauré : **"+backup_name+"**", false);
-				}).subscribe();
+				spec.setBitrate(jsonChannel.getInt("bitrate"));
+				spec.setUserLimit(jsonChannel.getInt("user_limit"));
+
+				spec.setReason("restore voice channel");
+			    }).block();
 
 			} else {
-				channel.createEmbed(spec -> {
-					spec.setAuthor(user_bot.getUsername(), null, user_bot.getAvatarUrl());
-					spec.setColor(Color.ORANGE);
-					spec.setFooter("Lançé par "+author.getUsername(), author.getAvatarUrl());
-					spec.setTimestamp(message.getTimestamp());
-
-					spec.addField("Commande refusé !", "Une autre tâche est en cours !", false);
-				}).subscribe();
+			    System.err.println(
+				    "[Backup] A channel type is unsupported and cannot be restored : " + channelType);
 			}
+		    }
 		}
-	}
 
-	public void listBackup(MessageCreateEvent event) {
-		Message message = event.getMessage();
-		TextChannel channel = message.getChannel().ofType(TextChannel.class).block();
-		User user_bot = event.getClient().getSelf().block();
-		User author = event.getMember().get();
-		Guild guild = event.getGuild().block();
+		// Members
+		JSONObject jsonMembers = jsonBackup.getJSONObject("members");
+		for (String strMemberId : jsonMembers.keySet()) {
+		    JSONObject jsonMember = jsonMembers.getJSONObject(strMemberId);
 
-		Set<String> backups = Main.getBotInstance().getDataCenter().getDataGuild(guild).listBackup();
+		    Snowflake memberId = Snowflake.of(strMemberId);
+		    Optional<Member> optMember = BotUtils.returnOptional(guild.getMemberById(memberId));
 
-		if(backups.size()>0) {
-			channel.createEmbed(spec -> {
-				spec.setAuthor(user_bot.getUsername(), null, user_bot.getAvatarUrl());
-				spec.setColor(Color.ORANGE);
-				spec.setFooter("Lançé par "+author.getUsername(), author.getAvatarUrl());
-				spec.setTimestamp(message.getTimestamp());
+		    if (optMember.isPresent()) {
 
-				spec.addField("Liste des backups", String.join("\n", backups), false);
-			}).subscribe();
-		} else {
-			channel.createEmbed(spec -> {
-				spec.setAuthor(user_bot.getUsername(), null, user_bot.getAvatarUrl());
-				spec.setColor(Color.ORANGE);
-				spec.setFooter("Lançé par "+author.getUsername(), author.getAvatarUrl());
-				spec.setTimestamp(message.getTimestamp());
+			try {
+			    optMember.get().edit(spec -> {
+				JSONArray rolesArray = jsonMember.getJSONArray("roles");
+				HashSet<Snowflake> rolesId = new HashSet<>(rolesArray.length());
+				for (int i = 0; i < rolesArray.length(); i++) {
+				    rolesId.add(Snowflake.of(rolesArray.getString(i)));
+				}
+				spec.setRoles(rolesId);
+				if (jsonMember.has("nickname")) {
+				    spec.setNickname(jsonMember.getString("nickname"));
+				}
 
-				spec.setDescription("Aucune backup enregistré !");
-			}).subscribe();
-		}
-	}
-
-	public void removeBackup(MessageCreateEvent event, List<String> args) {
-		Message message = event.getMessage();
-		TextChannel channel = message.getChannel().ofType(TextChannel.class).block();
-		User user_bot = event.getClient().getSelf().block();
-		User author = event.getMember().get();
-		Guild guild = event.getGuild().block();
-
-		String backup_name = args.get(0);
-
-		if((backup_name == null) || backup_name.isEmpty()) {
-			channel.createEmbed(spec -> {
-				spec.setAuthor(user_bot.getUsername(), null, user_bot.getAvatarUrl());
-				spec.setColor(Color.ORANGE);
-				spec.setFooter("Lançé par "+author.getUsername(), author.getAvatarUrl());
-				spec.setTimestamp(message.getTimestamp());
-
-				spec.addField("Syntaxe incorrect !", "le nom doit être valide !", false);
-			}).subscribe();
-		} else {
-
-			DataGuild data_guild = Main.getBotInstance().getDataCenter().getDataGuild(guild);
-
-			if(data_guild.hasBackup(backup_name)) {
-				data_guild.removeBackup(backup_name);
-				channel.createEmbed(spec -> {
-					spec.setAuthor(user_bot.getUsername(), null, user_bot.getAvatarUrl());
-					spec.setColor(Color.ORANGE);
-					spec.setFooter("Lançé par "+author.getUsername(), author.getAvatarUrl());
-					spec.setTimestamp(message.getTimestamp());
-
-					spec.addField("Backup supprimé !", "Nom de la backup supprimé : **"+backup_name+"**", false);
-				}).subscribe();
-			} else {
-				channel.createEmbed(spec -> {
-					spec.setAuthor(user_bot.getUsername(), null, user_bot.getAvatarUrl());
-					spec.setColor(Color.ORANGE);
-					spec.setFooter("Lançé par "+author.getUsername(), author.getAvatarUrl());
-					spec.setTimestamp(message.getTimestamp());
-
-					spec.setDescription("Aucune backup enregistré avec ce nom : **"+backup_name+"**");
-				}).subscribe();
+				spec.setReason("restore member");
+			    }).block();
+			} catch (ClientException e) {
+			    if ((e != null) && e.getClass().getName().equals(ClientException.class.getName())
+				    && e.getStatus().code() == 403) {
+				System.err.println("No permission for edit and restore the member '"
+					+ optMember.get().getUsername() + "' (" + optMember.get().getId().asString()
+					+ ")");
+			    } else
+				throw e;
 			}
+
+		    } else {
+			System.err.println(
+				String.format("[Backup] The backup member id '%s' is not in the guild!", strMemberId));
+		    }
 		}
+
+		// Webhook
+		JSONObject jsonWebhooks = jsonBackup.getJSONObject("webhooks");
+
+		for (String strWebhookId : jsonWebhooks.keySet()) {
+		    JSONObject jsonWebhook = jsonWebhooks.getJSONObject(strWebhookId);
+
+		    Snowflake webhookId = Snowflake.of(strWebhookId);
+		    Optional<Webhook> optWebhook = BotUtils
+			    .returnOptional(guild.getWebhooks().filter(w -> w.getId().equals(webhookId)).next());
+		    if (optWebhook.isPresent()) {
+			Webhook webhook = optWebhook.get();
+
+			webhook.edit(spec -> {
+			    if (jsonWebhook.has("name")) {
+				spec.setName(jsonWebhook.getString("name"));
+				// if(jsonWebhook.has("avatar"))
+				// spec.setAvatar(Image.ofRaw(jsonWebhook.getString("avatar").getBytes(),
+				// Format.PNG));
+			    }
+
+			    spec.setReason("Restore Webhook");
+			}).block();
+		    } else {
+			TextChannel textChannel = guild.getChannelById(Snowflake.of(jsonWebhook.getString("channel")))
+				.ofType(TextChannel.class).block();
+
+			textChannel.createWebhook(spec -> {
+			    if (jsonWebhook.has("name")) {
+				spec.setName(jsonWebhook.getString("name"));
+				// if(jsonWebhook.has("avatar"))
+				// spec.setAvatar(Image.ofRaw(jsonWebhook.getString("avatar").getBytes(),
+				// Format.PNG));
+			    }
+
+			    spec.setReason("Restore Webhook");
+			}).block();
+		    }
+		}
+		// End backup
+
+		dataGuild.inBigTask = false;
+		channel.createEmbed(spec -> {
+		    spec.setAuthor(userBot.getUsername(), null, userBot.getAvatarUrl());
+		    spec.setColor(Color.ORANGE);
+		    spec.setFooter("Lançé par " + author.getUsername(), author.getAvatarUrl());
+		    spec.setTimestamp(message.getTimestamp());
+
+		    spec.addField("Restauration terminé !", "Nom de la backup restauré : **" + backupName + "**",
+			    false);
+		}).subscribe();
+
+	    } else {
+		channel.createEmbed(spec -> {
+		    spec.setAuthor(userBot.getUsername(), null, userBot.getAvatarUrl());
+		    spec.setColor(Color.ORANGE);
+		    spec.setFooter("Lançé par " + author.getUsername(), author.getAvatarUrl());
+		    spec.setTimestamp(message.getTimestamp());
+
+		    spec.addField("Commande refusé !", "Une autre tâche est en cours !", false);
+		}).subscribe();
+	    }
 	}
+    }
+
+    public void listBackup(MessageCreateEvent event) {
+	Message message = event.getMessage();
+	TextChannel channel = message.getChannel().ofType(TextChannel.class).block();
+	User userBot = event.getClient().getSelf().block();
+	User author = event.getMember().get();
+	Guild guild = event.getGuild().block();
+
+	Set<String> backups = Main.getBotInstance().getDataCenter().getDataGuild(guild).listBackup();
+
+	if (backups.size() > 0) {
+	    channel.createEmbed(spec -> {
+		spec.setAuthor(userBot.getUsername(), null, userBot.getAvatarUrl());
+		spec.setColor(Color.ORANGE);
+		spec.setFooter("Lançé par " + author.getUsername(), author.getAvatarUrl());
+		spec.setTimestamp(message.getTimestamp());
+
+		spec.addField("Liste des backups", String.join("\n", backups), false);
+	    }).subscribe();
+	} else {
+	    channel.createEmbed(spec -> {
+		spec.setAuthor(userBot.getUsername(), null, userBot.getAvatarUrl());
+		spec.setColor(Color.ORANGE);
+		spec.setFooter("Lançé par " + author.getUsername(), author.getAvatarUrl());
+		spec.setTimestamp(message.getTimestamp());
+
+		spec.setDescription("Aucune backup enregistré !");
+	    }).subscribe();
+	}
+    }
+
+    public void removeBackup(MessageCreateEvent event, List<String> args) {
+	Message message = event.getMessage();
+	TextChannel channel = message.getChannel().ofType(TextChannel.class).block();
+	User userBot = event.getClient().getSelf().block();
+	User author = event.getMember().get();
+	Guild guild = event.getGuild().block();
+
+	String backupName = args.get(0);
+
+	if ((backupName == null) || backupName.isEmpty()) {
+	    channel.createEmbed(spec -> {
+		spec.setAuthor(userBot.getUsername(), null, userBot.getAvatarUrl());
+		spec.setColor(Color.ORANGE);
+		spec.setFooter("Lançé par " + author.getUsername(), author.getAvatarUrl());
+		spec.setTimestamp(message.getTimestamp());
+
+		spec.addField("Syntaxe incorrect !", "le nom doit être valide !", false);
+	    }).subscribe();
+	} else {
+
+	    DataGuild dataGuild = Main.getBotInstance().getDataCenter().getDataGuild(guild);
+
+	    if (dataGuild.hasBackup(backupName)) {
+		dataGuild.removeBackup(backupName);
+		channel.createEmbed(spec -> {
+		    spec.setAuthor(userBot.getUsername(), null, userBot.getAvatarUrl());
+		    spec.setColor(Color.ORANGE);
+		    spec.setFooter("Lançé par " + author.getUsername(), author.getAvatarUrl());
+		    spec.setTimestamp(message.getTimestamp());
+
+		    spec.addField("Backup supprimé !", "Nom de la backup supprimé : **" + backupName + "**", false);
+		}).subscribe();
+	    } else {
+		channel.createEmbed(spec -> {
+		    spec.setAuthor(userBot.getUsername(), null, userBot.getAvatarUrl());
+		    spec.setColor(Color.ORANGE);
+		    spec.setFooter("Lançé par " + author.getUsername(), author.getAvatarUrl());
+		    spec.setTimestamp(message.getTimestamp());
+
+		    spec.setDescription("Aucune backup enregistré avec ce nom : **" + backupName + "**");
+		}).subscribe();
+	    }
+	}
+    }
 
 }

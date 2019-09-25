@@ -47,9 +47,9 @@ public class DataRole extends DataObject<Role> implements Permissible {
     @Override
     public void load(JSONObject json) {
 	super.load(json);
-	JSONArray perms_json = json.optJSONArray("permissions");
-	if (perms_json != null) {
-	    perms = perms_json.toList().stream().map(Object::toString).map(Permission::getByName).collect(HashSet::new,
+	JSONArray permsJson = json.optJSONArray("permissions");
+	if (permsJson != null) {
+	    perms = permsJson.toList().stream().map(Object::toString).map(Permission::getByName).collect(HashSet::new,
 		    Set::addAll, Set::addAll);
 	}
     }

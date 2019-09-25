@@ -15,103 +15,103 @@ import net.gunivers.gunibot.core.command.parser.Parser;
 
 public class SaveCommand extends Command {
 
-	@Override
-	public String getSyntaxFile() {
-		return "developper/save.json";
+    @Override
+    public String getSyntaxFile() {
+	return "developper/save.json";
+    }
+
+    public void saveGuild(MessageCreateEvent event) {
+	Guild guild = event.getGuild().block();
+	Main.getBotInstance().getDataCenter().saveGuild(guild);
+
+	Message message = event.getMessage();
+	message.getChannel().flatMap(channel -> channel.createEmbed(spec -> {
+	    Member author = event.getMember().get();
+	    User userBot = event.getClient().getSelf().block();
+
+	    spec.setTitle("Data saving");
+	    spec.setAuthor(userBot.getUsername(), null, userBot.getAvatarUrl());
+	    spec.setColor(Color.ORANGE);
+	    spec.setFooter("Lançé par " + author.getUsername(), author.getAvatarUrl());
+	    spec.setTimestamp(message.getTimestamp());
+
+	    spec.setDescription("All datas of this server has been saved!");
+	})).subscribe();
+    }
+
+    public void saveUser(MessageCreateEvent event, List<String> args) {
+	Message message = event.getMessage();
+	User user;
+
+	try {
+	    user = Parser.singleEntity(Parser.parseUser(args.get(0), event.getClient()));
+	} catch (ObjectParsingException e) {
+	    message.getChannel().flatMap(channel -> channel.createEmbed(spec -> {
+		Member author = event.getMember().get();
+		User userBot = event.getClient().getSelf().block();
+
+		spec.setTitle("Error in data saving !");
+		spec.setAuthor(userBot.getUsername(), null, userBot.getAvatarUrl());
+		spec.setColor(Color.ORANGE);
+		spec.setFooter("Lançé par " + author.getUsername(), author.getAvatarUrl());
+		spec.setTimestamp(message.getTimestamp());
+
+		spec.setDescription(e.getMessage());
+	    })).subscribe();
+	    return;
 	}
+	Main.getBotInstance().getDataCenter().saveUser(user);
 
-	public void saveGuild(MessageCreateEvent event) {
-		Guild guild = event.getGuild().block();
-		Main.getBotInstance().getDataCenter().saveGuild(guild);
+	message.getChannel().flatMap(channel -> channel.createEmbed(spec -> {
+	    Member author = event.getMember().get();
+	    User userBot = event.getClient().getSelf().block();
 
-		Message message = event.getMessage();
-		message.getChannel().flatMap(channel -> channel.createEmbed(spec -> {
-			Member author = event.getMember().get();
-			User user_bot = event.getClient().getSelf().block();
+	    spec.setTitle("Data saving");
+	    spec.setAuthor(userBot.getUsername(), null, userBot.getAvatarUrl());
+	    spec.setColor(Color.ORANGE);
+	    spec.setFooter("Lançé par " + author.getUsername(), author.getAvatarUrl());
+	    spec.setTimestamp(message.getTimestamp());
 
-			spec.setTitle("Data saving");
-			spec.setAuthor(user_bot.getUsername(), null, user_bot.getAvatarUrl());
-			spec.setColor(Color.ORANGE);
-			spec.setFooter("Lançé par "+author.getUsername(), author.getAvatarUrl());
-			spec.setTimestamp(message.getTimestamp());
+	    spec.setDescription("All datas of the user " + user.getUsername() + " has been saved!");
+	})).subscribe();
+    }
 
-			spec.setDescription("All datas of this server has been saved!");
-		})).subscribe();
-	}
+    public void saveSystem(MessageCreateEvent event, List<String> args) {
+	Message message = event.getMessage();
+	String systemId = args.get(0);
+	Main.getBotInstance().getDataCenter().saveSystem(systemId);
 
-	public void saveUser(MessageCreateEvent event, List<String> args) {
-		Message message = event.getMessage();
-		User user;
+	message.getChannel().flatMap(channel -> channel.createEmbed(spec -> {
+	    Member author = event.getMember().get();
+	    User userBot = event.getClient().getSelf().block();
 
-		try {
-			user = Parser.singleEntity(Parser.parseUser(args.get(0), event.getClient()));
-		} catch (ObjectParsingException e) {
-			message.getChannel().flatMap(channel -> channel.createEmbed(spec -> {
-				Member author = event.getMember().get();
-				User user_bot = event.getClient().getSelf().block();
+	    spec.setTitle("Data saving");
+	    spec.setAuthor(userBot.getUsername(), null, userBot.getAvatarUrl());
+	    spec.setColor(Color.ORANGE);
+	    spec.setFooter("Lançé par " + author.getUsername(), author.getAvatarUrl());
+	    spec.setTimestamp(message.getTimestamp());
 
-				spec.setTitle("Error in data saving !");
-				spec.setAuthor(user_bot.getUsername(), null, user_bot.getAvatarUrl());
-				spec.setColor(Color.ORANGE);
-				spec.setFooter("Lançé par "+author.getUsername(), author.getAvatarUrl());
-				spec.setTimestamp(message.getTimestamp());
+	    spec.setDescription("All datas of the system " + systemId + " has been saved!");
+	})).subscribe();
+    }
 
-				spec.setDescription(e.getMessage());
-			})).subscribe();
-			return;
-		}
-		Main.getBotInstance().getDataCenter().saveUser(user);
+    public void saveOldSerializer(MessageCreateEvent event, List<String> args) {
+	Message message = event.getMessage();
+	String systemId = args.get(0);
+	Main.getBotInstance().getDataCenter().saveOldSerializer(systemId);
 
-		message.getChannel().flatMap(channel -> channel.createEmbed(spec -> {
-			Member author = event.getMember().get();
-			User user_bot = event.getClient().getSelf().block();
+	message.getChannel().flatMap(channel -> channel.createEmbed(spec -> {
+	    Member author = event.getMember().get();
+	    User userBot = event.getClient().getSelf().block();
 
-			spec.setTitle("Data saving");
-			spec.setAuthor(user_bot.getUsername(), null, user_bot.getAvatarUrl());
-			spec.setColor(Color.ORANGE);
-			spec.setFooter("Lançé par "+author.getUsername(), author.getAvatarUrl());
-			spec.setTimestamp(message.getTimestamp());
+	    spec.setTitle("Data saving");
+	    spec.setAuthor(userBot.getUsername(), null, userBot.getAvatarUrl());
+	    spec.setColor(Color.ORANGE);
+	    spec.setFooter("Lançé par " + author.getUsername(), author.getAvatarUrl());
+	    spec.setTimestamp(message.getTimestamp());
 
-			spec.setDescription("All datas of the user "+user.getUsername()+" has been saved!");
-		})).subscribe();
-	}
-
-	public void saveSystem(MessageCreateEvent event, List<String> args) {
-		Message message = event.getMessage();
-		String system_id = args.get(0);
-		Main.getBotInstance().getDataCenter().saveSystem(system_id);
-
-		message.getChannel().flatMap(channel -> channel.createEmbed(spec -> {
-			Member author = event.getMember().get();
-			User user_bot = event.getClient().getSelf().block();
-
-			spec.setTitle("Data saving");
-			spec.setAuthor(user_bot.getUsername(), null, user_bot.getAvatarUrl());
-			spec.setColor(Color.ORANGE);
-			spec.setFooter("Lançé par "+author.getUsername(), author.getAvatarUrl());
-			spec.setTimestamp(message.getTimestamp());
-
-			spec.setDescription("All datas of the system "+system_id+" has been saved!");
-		})).subscribe();
-	}
-
-	public void saveOldSerializer(MessageCreateEvent event, List<String> args) {
-		Message message = event.getMessage();
-		String system_id = args.get(0);
-		Main.getBotInstance().getDataCenter().saveOldSerializer(system_id);
-
-		message.getChannel().flatMap(channel -> channel.createEmbed(spec -> {
-			Member author = event.getMember().get();
-			User user_bot = event.getClient().getSelf().block();
-
-			spec.setTitle("Data saving");
-			spec.setAuthor(user_bot.getUsername(), null, user_bot.getAvatarUrl());
-			spec.setColor(Color.ORANGE);
-			spec.setFooter("Lançé par "+author.getUsername(), author.getAvatarUrl());
-			spec.setTimestamp(message.getTimestamp());
-
-			spec.setDescription("All datas of the old serializer "+system_id+" has been saved!");
-		})).subscribe();
-	}
+	    spec.setDescription("All datas of the old serializer " + systemId + " has been saved!");
+	})).subscribe();
+    }
 
 }
