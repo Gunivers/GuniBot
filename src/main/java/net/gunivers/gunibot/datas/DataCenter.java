@@ -29,7 +29,7 @@ import net.gunivers.gunibot.sql.SQLRestorerSystem.SQLConfig;
 public class DataCenter {
 
     private DiscordClient botClient;
-    private BotInstance botInstance;
+    // private BotInstance botInstance;
 
     /**
      * Contient tout les serveurs possédant des données (ou mis en cache en cas de
@@ -55,7 +55,7 @@ public class DataCenter {
     private SQLRestorerSystem sqlRestorerSystem;
 
     public DataCenter(BotInstance newBotInstance) {
-	botInstance = newBotInstance;
+	// botInstance = newBotInstance;
 	botClient = newBotInstance.getBotClient();
 
 	dataGuilds = new ConcurrentHashMap<>();
