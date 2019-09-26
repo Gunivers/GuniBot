@@ -7,9 +7,8 @@ import java.util.stream.Collectors;
 
 import discord4j.core.event.domain.message.ReactionRemoveAllEvent;
 import discord4j.core.object.entity.Message;
-
-import net.gunivers.gunibot.utils.tuple.Tuple;
-import net.gunivers.gunibot.utils.tuple.Tuple2;
+import net.gunivers.gunibot.core.utils.tuple.Tuple;
+import net.gunivers.gunibot.core.utils.tuple.Tuple2;
 
 public class ReactionRemovedAllListener extends Events<ReactionRemoveAllEvent>
 {

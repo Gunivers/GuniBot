@@ -6,7 +6,7 @@ import org.json.JSONObject;
 import net.gunivers.gunibot.core.command.Command;
 import net.gunivers.gunibot.core.command.JsonCommandFormatException;
 import net.gunivers.gunibot.core.command.nodes.Node;
-import net.gunivers.gunibot.utils.tuple.Tuple2;
+import net.gunivers.gunibot.core.utils.tuple.Tuple2;
 
 public abstract class Key {
 

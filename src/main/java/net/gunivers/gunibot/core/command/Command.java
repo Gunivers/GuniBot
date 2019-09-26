@@ -18,7 +18,7 @@ import net.gunivers.gunibot.command.permissions.Permission;
 import net.gunivers.gunibot.core.command.nodes.Node;
 import net.gunivers.gunibot.core.command.nodes.NodeRoot;
 import net.gunivers.gunibot.core.datas.DataCenter;
-import net.gunivers.gunibot.utils.tuple.Tuple2;
+import net.gunivers.gunibot.core.utils.tuple.Tuple2;
 
 public abstract class Command {
 

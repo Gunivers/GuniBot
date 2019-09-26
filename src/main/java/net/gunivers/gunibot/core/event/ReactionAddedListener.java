@@ -9,8 +9,8 @@ import discord4j.core.event.domain.message.ReactionAddEvent;
 import discord4j.core.object.entity.Message;
 import discord4j.core.object.reaction.ReactionEmoji;
 import net.gunivers.gunibot.core.utils.BotUtils;
-import net.gunivers.gunibot.utils.tuple.Tuple;
-import net.gunivers.gunibot.utils.tuple.Tuple3;
+import net.gunivers.gunibot.core.utils.tuple.Tuple;
+import net.gunivers.gunibot.core.utils.tuple.Tuple3;
 
 public class ReactionAddedListener extends Events<ReactionAddEvent>
 {

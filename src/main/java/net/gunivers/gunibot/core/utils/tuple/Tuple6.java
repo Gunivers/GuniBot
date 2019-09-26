@@ -1,4 +1,4 @@
-package net.gunivers.gunibot.utils.tuple;
+package net.gunivers.gunibot.core.utils.tuple;
 
 import java.io.Serializable;
 

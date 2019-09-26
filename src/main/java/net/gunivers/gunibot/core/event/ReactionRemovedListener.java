@@ -10,8 +10,8 @@ import java.util.stream.Collectors;
 import discord4j.core.event.domain.message.ReactionRemoveEvent;
 import discord4j.core.object.entity.Message;
 import discord4j.core.object.reaction.ReactionEmoji;
-import net.gunivers.gunibot.utils.tuple.Tuple;
-import net.gunivers.gunibot.utils.tuple.Tuple3;
+import net.gunivers.gunibot.core.utils.tuple.Tuple;
+import net.gunivers.gunibot.core.utils.tuple.Tuple3;
 
 public class ReactionRemovedListener extends Events<ReactionRemoveEvent>
 {

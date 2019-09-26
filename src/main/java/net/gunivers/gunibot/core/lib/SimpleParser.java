@@ -5,8 +5,8 @@ import java.util.LinkedList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import net.gunivers.gunibot.utils.tuple.Tuple;
-import net.gunivers.gunibot.utils.tuple.Tuple2;
+import net.gunivers.gunibot.core.utils.tuple.Tuple;
+import net.gunivers.gunibot.core.utils.tuple.Tuple2;
 
 public final class SimpleParser
 {	

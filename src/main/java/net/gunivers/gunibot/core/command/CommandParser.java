@@ -20,7 +20,7 @@ import net.gunivers.gunibot.core.command.keys.KeyEnum;
 import net.gunivers.gunibot.core.command.keys.KeyEnum.Position;
 import net.gunivers.gunibot.core.command.nodes.Node;
 import net.gunivers.gunibot.core.command.nodes.NodeRoot;
-import net.gunivers.gunibot.utils.tuple.Tuple2;
+import net.gunivers.gunibot.core.utils.tuple.Tuple2;
 
 public class CommandParser {
 

@@ -12,8 +12,8 @@ import net.gunivers.gunibot.core.command.Command;
 import net.gunivers.gunibot.core.command.CommandSyntaxError;
 import net.gunivers.gunibot.core.command.CommandSyntaxError.SyntaxError;
 import net.gunivers.gunibot.core.command.keys.KeyEnum;
-import net.gunivers.gunibot.utils.tuple.Tuple;
-import net.gunivers.gunibot.utils.tuple.Tuple2;
+import net.gunivers.gunibot.core.utils.tuple.Tuple;
+import net.gunivers.gunibot.core.utils.tuple.Tuple2;
 
 public abstract class Node {
 
