@@ -22,7 +22,6 @@ import discord4j.core.object.reaction.ReactionEmoji;
 import discord4j.core.object.util.Snowflake;
 import net.gunivers.gunibot.Main;
 import net.gunivers.gunibot.core.command.Command;
-import net.gunivers.gunibot.core.command.Ignore;
 import net.gunivers.gunibot.core.lib.EmbedBuilder;
 import net.gunivers.gunibot.core.lib.EmbedBuilder.Field;
 import net.gunivers.gunibot.core.utils.BotUtils;
@@ -38,7 +37,6 @@ import reactor.core.Disposable;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-@Ignore
 public class WormHoleCommand extends Command {
 
     private static class Memory implements OldRestorable {
@@ -92,6 +90,7 @@ public class WormHoleCommand extends Command {
      * @param e
      */
     public void list(MessageCreateEvent e) {
+    final String messageIfEmpty = "Aucun wormhole existant.";
 	final Field list = new Field("‌‌Sender Channels");
 	// On trie et ajoute les index en préfixe des éléments de la liste
 	String text = sortSetAndZipWithIndex(memory.linkedChannels.keySet()).map(t -> {
@@ -100,7 +99,7 @@ public class WormHoleCommand extends Command {
 		    + "**";
 	}).collect(Collectors.joining("\n"));
 	// On envoie l'embed
-	list.setValue(text);
+	list.setValue(text.isEmpty() ? messageIfEmpty : text);
 	constructAndSendEmbed(list, e);
     }
 
@@ -278,7 +277,6 @@ public class WormHoleCommand extends Command {
 		infos._5.dispose();
 		infos._4.delete().subscribe();
 
-		System.out.println("okay");
 		e.getMessage().block().getChannel().block().createMessage("Specified link removed!").subscribe();
 		// On crée la nouvelle liste des enfants sans celui supprimé
 		Set<Tuple2<Long, Long>> children = getChildren(infos._1.getId().asLong(),
@@ -365,7 +363,6 @@ public class WormHoleCommand extends Command {
     private void copyMessage(MessageCreateEvent e) {
 	if (e.getMember().isPresent()) {
 
-	    System.out.println(e.getMessage().getContent().get());
 	    String message = Arrays.asList(e.getMessage().getContent().get().split(" ")).stream()
 		    .map(s -> s.matches("<@\\d*>")
 			    ? e.getGuild().block().getMemberById(Snowflake.of(s.substring(2, s.length() - 1))).block()
