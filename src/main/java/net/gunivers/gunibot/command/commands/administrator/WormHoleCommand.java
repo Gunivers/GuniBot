@@ -343,7 +343,7 @@ public class WormHoleCommand extends Command {
 				values);
 			// Si le channel émetteur reçoit un message, on appelle la fonction copyMessage
 			discordClient.getEventDispatcher().on(MessageCreateEvent.class)
-				.filter(mce -> infos._1.getId().asLong() == mce.getMessage().getChannelId().asLong())
+				.filter(mce -> infos._1.getId().asLong() == mce.getMessage().getChannelId().asLong() && mce.getMessage().getContent().isPresent())
 				.subscribe(e2 -> copyMessage(e2));
 		    } else {
 			e.getChannel().block().createMessage("One of the two channels not exist!").subscribe();

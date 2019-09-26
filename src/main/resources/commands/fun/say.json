@@ -7,7 +7,7 @@
 		[
 			{
 				"type": "string...",
-				"tag": "message1",
+				"tag": "message",
 				"execute": "say",
 				"keep_value": true
 			}
