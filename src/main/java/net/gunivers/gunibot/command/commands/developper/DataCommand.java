@@ -16,7 +16,7 @@ import net.gunivers.gunibot.Main;
 import net.gunivers.gunibot.core.command.Command;
 import net.gunivers.gunibot.core.command.parser.ObjectParsingException;
 import net.gunivers.gunibot.core.command.parser.Parser;
-import net.gunivers.gunibot.datas.DataCenter;
+import net.gunivers.gunibot.core.datas.DataCenter;
 
 public class DataCommand extends Command {
 

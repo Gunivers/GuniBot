@@ -22,13 +22,14 @@ import discord4j.core.object.reaction.ReactionEmoji;
 import discord4j.core.object.util.Snowflake;
 import net.gunivers.gunibot.Main;
 import net.gunivers.gunibot.core.command.Command;
+import net.gunivers.gunibot.core.command.Ignore;
+import net.gunivers.gunibot.core.datas.serialize.OldRestorable;
+import net.gunivers.gunibot.core.datas.serialize.OldSerializer;
+import net.gunivers.gunibot.core.event.Events;
 import net.gunivers.gunibot.core.lib.EmbedBuilder;
 import net.gunivers.gunibot.core.lib.EmbedBuilder.Field;
 import net.gunivers.gunibot.core.utils.BotUtils;
 import net.gunivers.gunibot.core.utils.ListUtils;
-import net.gunivers.gunibot.datas.serialize.OldRestorable;
-import net.gunivers.gunibot.datas.serialize.OldSerializer;
-import net.gunivers.gunibot.event.Events;
 import net.gunivers.gunibot.utils.tuple.Tuple;
 import net.gunivers.gunibot.utils.tuple.Tuple2;
 import net.gunivers.gunibot.utils.tuple.Tuple3;
@@ -37,6 +38,7 @@ import reactor.core.Disposable;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+@Ignore
 public class WormHoleCommand extends Command {
 
     private static class Memory implements OldRestorable {

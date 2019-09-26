@@ -13,8 +13,8 @@ import javax.naming.InvalidNameException;
 import discord4j.core.object.entity.Member;
 import discord4j.core.object.entity.Role;
 import net.gunivers.gunibot.Main;
-import net.gunivers.gunibot.datas.DataGuild;
-import net.gunivers.gunibot.datas.DataMember;
+import net.gunivers.gunibot.core.datas.DataGuild;
+import net.gunivers.gunibot.core.datas.DataMember;
 
 public class Permission
 {
