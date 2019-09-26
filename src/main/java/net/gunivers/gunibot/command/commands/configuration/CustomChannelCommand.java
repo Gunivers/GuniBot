@@ -1,10 +1,10 @@
 package net.gunivers.gunibot.command.commands.configuration;
 
-import static net.gunivers.gunibot.custom_channel.CustomChannelCreator.create;
-import static net.gunivers.gunibot.custom_channel.CustomChannelCreator.getByGuild;
-import static net.gunivers.gunibot.custom_channel.CustomChannelCreator.getByOwner;
-import static net.gunivers.gunibot.custom_channel.CustomChannelCreator.removeChannel;
-import static net.gunivers.gunibot.custom_channel.CustomChannelCreator.renewChannel;
+import static net.gunivers.gunibot.core.custom_channel.CustomChannelCreator.create;
+import static net.gunivers.gunibot.core.custom_channel.CustomChannelCreator.getByGuild;
+import static net.gunivers.gunibot.core.custom_channel.CustomChannelCreator.getByOwner;
+import static net.gunivers.gunibot.core.custom_channel.CustomChannelCreator.removeChannel;
+import static net.gunivers.gunibot.core.custom_channel.CustomChannelCreator.renewChannel;
 
 import java.util.List;
 
@@ -18,12 +18,12 @@ import net.gunivers.gunibot.Main;
 import net.gunivers.gunibot.core.command.Command;
 import net.gunivers.gunibot.core.command.Ignore;
 import net.gunivers.gunibot.core.command.parser.Parser;
+import net.gunivers.gunibot.core.custom_channel.CustomChannelCreator;
+import net.gunivers.gunibot.core.custom_channel.Invitation;
+import net.gunivers.gunibot.core.datas.DataGuild;
+import net.gunivers.gunibot.core.datas.DataTextChannel;
 import net.gunivers.gunibot.core.lib.EmbedBuilder;
 import net.gunivers.gunibot.core.lib.EmbedBuilder.Field;
-import net.gunivers.gunibot.custom_channel.CustomChannelCreator;
-import net.gunivers.gunibot.custom_channel.Invitation;
-import net.gunivers.gunibot.datas.DataGuild;
-import net.gunivers.gunibot.datas.DataTextChannel;
 
 /**
  * @author A~Z<br>

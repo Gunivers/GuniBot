@@ -3,7 +3,7 @@ package net.gunivers.gunibot.command.commands.audio;
 import java.util.List;
 
 import discord4j.core.event.domain.message.MessageCreateEvent;
-import net.gunivers.gunibot.audio.Audio;
+import net.gunivers.gunibot.core.audio.Audio;
 import net.gunivers.gunibot.core.command.Command;
 
 public class PlayCommand extends Command {

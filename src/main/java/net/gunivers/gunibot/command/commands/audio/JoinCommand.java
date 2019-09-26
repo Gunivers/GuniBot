@@ -4,7 +4,7 @@ import discord4j.core.event.domain.message.MessageCreateEvent;
 import discord4j.core.object.VoiceState;
 import discord4j.core.object.entity.Member;
 import discord4j.core.object.entity.VoiceChannel;
-import net.gunivers.gunibot.audio.Audio;
+import net.gunivers.gunibot.core.audio.Audio;
 import net.gunivers.gunibot.core.command.Command;
 
 public class JoinCommand extends Command {

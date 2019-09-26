@@ -1,6 +1,8 @@
 package net.gunivers.gunibot;
 
 import fr.syl2010.utils.io.parser.UnixCommandLineParser;
+import net.gunivers.gunibot.core.BotConfig;
+import net.gunivers.gunibot.core.BotInstance;
 
 public class Main {
 

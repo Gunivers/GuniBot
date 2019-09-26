@@ -5,11 +5,11 @@ import java.util.List;
 import discord4j.core.event.domain.message.MessageCreateEvent;
 import net.gunivers.gunibot.Main;
 import net.gunivers.gunibot.core.command.Command;
+import net.gunivers.gunibot.core.datas.Configuration;
+import net.gunivers.gunibot.core.datas.DataGuild;
+import net.gunivers.gunibot.core.datas.DataObject;
 import net.gunivers.gunibot.core.lib.EmbedBuilder;
 import net.gunivers.gunibot.core.lib.EmbedBuilder.Field;
-import net.gunivers.gunibot.datas.Configuration;
-import net.gunivers.gunibot.datas.DataGuild;
-import net.gunivers.gunibot.datas.DataObject;
 
 public class ConfigCommand extends Command {
 
