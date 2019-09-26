@@ -10,13 +10,13 @@
                {  
                   "type":"string",
                   "matches":"\\d+",
-                  "tag":"MessageChannelId",
+                  "tag":"MessageChannelIndex",
                   "keep_value":true,
                   "arguments":[  
                      {  
                         "type":"string",
                         "matches":"\\d+",
-                        "tag":"MessageChannelId",
+                        "tag":"MessageChannelIndex",
                         "keep_value":true,
                         "execute":"remove"
                      }
