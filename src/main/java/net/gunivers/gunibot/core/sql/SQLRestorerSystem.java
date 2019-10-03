@@ -16,7 +16,7 @@ import net.gunivers.gunibot.core.utils.JsonObjectV2;
 
 public class SQLRestorerSystem extends AbstractRestorerSystem {
 
-    public static boolean OPTIONAL = true;
+    public static boolean OPTIONAL = false;
 
     public static class SQLConfig {
 	public final String sqlUrl;
