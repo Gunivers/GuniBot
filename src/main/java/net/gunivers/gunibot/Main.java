@@ -1,14 +1,15 @@
 package net.gunivers.gunibot;
 
-import net.gunivers.gunibot.core.main_parser.ArgumentParser;
-import net.gunivers.gunibot.core.main_parser.BotConfig;
+import fr.syl2010.utils.io.parser.UnixCommandLineParser;
+import net.gunivers.gunibot.core.BotConfig;
+import net.gunivers.gunibot.core.BotInstance;
 
 public class Main {
 
 	private static BotInstance botInstance;
 
 	public static void main(String[] args) {
-		botInstance = new BotInstance(new BotConfig(new ArgumentParser(args)));
+		botInstance = new BotInstance(new BotConfig(new UnixCommandLineParser(args)));
 		botInstance.loginBlock(); // lance le bot en bloquant le thread principal
 	}
 

@@ -1,8 +1,0 @@
-{
-	"save": 
-	{
-		"description": "Save internal data of the guild",
-		"permissions": ["discord.administrator"],
-		"execute": "save"
-	}
-}

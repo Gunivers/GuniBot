@@ -6,17 +6,16 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import discord4j.core.event.domain.message.MessageCreateEvent;
-import discord4j.core.object.entity.Role;
 import net.gunivers.gunibot.Main;
 import net.gunivers.gunibot.command.permissions.Permission;
 import net.gunivers.gunibot.core.command.Command;
 import net.gunivers.gunibot.core.command.parser.Parser;
+import net.gunivers.gunibot.core.datas.DataGuild;
+import net.gunivers.gunibot.core.datas.DataMember;
+import net.gunivers.gunibot.core.datas.DataRole;
 import net.gunivers.gunibot.core.lib.EmbedBuilder;
 import net.gunivers.gunibot.core.lib.EmbedBuilder.Field;
 import net.gunivers.gunibot.core.lib.SimpleParser;
-import net.gunivers.gunibot.datas.DataGuild;
-import net.gunivers.gunibot.datas.DataMember;
-import net.gunivers.gunibot.datas.DataRole;
 import reactor.core.publisher.Flux;
 
 public class PermissionCommand extends Command
@@ -38,23 +37,18 @@ public class PermissionCommand extends Command
 		bot.setValue(Permission.bot.values().stream().sorted((a,b) -> a.higherThan(b) ? 1 : 0).map(Permission::getName).reduce("", (r,s) -> r += s + '\n'));
 		builder.addField(bot);
 
-		DataGuild guild = Main.getBotInstance().getDataCenter().getDataGuild(event.getGuild().block());
-		for (Role role : event.getGuild().block().getRoles().toIterable())
-		{
-			Field f = new Field(role.getName());
-			f.setValue(guild.getDataRole(role).getPermissions().stream().map(Permission::getName).reduce("", (r,s) -> r += s + '\n'));
-			builder.addField(f);
-		}
-
 		builder.buildAndSend();
 	}
 
 	public void get(MessageCreateEvent event, List<String> args)
 	{
 		DataGuild g = Main.getBotInstance().getDataCenter().getDataGuild(event.getGuild().block());
-		Flux<DataMember> members = Parser.parseMember(args.get(0), g.getEntity()).map(g::getDataMember);
-		Flux<DataRole> roles = Parser.parseRole(args.get(0), g.getEntity()).map(g::getDataRole);
-
+		Flux<DataMember> members = Parser.parseMember(args.get(0), g.getEntity()).filter(m -> m != null).map(g::getDataMember)
+				.doOnEach(s -> { if (s.get() != null) s.get().recalculatePermissions(); });
+		
+		Flux<DataRole> roles = Parser.parseRole(args.get(0), g.getEntity()).filter(r -> r != null).map(g::getDataRole)
+				.doOnEach(s -> { if (s.get() != null) s.get().recalculatePermissions(); });
+		
 		if (members.blockFirst() == null && roles.blockFirst() == null) {
 			event.getMessage().getChannel().flatMap(c -> c.createMessage(args.get(0) + " did not match for any user nor role.")).subscribe();
 			return;
@@ -93,7 +87,7 @@ public class PermissionCommand extends Command
 		int level = Permission.getHighestPermission(event.getMember().get()).getLevel();
 		for (Permission p : perms) if (p.getLevel() > level) {
 			event.getMessage().getChannel().flatMap(c -> c.createMessage("The permission '"+ p.getName() +"' is of level "+ p.getLevel()
-			+ "\nYou may not access permissions of higher level than "+ level)).subscribe();
+				+ "\nYou may not access permissions of higher level than "+ level)).subscribe();
 			return;
 		}
 

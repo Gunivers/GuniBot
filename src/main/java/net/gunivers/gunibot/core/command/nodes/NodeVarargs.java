@@ -6,8 +6,8 @@ import java.util.List;
 
 import net.gunivers.gunibot.core.command.JsonCommandFormatException;
 import net.gunivers.gunibot.core.command.keys.KeyEnum;
-import net.gunivers.gunibot.utils.tuple.Tuple;
-import net.gunivers.gunibot.utils.tuple.Tuple2;
+import net.gunivers.gunibot.core.utils.tuple.Tuple;
+import net.gunivers.gunibot.core.utils.tuple.Tuple2;
 
 public class NodeVarargs extends TypeNode {
 

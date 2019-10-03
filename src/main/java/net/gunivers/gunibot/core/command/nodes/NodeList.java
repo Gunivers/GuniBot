@@ -1,8 +1,8 @@
 package net.gunivers.gunibot.core.command.nodes;
 
 import net.gunivers.gunibot.core.command.JsonCommandFormatException;
-import net.gunivers.gunibot.utils.tuple.Tuple;
-import net.gunivers.gunibot.utils.tuple.Tuple2;
+import net.gunivers.gunibot.core.utils.tuple.Tuple;
+import net.gunivers.gunibot.core.utils.tuple.Tuple2;
 
 public class NodeList extends TypeNode {
 

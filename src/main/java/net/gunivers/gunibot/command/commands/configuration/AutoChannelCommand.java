@@ -7,8 +7,8 @@ import discord4j.core.event.domain.message.MessageCreateEvent;
 import discord4j.core.object.entity.GuildChannel;
 import discord4j.core.object.entity.VoiceChannel;
 import discord4j.core.object.util.Snowflake;
-import net.gunivers.gunibot.auto_vocal_channel.VoiceChannelCreator;
 import net.gunivers.gunibot.core.command.Command;
+import net.gunivers.gunibot.core.feature.auto_vocal_channel.VoiceChannelCreator;
 import net.gunivers.gunibot.core.lib.EmbedBuilder;
 import net.gunivers.gunibot.core.lib.EmbedBuilder.Field;
 

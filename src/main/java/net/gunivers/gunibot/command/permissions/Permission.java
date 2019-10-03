@@ -13,8 +13,8 @@ import javax.naming.InvalidNameException;
 import discord4j.core.object.entity.Member;
 import discord4j.core.object.entity.Role;
 import net.gunivers.gunibot.Main;
-import net.gunivers.gunibot.datas.DataGuild;
-import net.gunivers.gunibot.datas.DataMember;
+import net.gunivers.gunibot.core.datas.DataGuild;
+import net.gunivers.gunibot.core.datas.DataMember;
 
 public class Permission
 {
@@ -22,19 +22,17 @@ public class Permission
 	public static final HashMap<String, Permission> bot = new HashMap<>();
 	public static final HashMap<discord4j.core.object.util.Permission, Permission> discord = new HashMap<>();
 
+	public static final Permission EVERYONE			= new Permission("perm.everyone", 1);
+	public static final Permission SERVER_MODERATOR	= new Permission("server.moderator", 3);
+	public static final Permission SERVER_TRUSTED	= new Permission("server.trusted", 5);
+	public static final Permission SERVER_OWNER		= new Permission("server.owner", 6);
+	public static final Permission BOT_TRUSTED		= new Permission("bot.trusted", 8);
+	public static final Permission BOT_DEV			= new Permission("bot.dev", 10);
+	
 	static
 	{
 		Arrays.asList(discord4j.core.object.util.Permission.values()).forEach(perm ->
-		new Permission(perm.name().toLowerCase(), perm));
-
-		new Permission("other.everyone", 1);
-		new Permission("other.average", 2);
-		new Permission("server.moderator", 3);
-		new Permission("server.trusted", 5);
-		new Permission("server.owner", 6);
-		new Permission("bot.trusted", 7);
-		new Permission("bot.trainee", 8);
-		new Permission("bot.dev", 9);
+			new Permission(perm.name().toLowerCase(), perm));
 
 		discord.get(discord4j.core.object.util.Permission.ADMINISTRATOR).level = 4;
 	}
@@ -46,74 +44,16 @@ public class Permission
 	private final String name;
 	private int level;
 
-	/**
-	 * @param level of permission, where:
-	 * <ol>
-	 * <li> Everyone
-	 * <li> Average
-	 * <li> Moderator
-	 * <li> Administrator [linked with discord.administrator]
-	 * <li> Server Trusted
-	 * <li> Server Owner
-	 * <li> Trusted
-	 * <li> Assistant Developper
-	 * <li> Bot Developper
-	 * </ol>
-	 */
-	public Permission(String name, int level)
-	{
-		this(-1, name);
-		bot.put(name, this);
-	}
-
-	private Permission(String name, discord4j.core.object.util.Permission perm)
-	{
-		this(10, "discord." + name);
-		discord.putIfAbsent(perm, this);
-	}
-
-	private Permission(int level, String name)
-	{
-		if (!name.matches("([a-z_]+\\.)+[a-z_]+"))
-			throw new RuntimeException(new InvalidNameException("Permission name should matche '([a-z_]+\\.)+[a-z_]+'"));
-
-		this.name = name;
-		this.level = level;
-	}
-
-
-	public boolean hasPermission(Member user)
-	{
-		DataGuild data = Main.getBotInstance().getDataCenter().getDataGuild(user.getGuild().block());
-		if (user.getRoles().toStream().anyMatch(role -> data.getDataRole(role).getPermissions().contains(this))) return true;
-
-		DataMember member = data.getDataMember(user);
-		return member.getPermissions().contains(this) || user.getBasePermissions().block().contains(Permission.get(this));
-	}
-
-	public boolean higherThan(Permission perm)
-	{
-		if (this.isFromDiscord() && this != discord.get(discord4j.core.object.util.Permission.ADMINISTRATOR)) return false;
-		return this.level > perm.level;
-	}
-
-
-	public boolean isFromBot() { return bot.values().contains(this); }
-	public boolean isFromDiscord() { return discord.values().contains(this); }
-
-	public String getName() { return this.name; }
-	public int getLevel() { return level; }
-
-
 	public static Permission getHighestPermission(Member member)
 	{
 		DataGuild guild = Main.getBotInstance().getDataCenter().getDataGuild(member.getGuild().block());
-		Permission p = Permission.bot.get("other.everyone");
+		Permission p = new Permission(0, "you.should.not.see.this");
+		
+		for (Permission perm : guild.getDataMember(member).getPermissions()) if (perm.higherThan(p))
+			p = perm;
 
-		for (Permission perm : guild.getDataMember(member).getPermissions()) if (perm.higherThan(p)) p = perm;
-
-		for (Role role : member.getRoles().toIterable())
-			for (Permission perm : guild.getDataRole(role).getPermissions()) if (perm.higherThan(p)) p = perm;
+		for (Role role : member.getRoles().toIterable()) for (Permission perm : guild.getDataRole(role).getPermissions()) if (perm.higherThan(p))
+			p = perm;
 
 		return p;
 	}
@@ -141,6 +81,62 @@ public class Permission
 		for (Permission perm : perms) if (!perm.hasPermission(member)) return false;
 		return true;
 	}
+
+	/**
+	 * @param level of permission, where:
+	 * <ol>
+	 * <li> Everyone
+	 * <li> Average
+	 * <li> Moderator
+	 * <li> Administrator [linked with discord.administrator]
+	 * <li> Server Trusted
+	 * <li> Server Owner
+	 * <li> Trusted
+	 * <li> Assistant Developper
+	 * <li> Bot Developper
+	 * </ol>
+	 */
+	public Permission(String name, int level)
+	{
+		this(level, name);
+		bot.putIfAbsent(name, this);
+	}
+
+	private Permission(String name, discord4j.core.object.util.Permission perm)
+	{
+		this(9, "discord." + name);
+		discord.putIfAbsent(perm, this);
+	}
+
+	private Permission(int level, String name)
+	{
+		if (!name.matches("([a-z_]+\\.)+[a-z_]+"))
+			throw new RuntimeException(new InvalidNameException("Permission name should matche '([a-z_]+\\.)+[a-z_]+'"));
+
+		this.name = name;
+		this.level = level;
+	}
+
+	public boolean hasPermission(Member user)
+	{
+		DataGuild data = Main.getBotInstance().getDataCenter().getDataGuild(user.getGuild().block());
+		if (user.getRoles().toStream().anyMatch(role -> data.getDataRole(role).getPermissions().contains(this))) return true;
+
+		DataMember member = data.getDataMember(user);
+		return member.getPermissions().contains(this) || user.getBasePermissions().block().contains(Permission.get(this));
+	}
+
+	public boolean higherThan(Permission perm)
+	{
+		if (this.isFromDiscord()) return false;
+		return this.level > perm.level;
+	}
+
+	public boolean isFromBot() { return bot.values().contains(this); }
+	public boolean isFromDiscord() { return discord.values().contains(this); }
+
+	public String getName() { return this.name; }
+	public int getLevel() { return level; }
 
 	@Override
 	public boolean equals(Object perm)
