@@ -38,7 +38,7 @@ public class OldSerializer extends HashMap<String, Serializable> {
 
     @SuppressWarnings("unchecked")
     public static OldSerializer from(JSONObject json) {
-	Map<String, Object> dataMap = new HashMap<>();
+	Map<String, Serializable> dataMap = new HashMap<>();
 	for (Entry<String, Object> entry : json.toMap().entrySet()) {
 	    // System.out.println("key = "+entry.getKey().toString()+" | value =
 	    // "+entry.getValue().toString());
@@ -50,14 +50,14 @@ public class OldSerializer extends HashMap<String, Serializable> {
 	    ByteArrayInputStream bais = new ByteArrayInputStream(array);
 	    try {
 		ObjectInputStream ois = new ObjectInputStream(bais);
-		dataMap.put(entry.getKey(), ois.readObject());
+		dataMap.put(entry.getKey(), (Serializable) ois.readObject());
 	    } catch (IOException | ClassNotFoundException e) {
 		e.printStackTrace();
 	    }
 	}
 	OldSerializer output = new OldSerializer();
 	// Map<String, Object> dataMap = json.toMap();
-	output.putAll((Map<? extends String, ? extends Serializable>) dataMap);
+	output.putAll(dataMap);
 	return output;
     }
 }
