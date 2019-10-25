@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import discord4j.core.event.domain.message.MessageCreateEvent;
 import net.gunivers.gunibot.Main;
 import net.gunivers.gunibot.command.permissions.Permission;
 import net.gunivers.gunibot.core.command.Command;
@@ -15,7 +14,10 @@ import net.gunivers.gunibot.core.datas.DataMember;
 import net.gunivers.gunibot.core.datas.DataRole;
 import net.gunivers.gunibot.core.lib.EmbedBuilder;
 import net.gunivers.gunibot.core.lib.EmbedBuilder.Field;
-import net.gunivers.gunibot.core.lib.SimpleParser;
+import net.gunivers.gunibot.core.lib.parsing.ListParser;
+import net.gunivers.gunibot.core.lib.parsing.ParsingException;
+
+import discord4j.core.event.domain.message.MessageCreateEvent;
 import reactor.core.publisher.Flux;
 
 public class PermissionCommand extends Command
@@ -45,10 +47,10 @@ public class PermissionCommand extends Command
 		DataGuild g = Main.getBotInstance().getDataCenter().getDataGuild(event.getGuild().block());
 		Flux<DataMember> members = Parser.parseMember(args.get(0), g.getEntity()).filter(m -> m != null).map(g::getDataMember)
 				.doOnEach(s -> { if (s.get() != null) s.get().recalculatePermissions(); });
-		
+
 		Flux<DataRole> roles = Parser.parseRole(args.get(0), g.getEntity()).filter(r -> r != null).map(g::getDataRole)
 				.doOnEach(s -> { if (s.get() != null) s.get().recalculatePermissions(); });
-		
+
 		if (members.blockFirst() == null && roles.blockFirst() == null) {
 			event.getMessage().getChannel().flatMap(c -> c.createMessage(args.get(0) + " did not match for any user nor role.")).subscribe();
 			return;
@@ -76,12 +78,12 @@ public class PermissionCommand extends Command
 		builder.buildAndSend();
 	}
 
-	public void set(MessageCreateEvent event, List<String> args)
+	public void set(MessageCreateEvent event, List<String> args) throws ParsingException
 	{
 		boolean add = Boolean.parseBoolean(args.get(1));
 		DataGuild g =  Main.getBotInstance().getDataCenter().getDataGuild(event.getGuild().block());
 
-		Set<Permission> perms = SimpleParser.parseList(args.get(0)).stream().map(Permission::getByName).reduce(new HashSet<>(), (l,s) -> {l.addAll(s); return l;});
+		Set<Permission> perms = ListParser.rawParse(args.get(0)).stream().map(Permission::getByName).reduce(new HashSet<>(), (l,s) -> {l.addAll(s); return l;});
 
 		//If the level of any permission is higher than the highest level of the user
 		int level = Permission.getHighestPermission(event.getMember().get()).getLevel();
@@ -96,7 +98,7 @@ public class PermissionCommand extends Command
 		builder.addField("Permissions changed:", perms.stream().map(Permission::getName).reduce("", (a,b) -> a + " - " + b + '\n'), true);
 
 		//Managing users permissions
-		List<DataMember> users = SimpleParser.parseList(args.get(2)).stream().flatMap(s -> Parser.parseMember(s, g.getEntity()).toStream()).map(g::getDataMember).collect(Collectors.toList());
+		List<DataMember> users = ListParser.rawParse(args.get(2)).stream().flatMap(s -> Parser.parseMember(s, g.getEntity()).toStream()).map(g::getDataMember).collect(Collectors.toList());
 		Field u = new Field("Users:");
 		for (DataMember user : users) {
 			if (add) user.getPermissions().addAll(perms);
@@ -105,7 +107,7 @@ public class PermissionCommand extends Command
 		}
 
 		//Managing roles permissions
-		List<DataRole> roles = SimpleParser.parseList(args.get(2)).stream().flatMap(s -> Parser.parseRole(s, g.getEntity()).toStream()).map(g::getDataRole).collect(Collectors.toList());
+		List<DataRole> roles = ListParser.rawParse(args.get(2)).stream().flatMap(s -> Parser.parseRole(s, g.getEntity()).toStream()).map(g::getDataRole).collect(Collectors.toList());
 		Field r = new Field("Roles:");
 		for (DataRole role : roles) {
 			if (add) role.getPermissions().addAll(perms);

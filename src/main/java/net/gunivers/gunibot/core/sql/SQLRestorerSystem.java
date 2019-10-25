@@ -16,7 +16,7 @@ import net.gunivers.gunibot.core.utils.JsonObjectV2;
 
 public class SQLRestorerSystem extends AbstractRestorerSystem {
 
-    public static boolean OPTIONAL = false;
+    public static boolean OPTIONAL = true;
 
     public static class SQLConfig {
 	public final String sqlUrl;
@@ -28,9 +28,9 @@ public class SQLRestorerSystem extends AbstractRestorerSystem {
 	}
 
 	private SQLConfig(String newSqlUrl, String newSqlUser, String newSqlPwd) {
-	    sqlUrl = newSqlUrl;
-	    sqlUser = newSqlUser;
-	    sqlPassword = newSqlPwd;
+	    this.sqlUrl = newSqlUrl;
+	    this.sqlUser = newSqlUser;
+	    this.sqlPassword = newSqlPwd;
 	}
     }
 
@@ -41,13 +41,13 @@ public class SQLRestorerSystem extends AbstractRestorerSystem {
     public SQLRestorerSystem(SQLConfig config) {
 	this.config = config;
 	try {
-	    sqlConnection = connect();
-	    initialize();
+	    this.sqlConnection = this.connect();
+	    this.initialize();
 	} catch (Exception e) {
 	    if (OPTIONAL) {
 		System.err.println("[SQLClient] Connection failed : " + e.getMessage());
 		System.err.println("[SQLClient] Optional option activated, database disabled !");
-		isDisable = true;
+		this.isDisable = true;
 	    } else
 		throw new RuntimeException("Error on database initialization !", e);
 	}
@@ -55,7 +55,7 @@ public class SQLRestorerSystem extends AbstractRestorerSystem {
 
     private Connection connect() {
 	try {
-	    return DriverManager.getConnection(config.sqlUrl, config.sqlUser, config.sqlPassword);
+	    return DriverManager.getConnection(this.config.sqlUrl, this.config.sqlUser, this.config.sqlPassword);
 	} catch (SQLException e) {
 	    throw new RuntimeException("Error on database access !", e);
 	}
@@ -63,9 +63,8 @@ public class SQLRestorerSystem extends AbstractRestorerSystem {
 
     private void checkConnection() {
 	try {
-	    if (!sqlConnection.isValid(10)) {
-		sqlConnection = connect();
-	    }
+	    if (!this.sqlConnection.isValid(10))
+			this.sqlConnection = this.connect();
 	} catch (SQLException e) {
 	    throw new RuntimeException("The timeout is less than 0 !", e);
 	}
@@ -73,16 +72,16 @@ public class SQLRestorerSystem extends AbstractRestorerSystem {
 
     private void initialize() {
 	try {
-	    sqlConnection.createStatement().execute(
+	    this.sqlConnection.createStatement().execute(
 		    "CREATE TABLE IF NOT EXISTS systems " + "(id varchar(256) NOT NULL PRIMARY KEY, " + "json JSON);");
-	    sqlConnection.createStatement().execute(SQLDataTemplate.createGuildsTable());
-	    sqlConnection.createStatement().execute(SQLDataTemplate.createMembersTable());
-	    sqlConnection.createStatement().execute(SQLDataTemplate.createTextChannelsTable());
-	    sqlConnection.createStatement().execute(SQLDataTemplate.createRolesTable());
-	    sqlConnection.createStatement().execute(SQLDataTemplate.createVoiceChannelsTable());
-	    sqlConnection.createStatement().execute(SQLDataTemplate.createCategoriesTable());
-	    sqlConnection.createStatement().execute(SQLDataTemplate.createUsersTable());
-	    sqlConnection.createStatement().execute(SQLDataTemplate.createOldSerializerTable());
+	    this.sqlConnection.createStatement().execute(SQLDataTemplate.createGuildsTable());
+	    this.sqlConnection.createStatement().execute(SQLDataTemplate.createMembersTable());
+	    this.sqlConnection.createStatement().execute(SQLDataTemplate.createTextChannelsTable());
+	    this.sqlConnection.createStatement().execute(SQLDataTemplate.createRolesTable());
+	    this.sqlConnection.createStatement().execute(SQLDataTemplate.createVoiceChannelsTable());
+	    this.sqlConnection.createStatement().execute(SQLDataTemplate.createCategoriesTable());
+	    this.sqlConnection.createStatement().execute(SQLDataTemplate.createUsersTable());
+	    this.sqlConnection.createStatement().execute(SQLDataTemplate.createOldSerializerTable());
 	} catch (SQLException e) {
 	    throw new RuntimeException("Error on table creation !", e);
 	}
@@ -90,15 +89,15 @@ public class SQLRestorerSystem extends AbstractRestorerSystem {
 
     @Override
     public void saveSystem(String id) {
-	if (isDisable) {
+	if (this.isDisable) {
 	    System.err.println("SQL system is currently disabled!");
 	    return;
 	}
-	checkConnection();
+	this.checkConnection();
 
 	try {
-	    sqlConnection.createStatement().execute(
-		    "REPLACE INTO systems (id,json) VALUE ('" + id + "','" + getSystem(id).save().toString() + "');");
+	    this.sqlConnection.createStatement().execute(
+		    "REPLACE INTO systems (id,json) VALUE ('" + id + "','" + this.getSystem(id).save().toString() + "');");
 	} catch (SQLException e) {
 	    throw new RuntimeException("Error on sql writing for system '" + id + "'!", e);
 	}
@@ -106,193 +105,191 @@ public class SQLRestorerSystem extends AbstractRestorerSystem {
 
     @Override
     public void loadSystem(String id) {
-	if (isDisable) {
+	if (this.isDisable) {
 	    System.err.println("SQL system is currently disabled!");
 	    return;
 	}
-	checkConnection();
+	this.checkConnection();
 
 	try {
-	    RestorableSystem system = getSystem(id);
+	    RestorableSystem system = this.getSystem(id);
 
-	    Statement statement = sqlConnection.createStatement();
+	    Statement statement = this.sqlConnection.createStatement();
 	    statement.execute("SELECT id,json FROM systems WHERE id=" + id);
 	    ResultSet results = statement.getResultSet();
 
-	    if (results.next()) {
-		system.load(new JSONObject(results.getString("json")));
-	    } else {
-		system.load(new JSONObject());
-	    }
+	    if (results.next())
+			system.load(new JSONObject(results.getString("json")));
+		else
+			system.load(new JSONObject());
 	} catch (SQLException e) {
 	    throw new RuntimeException("Error on sql reading for system '" + id + "'!", e);
 	}
     }
 
     public boolean hasGuildData(long guildId) {
-	if (isDisable) {
+	if (this.isDisable) {
 	    System.err.println("SQL system is currently disabled!");
 	    return false;
 	}
-	checkConnection();
+	this.checkConnection();
 
 	try {
-	    return sqlConnection.createStatement().execute(SQLDataTemplate.hasGuildData(guildId));
+	    return this.sqlConnection.createStatement().execute(SQLDataTemplate.hasGuildData(guildId));
 	} catch (SQLException e) {
 	    throw new RuntimeException(e);
 	}
     }
 
     public boolean hasUserData(long userId) {
-	if (isDisable) {
+	if (this.isDisable) {
 	    System.err.println("SQL system is currently disabled!");
 	    return false;
 	}
-	checkConnection();
+	this.checkConnection();
 
 	try {
-	    return sqlConnection.createStatement().execute(SQLDataTemplate.hasUserData(userId));
+	    return this.sqlConnection.createStatement().execute(SQLDataTemplate.hasUserData(userId));
 	} catch (SQLException e) {
 	    throw new RuntimeException(e);
 	}
     }
 
     public boolean hasOldSerializerData(String systemId) {
-	if (isDisable) {
+	if (this.isDisable) {
 	    System.err.println("SQL system is currently disabled!");
 	    return false;
 	}
-	checkConnection();
+	this.checkConnection();
 
 	try {
-	    return sqlConnection.createStatement().execute(SQLDataTemplate.hasOldSerializerData(systemId));
+	    return this.sqlConnection.createStatement().execute(SQLDataTemplate.hasOldSerializerData(systemId));
 	} catch (SQLException e) {
 	    throw new RuntimeException(e);
 	}
     }
 
     public boolean hasSystemData(String systemId) {
-	if (isDisable) {
+	if (this.isDisable) {
 	    System.err.println("SQL system is currently disabled!");
 	    return false;
 	}
-	checkConnection();
+	this.checkConnection();
 
 	try {
-	    return sqlConnection.createStatement().execute(SQLDataTemplate.hasSystemData(systemId));
+	    return this.sqlConnection.createStatement().execute(SQLDataTemplate.hasSystemData(systemId));
 	} catch (SQLException e) {
 	    throw new RuntimeException(e);
 	}
     }
 
     public void removeGuildData(long guildId) {
-	if (isDisable) {
+	if (this.isDisable) {
 	    System.err.println("SQL system is currently disabled!");
 	    return;
 	}
-	checkConnection();
+	this.checkConnection();
 
 	try {
-	    sqlConnection.createStatement().execute(SQLDataTemplate.removeGuildData(guildId));
+	    this.sqlConnection.createStatement().execute(SQLDataTemplate.removeGuildData(guildId));
 	} catch (SQLException e) {
 	    throw new RuntimeException(e);
 	}
     }
 
     public void removeUserData(long userId) {
-	if (isDisable) {
+	if (this.isDisable) {
 	    System.err.println("SQL system is currently disabled!");
 	    return;
 	}
-	checkConnection();
+	this.checkConnection();
 
 	try {
-	    sqlConnection.createStatement().execute(SQLDataTemplate.removeUserData(userId));
+	    this.sqlConnection.createStatement().execute(SQLDataTemplate.removeUserData(userId));
 	} catch (SQLException e) {
 	    throw new RuntimeException(e);
 	}
     }
 
     public void removeOldSerializerData(String systemId) {
-	if (isDisable) {
+	if (this.isDisable) {
 	    System.err.println("SQL system is currently disabled!");
 	    return;
 	}
-	checkConnection();
+	this.checkConnection();
 
 	try {
-	    sqlConnection.createStatement().execute(SQLDataTemplate.removeOldSerializerData(systemId));
+	    this.sqlConnection.createStatement().execute(SQLDataTemplate.removeOldSerializerData(systemId));
 	} catch (SQLException e) {
 	    throw new RuntimeException(e);
 	}
     }
 
     public void removeSystemData(String systemId) {
-	if (isDisable) {
+	if (this.isDisable) {
 	    System.err.println("SQL system is currently disabled!");
 	    return;
 	}
-	checkConnection();
+	this.checkConnection();
 
 	try {
-	    sqlConnection.createStatement().execute(SQLDataTemplate.removeSystemData(systemId));
+	    this.sqlConnection.createStatement().execute(SQLDataTemplate.removeSystemData(systemId));
 	} catch (SQLException e) {
 	    throw new RuntimeException(e);
 	}
     }
 
     public void saveGuildData(long guildId, JSONObject datas) {
-	if (isDisable) {
+	if (this.isDisable) {
 	    System.err.println("SQL system is currently disabled!");
 	    return;
 	}
-	checkConnection();
+	this.checkConnection();
 
 	try {
-	    for (String line : SQLDataTemplate.insertGuildData(guildId, datas).split("\n")) {
-		sqlConnection.createStatement().execute(line);
-	    }
+	    for (String line : SQLDataTemplate.insertGuildData(guildId, datas).split("\n"))
+			this.sqlConnection.createStatement().execute(line);
 	} catch (SQLException e) {
 	    throw new RuntimeException(e);
 	}
     }
 
     public void saveUserData(long userId, JSONObject datas) {
-	if (isDisable) {
+	if (this.isDisable) {
 	    System.err.println("SQL system is currently disabled!");
 	    return;
 	}
-	checkConnection();
+	this.checkConnection();
 
 	try {
-	    sqlConnection.createStatement().execute(SQLDataTemplate.insertUserData(userId, datas));
+	    this.sqlConnection.createStatement().execute(SQLDataTemplate.insertUserData(userId, datas));
 	} catch (SQLException e) {
 	    throw new RuntimeException(e);
 	}
     }
 
     public void saveOldSerializerData(String systemId, JSONObject datas) {
-	if (isDisable) {
+	if (this.isDisable) {
 	    System.err.println("SQL system is currently disabled!");
 	    return;
 	}
-	checkConnection();
+	this.checkConnection();
 
 	try {
 	    // System.out.println(SQLDataTemplate.insertOldSerializerData(systemId,
 	    // datas));
-	    sqlConnection.createStatement().execute(SQLDataTemplate.insertOldSerializerData(systemId, datas));
+	    this.sqlConnection.createStatement().execute(SQLDataTemplate.insertOldSerializerData(systemId, datas));
 	} catch (SQLException e) {
 	    throw new RuntimeException(e);
 	}
     }
 
     public JsonObjectV2 loadGuildData(long guildId) {
-	if (isDisable) {
+	if (this.isDisable) {
 	    System.err.println("SQL system is currently disabled!");
 	    return new JsonObjectV2();
 	}
-	checkConnection();
+	this.checkConnection();
 
 	JsonObjectV2 json = new JsonObjectV2();
 	JsonObjectV2 jsonMembers = new JsonObjectV2();
@@ -301,14 +298,13 @@ public class SQLRestorerSystem extends AbstractRestorerSystem {
 	JsonObjectV2 jsonVoiceChannels = new JsonObjectV2();
 	JsonObjectV2 jsonCategories = new JsonObjectV2();
 	try {
-	    Statement guildStatement = sqlConnection.createStatement();
+	    Statement guildStatement = this.sqlConnection.createStatement();
 	    guildStatement.execute(SQLDataTemplate.getGuildData(guildId));
 	    ResultSet guildResult = guildStatement.getResultSet();
-	    if (guildResult.next()) {
-		json = new JsonObjectV2(guildResult.getString("json"));
-	    }
+	    if (guildResult.next())
+			json = new JsonObjectV2(guildResult.getString("json"));
 
-	    Statement membersStatement = sqlConnection.createStatement();
+	    Statement membersStatement = this.sqlConnection.createStatement();
 	    membersStatement.execute(SQLDataTemplate.getMembersDataForGuild(guildId));
 	    ResultSet memberResult = membersStatement.getResultSet();
 	    while (memberResult.next()) {
@@ -317,7 +313,7 @@ public class SQLRestorerSystem extends AbstractRestorerSystem {
 		jsonMembers.put(String.valueOf(memberId), jsonMember);
 	    }
 
-	    Statement textChannelsStatement = sqlConnection.createStatement();
+	    Statement textChannelsStatement = this.sqlConnection.createStatement();
 	    textChannelsStatement.execute(SQLDataTemplate.getTextChannelsDataForGuild(guildId));
 	    ResultSet textChannelsResult = textChannelsStatement.getResultSet();
 	    while (textChannelsResult.next()) {
@@ -326,7 +322,7 @@ public class SQLRestorerSystem extends AbstractRestorerSystem {
 		jsonTextChannels.put(String.valueOf(textChannelId), jsonTextChannel);
 	    }
 
-	    Statement rolesStatement = sqlConnection.createStatement();
+	    Statement rolesStatement = this.sqlConnection.createStatement();
 	    rolesStatement.execute(SQLDataTemplate.getRolesDataForGuild(guildId));
 	    ResultSet rolesResult = rolesStatement.getResultSet();
 	    while (rolesResult.next()) {
@@ -335,7 +331,7 @@ public class SQLRestorerSystem extends AbstractRestorerSystem {
 		jsonRoles.put(String.valueOf(roleId), jsonRole);
 	    }
 
-	    Statement voiceChannelsStatement = sqlConnection.createStatement();
+	    Statement voiceChannelsStatement = this.sqlConnection.createStatement();
 	    voiceChannelsStatement.execute(SQLDataTemplate.getVoiceChannelsDataForGuild(guildId));
 	    ResultSet voiceChannelsResult = voiceChannelsStatement.getResultSet();
 	    while (voiceChannelsResult.next()) {
@@ -344,7 +340,7 @@ public class SQLRestorerSystem extends AbstractRestorerSystem {
 		jsonVoiceChannels.put(String.valueOf(voiceChannelId), jsonVoiceChannel);
 	    }
 
-	    Statement categoriesStatement = sqlConnection.createStatement();
+	    Statement categoriesStatement = this.sqlConnection.createStatement();
 	    categoriesStatement.execute(SQLDataTemplate.getCategoriesDataForGuild(guildId));
 	    ResultSet categoriesResult = categoriesStatement.getResultSet();
 	    while (categoriesResult.next()) {
@@ -366,14 +362,14 @@ public class SQLRestorerSystem extends AbstractRestorerSystem {
     }
 
     public JsonObjectV2 loadUserData(long id) {
-	if (isDisable) {
+	if (this.isDisable) {
 	    System.err.println("SQL system is currently disabled!");
 	    return new JsonObjectV2();
 	}
-	checkConnection();
+	this.checkConnection();
 
 	try {
-	    Statement userStatement = sqlConnection.createStatement();
+	    Statement userStatement = this.sqlConnection.createStatement();
 	    userStatement.execute(SQLDataTemplate.getUserData(id));
 	    ResultSet userResult = userStatement.getResultSet();
 	    if (userResult.next())
@@ -386,14 +382,14 @@ public class SQLRestorerSystem extends AbstractRestorerSystem {
     }
 
     public JSONObject loadOldSerializerData(String id) {
-	if (isDisable) {
+	if (this.isDisable) {
 	    System.err.println("SQL system is currently disabled!");
 	    return new JsonObjectV2();
 	}
-	checkConnection();
+	this.checkConnection();
 
 	try {
-	    Statement systemStatement = sqlConnection.createStatement();
+	    Statement systemStatement = this.sqlConnection.createStatement();
 	    systemStatement.execute(SQLDataTemplate.getOldSerializerData(id));
 	    ResultSet systemResult = systemStatement.getResultSet();
 	    if (systemResult.next())
@@ -406,21 +402,21 @@ public class SQLRestorerSystem extends AbstractRestorerSystem {
     }
 
     public HashMap<Long, JSONObject> getAllDataGuilds() {
-	if (isDisable) {
+	if (this.isDisable) {
 	    System.err.println("SQL system is currently disabled!");
 	    return new HashMap<>();
 	}
-	checkConnection();
+	this.checkConnection();
 
 	try {
-	    Statement guildsStatement = sqlConnection.createStatement();
+	    Statement guildsStatement = this.sqlConnection.createStatement();
 	    guildsStatement.execute(SQLDataTemplate.getGuildsId());
 	    ResultSet guildsResult = guildsStatement.getResultSet();
 
 	    HashMap<Long, JSONObject> output = new HashMap<>(guildsResult.getFetchSize());
 	    while (guildsResult.next()) {
 		long guildId = guildsResult.getLong("id");
-		output.put(guildId, loadGuildData(guildId));
+		output.put(guildId, this.loadGuildData(guildId));
 	    }
 
 	    return output;
@@ -430,21 +426,21 @@ public class SQLRestorerSystem extends AbstractRestorerSystem {
     }
 
     public HashMap<Long, JSONObject> getAllDataUsers() {
-	if (isDisable) {
+	if (this.isDisable) {
 	    System.err.println("SQL system is currently disabled!");
 	    return new HashMap<>();
 	}
-	checkConnection();
+	this.checkConnection();
 
 	try {
-	    Statement usersStatement = sqlConnection.createStatement();
+	    Statement usersStatement = this.sqlConnection.createStatement();
 	    usersStatement.execute(SQLDataTemplate.getUsersId());
 	    ResultSet usersResult = usersStatement.getResultSet();
 
 	    HashMap<Long, JSONObject> output = new HashMap<>(usersResult.getFetchSize());
 	    while (usersResult.next()) {
 		long userId = usersResult.getLong("id");
-		output.put(userId, loadUserData(userId));
+		output.put(userId, this.loadUserData(userId));
 	    }
 
 	    return output;
@@ -454,21 +450,21 @@ public class SQLRestorerSystem extends AbstractRestorerSystem {
     }
 
     public HashMap<String, JSONObject> getAllOldDataSerializer() {
-	if (isDisable) {
+	if (this.isDisable) {
 	    System.err.println("SQL system is currently disabled!");
 	    return new HashMap<>();
 	}
-	checkConnection();
+	this.checkConnection();
 
 	try {
-	    Statement systemsStatement = sqlConnection.createStatement();
+	    Statement systemsStatement = this.sqlConnection.createStatement();
 	    systemsStatement.execute(SQLDataTemplate.getOldSerializerId());
 	    ResultSet systemsResult = systemsStatement.getResultSet();
 
 	    HashMap<String, JSONObject> output = new HashMap<>(systemsResult.getFetchSize());
 	    while (systemsResult.next()) {
 		String systemId = systemsResult.getString("id");
-		output.put(systemId, loadOldSerializerData(systemId));
+		output.put(systemId, this.loadOldSerializerData(systemId));
 	    }
 
 	    return output;
