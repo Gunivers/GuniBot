@@ -18,7 +18,7 @@ public class ConfigurationNode
 	protected boolean deleted = false;
 	protected boolean visible = true;
 
-	protected ConfigurationNode(ConfigurationNode parent, String name)
+	ConfigurationNode(ConfigurationNode parent, String name)
 	{
 		if (name.contains("."))
 			throw new RuntimeException(new InvalidNameException("A node name may not contain '.'"));
@@ -83,4 +83,6 @@ public class ConfigurationNode
 	public boolean isConfiguration() { return false; }
 	public boolean isDeleted() { return this.deleted; }
 	public boolean isVisible() { return this.visible && this.parent.isVisible(); }
+
+	public void setVisible(boolean visible) { this.visible = visible; }
 }

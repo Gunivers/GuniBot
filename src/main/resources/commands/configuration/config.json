@@ -47,6 +47,18 @@
 						"execute": "set"
 					}]
 				}]
+			},
+			{
+				"tag": "reset",
+				"type": "string",
+				"matches": "reset",
+				"arguments":
+				[{
+					"tag": "path",
+					"type": "string",
+					"keep_value": true,
+					"execute": "reset"
+				}]
 			}
 		]
 	}

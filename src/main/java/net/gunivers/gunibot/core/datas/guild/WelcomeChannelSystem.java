@@ -25,7 +25,7 @@ public class WelcomeChannelSystem
 	{
 		this.parent = parent;
 
-		this.enabled = new Configuration<>(parent, "message", new BooleanParser(), Configuration.BOOLEAN, true);
+		this.enabled = new Configuration<>(parent, "enabled", new BooleanParser(), Configuration.BOOLEAN, true);
 		this.channel = new Configuration<>(parent, "channel", new LongParser(), "Text Channel", null);
 		this.message = new Configuration<>(parent, "message", String::trim, Configuration.STRING, "Server: {server} ; User: {user} ; Mention: {user.mention}");
 	}
