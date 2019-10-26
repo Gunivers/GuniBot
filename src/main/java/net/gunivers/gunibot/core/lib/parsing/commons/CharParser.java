@@ -1,6 +1,9 @@
-package net.gunivers.gunibot.core.lib.parsing;
+package net.gunivers.gunibot.core.lib.parsing.commons;
 
 import java.util.List;
+
+import net.gunivers.gunibot.core.lib.parsing.Parser;
+import net.gunivers.gunibot.core.lib.parsing.ParsingException;
 
 public class CharParser implements Parser<Character>
 {

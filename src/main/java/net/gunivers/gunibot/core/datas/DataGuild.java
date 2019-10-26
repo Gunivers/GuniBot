@@ -11,7 +11,11 @@ import java.util.function.Function;
 import org.json.JSONObject;
 
 import net.gunivers.gunibot.core.datas.config.Configuration;
+import net.gunivers.gunibot.core.datas.config.ConfigurationHolder;
 import net.gunivers.gunibot.core.datas.config.ConfigurationTree;
+import net.gunivers.gunibot.core.datas.config.WrappedConfiguration;
+import net.gunivers.gunibot.core.datas.guild.WelcomeChannelSystem;
+import net.gunivers.gunibot.core.lib.parsing.commons.StringParser;
 import net.gunivers.gunibot.core.utils.BotUtils;
 
 import discord4j.core.object.entity.Category;
@@ -31,7 +35,7 @@ import reactor.core.publisher.Mono;
  * @author Syl2010
  *
  */
-public class DataGuild extends DataObject<Guild>
+public class DataGuild extends DataObject<Guild> implements ConfigurationHolder
 {
 	private ConcurrentHashMap<Snowflake, DataMember> dataMembers = new ConcurrentHashMap<>();
 	private ConcurrentHashMap<Snowflake, DataTextChannel> dataTextChannels = new ConcurrentHashMap<>();
@@ -42,10 +46,7 @@ public class DataGuild extends DataObject<Guild>
 	private HashMap<String, ConfigurationTree> configuration = new HashMap<>();
 
 	private Configuration<String> prefix;
-
-	private boolean welcomeEnabled = true;
-	private String welcomeMessage = "Server: {server} ; User: {user} ; Mention: {user.mention}";
-	private long welcomeChannel = -1L;
+	private WelcomeChannelSystem welcome;
 
 	private boolean ccEnabled = false;
 	private long ccActive = -1L;
@@ -59,19 +60,14 @@ public class DataGuild extends DataObject<Guild>
 	 *
 	 * @param guild le guild lié à cet objet.
 	 */
-	public DataGuild(Guild guild) {
-		super(guild);
-	}
+	public DataGuild(Guild guild) { super(guild); }
 
 	{
-		ConfigurationTree test = ConfigurationTree.getOrNew(this, "test");
-		test.createPath("0.0.0");
-		test.createPath("0.0.1");
-		test.createPath("0.1.0");
-		test.createPath("0.1.1");
+		ConfigurationTree global = ConfigurationTree.getOrNew(this, "global");
+		this.welcome = new WelcomeChannelSystem(global.createPath("welcome"));
 
-		ConfigurationTree commands = ConfigurationTree.getOrNew(this, "commands");
-		this.prefix = new Configuration<>(commands.getRoot(), "prefix", String::trim, Configuration.TYPE_STRING, "/");
+		ConfigurationTree cmd = ConfigurationTree.getOrNew(this, "cmd");
+		this.prefix = new Configuration<>(cmd.getRoot(), "prefix", new StringParser("[^ ]+"), Configuration.STRING, "/");
 	}
 
 	/**
@@ -86,16 +82,15 @@ public class DataGuild extends DataObject<Guild>
 	 * @param entity		  l'entité lié au DataObject à récupéré
 	 * @return le DataObject récupéré à partir de l'entité
 	 */
-	private static <D extends DataObject<E>, E extends Entity> D createDataObject(Map<Snowflake, D> dataMap,
-		Function<E, D> dataConstructor, E entity) {
-	D dataObject = dataMap.get(entity.getId());
-	if (dataObject != null)
-		return dataObject;
-	else {
-		dataObject = dataConstructor.apply(entity);
-		dataMap.put(entity.getId(), dataObject);
-		return dataObject;
-	}
+	private static <D extends DataObject<E>, E extends Entity> D createDataObject(Map<Snowflake, D> dataMap, Function<E, D> dataConstructor, E entity) {
+		D dataObject = dataMap.get(entity.getId());
+		if (dataObject != null)
+			return dataObject;
+		else {
+			dataObject = dataConstructor.apply(entity);
+			dataMap.put(entity.getId(), dataObject);
+			return dataObject;
+		}
 	}
 
 	/**
@@ -105,7 +100,7 @@ public class DataGuild extends DataObject<Guild>
 	 * @return l'objet de donnée du membre.
 	 */
 	public DataMember getDataMember(Member member) {
-	return DataGuild.createDataObject(this.dataMembers, DataMember::new, member);
+		return DataGuild.createDataObject(this.dataMembers, DataMember::new, member);
 	}
 
 	/**
@@ -116,7 +111,7 @@ public class DataGuild extends DataObject<Guild>
 	 * @return l'objet de donnée du channel textuel.
 	 */
 	public DataTextChannel getDataTextChannel(TextChannel textChannel) {
-	return DataGuild.createDataObject(this.dataTextChannels, DataTextChannel::new, textChannel);
+		return DataGuild.createDataObject(this.dataTextChannels, DataTextChannel::new, textChannel);
 	}
 
 	/**
@@ -126,7 +121,7 @@ public class DataGuild extends DataObject<Guild>
 	 * @return l'objet de donnée du role.
 	 */
 	public DataRole getDataRole(Role role) {
-	return DataGuild.createDataObject(this.dataRoles, DataRole::new, role);
+		return DataGuild.createDataObject(this.dataRoles, DataRole::new, role);
 	}
 
 	/**
@@ -137,7 +132,7 @@ public class DataGuild extends DataObject<Guild>
 	 * @return l'objet de donnée du channel vocal.
 	 */
 	public DataVoiceChannel getDataVoiceChannel(VoiceChannel voiceChannel) {
-	return DataGuild.createDataObject(this.dataVoiceChannels, DataVoiceChannel::new, voiceChannel);
+		return DataGuild.createDataObject(this.dataVoiceChannels, DataVoiceChannel::new, voiceChannel);
 	}
 
 	/**
@@ -148,7 +143,7 @@ public class DataGuild extends DataObject<Guild>
 	 * @return l'objet de donnée de la catégorie.
 	 */
 	public DataCategory getDataCategory(Category category) {
-	return DataGuild.createDataObject(this.dataCategories, DataCategory::new, category);
+		return DataGuild.createDataObject(this.dataCategories, DataCategory::new, category);
 	}
 
 	// //En réflexion
@@ -203,32 +198,28 @@ public class DataGuild extends DataObject<Guild>
 	 * sauvegarde des données des objets discord contenue dans cet objet.
 	 */
 	@Override
-	public JSONObject save() {
-	JSONObject json = super.save();
+	public JSONObject save()
+	{
+		JSONObject json = super.save();
 
-	json.putOpt("members", DataGuild.extractJsonDatas(this.dataMembers));
-	json.putOpt("text_channels", DataGuild.extractJsonDatas(this.dataTextChannels));
-	json.putOpt("roles", DataGuild.extractJsonDatas(this.dataRoles));
-	json.putOpt("voice_channels", DataGuild.extractJsonDatas(this.dataVoiceChannels));
-	json.putOpt("categories", DataGuild.extractJsonDatas(this.dataCategories));
+		json.putOpt("members", DataGuild.extractJsonDatas(this.dataMembers));
+		json.putOpt("text_channels", DataGuild.extractJsonDatas(this.dataTextChannels));
+		json.putOpt("roles", DataGuild.extractJsonDatas(this.dataRoles));
+		json.putOpt("voice_channels", DataGuild.extractJsonDatas(this.dataVoiceChannels));
+		json.putOpt("categories", DataGuild.extractJsonDatas(this.dataCategories));
 
-	json.putOpt("prefix", this.prefix);
+		json.putOpt("prefix", this.prefix);
+		json.putOpt("welcome", this.welcome.save());
 
-	JSONObject welcome = new JSONObject();
-	welcome.putOpt("enabled", this.welcomeEnabled);
-	welcome.putOpt("message", this.welcomeMessage);
-	welcome.putOpt("channel", this.welcomeChannel);
-	json.put("welcome", welcome);
+		JSONObject cc = new JSONObject();
+		cc.putOpt("enabled", this.ccEnabled);
+		cc.putOpt("active", this.ccActive);
+		cc.putOpt("archive", this.ccArchive);
+		json.put("cchannel", cc);
 
-	JSONObject cc = new JSONObject();
-	cc.putOpt("enabled", this.ccEnabled);
-	cc.putOpt("active", this.ccActive);
-	cc.putOpt("archive", this.ccArchive);
-	json.put("cchannel", cc);
+		json.putOpt("backups", this.backups);
 
-	json.putOpt("backups", this.backups);
-
-	return json;
+		return json;
 	}
 
 	/**
@@ -243,32 +234,32 @@ public class DataGuild extends DataObject<Guild>
 	 * @param json			les données à utiliser pour hydratés les DataObject
 	 * @param type			le type/classe de l'entité
 	 */
-	private <D extends DataObject<E>, E extends Entity> void hydratateDataObject(Map<Snowflake, D> dataMap,
-		Function<E, D> dataConstructor, Function<Snowflake, Mono<? super E>> entityMono, JSONObject json,
-		Class<E> type) {
-	if (json != null)
-		for (String strId : json.keySet()) {
-		Snowflake id = Snowflake.of(strId);
-		Optional<E> opt = BotUtils.returnOptional(entityMono.apply(id).ofType(type));
+	private <D extends DataObject<E>, E extends Entity> void hydratateDataObject(Map<Snowflake, D> dataMap, Function<E, D> dataConstructor, Function<Snowflake, Mono<? super E>> entityMono, JSONObject json, Class<E> type)
+	{
+		if (json != null)
+			for (String strId : json.keySet())
+			{
+				Snowflake id = Snowflake.of(strId);
+				Optional<E> opt = BotUtils.returnOptional(entityMono.apply(id).ofType(type));
 
-		if (opt.isPresent()) {
-			if (dataMap.containsKey(id))
-				dataMap.get(id).load(json.getJSONObject(strId));
-			else {
-			D dataMember = dataConstructor.apply(opt.get());
-			dataMember.load(json.getJSONObject(strId));
-			dataMap.put(id, dataMember);
+				if (opt.isPresent())
+				{
+					if (dataMap.containsKey(id))
+						dataMap.get(id).load(json.getJSONObject(strId));
+					else
+					{
+						D dataMember = dataConstructor.apply(opt.get());
+						dataMember.load(json.getJSONObject(strId));
+						dataMap.put(id, dataMember);
+					}
+				} else
+					System.err.println(String.format(
+							"No reachable entity '%s' with id '%s' in the guild '%s' (%s)! Skipping loading of this entity!",
+							type.getSimpleName(), id.asString(), this.getEntity().getName(), this.getEntity().getId().asString()));
 			}
-		} else
-			System.err.println(String.format(
-				"No entity '%s' with id '%s' in the guild '%s' (%s) is not reachable! Skipping loading of this entity!",
-				type.getSimpleName(), id.asString(), this.getEntity().getName(),
-				this.getEntity().getId().asString()));
-		}
-	else
-		System.out.println(
-			String.format("No entity '%s' datas in the guild '%s' (%s)! Skipping loading of their entities!",
-				type.getSimpleName(), this.getEntity().getName(), this.getEntity().getId().asString()));
+		else
+			System.out.println(String.format("No entity '%s' datas in the guild '%s' (%s)! Skipping loading of their entities!",
+					type.getSimpleName(), this.getEntity().getName(), this.getEntity().getId().asString()));
 	}
 
 	/**
@@ -278,58 +269,44 @@ public class DataGuild extends DataObject<Guild>
 	 */
 	@Override
 	public void load(JSONObject json) {
-	super.load(json);
+		super.load(json);
 
 	// debug
 	// System.out.println(json.toString());
 
-	this.hydratateDataObject(this.dataMembers, DataMember::new, this.getEntity()::getMemberById, json.optJSONObject("members"),
-		Member.class);
-	this.hydratateDataObject(this.dataTextChannels, DataTextChannel::new, this.getEntity()::getChannelById,
-		json.optJSONObject("text_channels"), TextChannel.class);
-	this.hydratateDataObject(this.dataRoles, DataRole::new, this.getEntity()::getRoleById, json.optJSONObject("roles"),
-		Role.class);
-	this.hydratateDataObject(this.dataVoiceChannels, DataVoiceChannel::new, this.getEntity()::getChannelById,
-		json.optJSONObject("voice_channels"), VoiceChannel.class);
-	this.hydratateDataObject(this.dataCategories, DataCategory::new, this.getEntity()::getChannelById,
-		json.optJSONObject("categories"), Category.class);
+		this.hydratateDataObject(this.dataMembers, DataMember::new, this.getEntity()::getMemberById, json.optJSONObject("members"), Member.class);
+		this.hydratateDataObject(this.dataTextChannels, DataTextChannel::new, this.getEntity()::getChannelById, json.optJSONObject("text_channels"), TextChannel.class);
+		this.hydratateDataObject(this.dataRoles, DataRole::new, this.getEntity()::getRoleById, json.optJSONObject("roles"), Role.class);
+		this.hydratateDataObject(this.dataVoiceChannels, DataVoiceChannel::new, this.getEntity()::getChannelById, json.optJSONObject("voice_channels"), VoiceChannel.class);
+		this.hydratateDataObject(this.dataCategories, DataCategory::new, this.getEntity()::getChannelById, json.optJSONObject("categories"), Category.class);
 
-	this.prefix.setValue(json.optString("prefix", this.prefix.getValue()));
+		this.prefix.setValue(json.optString("prefix", this.prefix.getValue()));
+		this.welcome.load(json.optJSONObject("welcome"));
 
-	JSONObject welcome = json.optJSONObject("welcome");
-	if (welcome == null)
-		welcome = new JSONObject();
-	this.welcomeEnabled = welcome.optBoolean("enabled", this.welcomeEnabled);
-	this.welcomeMessage = welcome.optString("message", this.welcomeMessage);
-	this.welcomeChannel = welcome.optLong("channel", this.welcomeChannel);
+		JSONObject customChannel = json.optJSONObject("cchannel");
+		if (customChannel == null)
+			customChannel = new JSONObject();
 
-	JSONObject customChannel = json.optJSONObject("cchannel");
-	if (customChannel == null)
-		customChannel = new JSONObject();
-	this.ccEnabled = customChannel.optBoolean("enabled", false);
-	this.ccActive = customChannel.optLong("active", -1L);
-	this.ccArchive = customChannel.optLong("archive", -1L);
+		this.ccEnabled = customChannel.optBoolean("enabled", false);
+		this.ccActive = customChannel.optLong("active", -1L);
+		this.ccArchive = customChannel.optLong("archive", -1L);
 
-	JSONObject jsonBackups = json.optJSONObject("backups");
-	if (jsonBackups != null)
-		for (String backupName : jsonBackups.keySet())
-			this.backups.put(backupName, jsonBackups.getJSONObject(backupName));
+		JSONObject jsonBackups = json.optJSONObject("backups");
+
+		if (jsonBackups != null)
+			for (String backupName : jsonBackups.keySet())
+				this.backups.put(backupName, jsonBackups.getJSONObject(backupName));
 	}
 
 	public Configuration<String> prefix() { return this.prefix; }
-	public String getPrefix() { return this.prefix.getValue(); }
+	public WelcomeChannelSystem welcomeSystem() { return this.welcome; }
 
-	public boolean isWelcomeEnabled() { return this.welcomeEnabled; }
-	public String getWelcomeMessage() { return this.welcomeMessage; }
-	public long getWelcomeChannel() { return this.welcomeChannel; }
+	public String getPrefix() { return this.prefix.getValue(); }
 	public boolean isCCEnabled() { return this.ccEnabled; }
 	public long getCCActive() { return this.ccActive; }
 	public long getCCArchive() { return this.ccArchive; }
 
 	public void setPrefix(String prefix) { this.prefix.setValue(prefix); }
-	public void setWelcomeEnable(boolean enable) { this.welcomeEnabled = enable; }
-	public void setWelcomeMessage(String msg) { this.welcomeMessage = msg; }
-	public void setWelcomeChannel(long channel) { this.welcomeChannel = channel; }
 	public void setCCEnable(boolean enable) { this.ccEnabled = enable; }
 	public void setCCActive(long c) { this.ccActive = c; }
 	public void setCCArchive(long c) { this.ccArchive = c; }
@@ -340,5 +317,6 @@ public class DataGuild extends DataObject<Guild>
 	public Set<String> listBackup() { return new HashSet<>(this.backups.keySet()); }
 	public void removeBackup(String backupName) { this.backups.remove(backupName); }
 
-	public Map<String, ConfigurationTree> getConfiguration() { return this.configuration; }
+	@Override
+	public WrappedConfiguration getConfiguration() { return new WrappedConfiguration(this.configuration); }
 }

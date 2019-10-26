@@ -20,17 +20,19 @@ import net.gunivers.gunibot.core.utils.TriConsumer;
  */
 public class Configuration<T> extends ConfigurationNode
 {
-	public static final String TYPE_BYTE = "Byte";
-	public static final String TYPE_SHORT = "Short Integer";
-	public static final String TYPE_INT = "Integer";
-	public static final String TYPE_LONG = "Long Integer";
-	public static final String TYPE_FLOAT = "Decimal";
-	public static final String TYPE_DOUBLE = "Long Decimal";
-	public static final String TYPE_NUMBER = "Number";
-	public static final String TYPE_CHAR = "Character";
-	public static final String TYPE_STRING = "Characters Chain";
-	public static final String TYPE_LIST = "List";
-	public static final String TYPE_MAP = "Map";
+	public static final String BOOLEAN = "Boolean";
+	public static final String BYTE = "Byte";
+	public static final String SHORT = "Short Integer";
+	public static final String INT = "Integer";
+	public static final String LONG = "Long Integer";
+	public static final String FLOAT = "Decimal";
+	public static final String DOUBLE = "Long Decimal";
+	public static final String NUMBER = "Number";
+	public static final String CHAR = "Character";
+	public static final String STRING = "Characters Chain";
+	public static final String LIST = "List";
+	public static final String MAP = "Map";
+	public static final String SNOWFLAKE = "ID";
 
 	private final Set<TriConsumer<Configuration<T>, T, T>> valueChangedListeners = new HashSet<>();
 	private final Parser<T> parser;
@@ -65,4 +67,5 @@ public class Configuration<T> extends ConfigurationNode
 	public T getValue() { return this.value; }
 
 	@Override public boolean isConfiguration() { return true; }
+	@Override public Configuration<T> asConfiguration() { return this; }
 }

@@ -1,4 +1,7 @@
-package net.gunivers.gunibot.core.lib.parsing;
+package net.gunivers.gunibot.core.lib.parsing.commons;
+
+import net.gunivers.gunibot.core.lib.parsing.Parser;
+import net.gunivers.gunibot.core.lib.parsing.ParsingException;
 
 public abstract class NumberParser<N extends Number> implements Parser<N>
 {

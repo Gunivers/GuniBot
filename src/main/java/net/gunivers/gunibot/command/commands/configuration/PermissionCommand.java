@@ -14,8 +14,8 @@ import net.gunivers.gunibot.core.datas.DataMember;
 import net.gunivers.gunibot.core.datas.DataRole;
 import net.gunivers.gunibot.core.lib.EmbedBuilder;
 import net.gunivers.gunibot.core.lib.EmbedBuilder.Field;
-import net.gunivers.gunibot.core.lib.parsing.ListParser;
 import net.gunivers.gunibot.core.lib.parsing.ParsingException;
+import net.gunivers.gunibot.core.lib.parsing.commons.ListParser;
 
 import discord4j.core.event.domain.message.MessageCreateEvent;
 import reactor.core.publisher.Flux;

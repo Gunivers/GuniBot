@@ -1,72 +1,52 @@
 package net.gunivers.gunibot.core.datas.config;
 
-import java.util.NoSuchElementException;
-
-import net.gunivers.gunibot.core.datas.DataGuild;
-
 public class ConfigurationTree
 {
-	public static ConfigurationTree opt(DataGuild guild, String name, ConfigurationTree byDefault)
+	public static ConfigurationTree get(ConfigurationHolder guild, String name)
 	{
-		ConfigurationTree tree = guild.getConfiguration().get(name);
-		if (tree == null) return byDefault;
-		return tree;
+		return guild.getConfiguration().get().get(name);
 	}
 
-	public static ConfigurationTree get(DataGuild guild, String name)
+	public static ConfigurationTree getOrNew(ConfigurationHolder guild, String name)
 	{
-		ConfigurationTree tree = guild.getConfiguration().get(name);
-		if (tree == null) throw new NoSuchElementException("The guild "+ guild.getEntity().getName() +" have no '"+ name +"' ConfigurationTree");
-		return tree;
-	}
-
-	public static ConfigurationTree getOrNew(DataGuild guild, String name)
-	{
-		ConfigurationTree tree = guild.getConfiguration().get(name);
+		ConfigurationTree tree = guild.getConfiguration().get().get(name);
 		if (tree == null) tree = new ConfigurationTree(guild, name);
 		return tree;
 	}
 
-	public static ConfigurationNode optAbsoluteNode(DataGuild guild, String path, ConfigurationNode byDefault)
+	public static ConfigurationNode getAbsoluteNode(ConfigurationHolder guild, String path)
 	{
 		if (path.isEmpty())
-			return byDefault;
+			return null;
 
 		String[] names = path.split("\\.");
-		ConfigurationTree tree = guild.getConfiguration().get(names[0]);
+		ConfigurationTree tree = guild.getConfiguration().get().get(names[0]);
 
 		if (tree == null)
-			return byDefault;
+			return null;
 
 		if (names.length == 1)
 			return tree.getRoot();
 
-		return tree.optNode(path.substring(tree.getName().length() +1), byDefault);
+		return tree.getNode(path.substring(tree.getName().length() +1));
 	}
 
-	public static ConfigurationNode getAbsoluteNode(DataGuild guild, String path)
-	{
-		ConfigurationNode node = ConfigurationTree.optAbsoluteNode(guild, path, null);
-		if (node == null) throw new NoSuchElementException("There is no node at path '"+ path +"'");
-		return node;
-	}
-
-	public static ConfigurationNode createAbsolutePath(DataGuild guild, String path)
+	public static ConfigurationNode createAbsolutePath(ConfigurationHolder guild, String path)
 	{
 		if (path.isEmpty()) return null;
 		ConfigurationTree tree = ConfigurationTree.getOrNew(guild, path.split("\\.")[0]);
 		return tree.createPath(path.substring(tree.getName().length()) +1);
 	}
 
-	private final DataGuild guild;
+	private final ConfigurationHolder guild;
 	private final ConfigurationRoot root;
 
-	private ConfigurationTree(DataGuild guild, String name)
+	private ConfigurationTree(ConfigurationHolder guild, String name)
 	{
 		this.guild = guild;
 		this.root = new ConfigurationRoot(name, this);
 
-		guild.getConfiguration().put(name, this);
+		guild.getConfiguration().get().put(name, this);
 	}
 
 	public ConfigurationNode createPath(String path)
@@ -77,7 +57,11 @@ public class ConfigurationTree
 		return node;
 	}
 
-	public ConfigurationNode optNode(String path, ConfigurationNode byDefault)
+	/**
+	 * @param path
+	 * @return null if there is no node at specified path, the node otherwise.
+	 */
+	public ConfigurationNode getNode(String path)
 	{
 		if (path.isEmpty())
 			return this.root;
@@ -87,31 +71,20 @@ public class ConfigurationTree
 		{
 			node = node.getChild(name);
 			if (node == null)
-				return byDefault;
+				return null;
 		}
 		return node;
 	}
 
-	public ConfigurationNode getNode(String path)
+	/**
+	 * @param path
+	 * @return null if there is no node at specified path or it isn't a configuration, the node as a configuration otherwise.
+	 */
+	public Configuration<?> getConfiguration(String path)
 	{
-		ConfigurationNode node = this.optNode(path, null);
-		if (node == null) throw new NoSuchElementException("There is no node at path '"+ path +'\'');
-		return node;
-	}
-
-	@SuppressWarnings("unchecked")
-	public <T> Configuration<T> optConfiguration(String path, Configuration<T> byDefault)
-	{
-		ConfigurationNode node = this.optNode(path, byDefault);
-		if (node instanceof Configuration) return (Configuration<T>) node;
-		return byDefault;
-	}
-
-	public <T> Configuration<T> getConfiguration(String path)
-	{
-		Configuration<T> node = this.optConfiguration(path, null);
-		if (node == null) throw new NoSuchElementException("There is no node at path '"+ path +"' or it isn't a Configuration");
-		return node;
+		ConfigurationNode node = this.getNode(path);
+		if (node == null) return null;
+		return node.asConfiguration();
 	}
 
 	public void delete() { this.root.delete(); }
@@ -136,7 +109,7 @@ public class ConfigurationTree
 		public void delete()
 		{
 			super.delete();
-			this.tree.guild.getConfiguration().remove(this.name);
+			this.tree.guild.getConfiguration().get().remove(this.name);
 		}
 
 		@Override public String getPath() { return this.name; }

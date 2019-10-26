@@ -1,9 +1,12 @@
-package net.gunivers.gunibot.core.lib.parsing;
+package net.gunivers.gunibot.core.lib.parsing.commons;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import net.gunivers.gunibot.core.lib.parsing.Parser;
+import net.gunivers.gunibot.core.lib.parsing.ParsingException;
 
 public class ListParser<T> implements Parser<List<T>>
 {

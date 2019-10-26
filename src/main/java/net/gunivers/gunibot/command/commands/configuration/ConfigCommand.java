@@ -28,7 +28,7 @@ public class ConfigCommand extends Command
 		Field names = new Field("Configuration Trees");
 		builder.addField(names);
 
-		for (String name : g.getConfiguration().keySet())
+		for (String name : g.getConfiguration().asMap().keySet())
 			names.getValue().append(name + '\n');
 
 		builder.buildAndSend();
@@ -40,7 +40,7 @@ public class ConfigCommand extends Command
 		EmbedBuilder builder = new EmbedBuilder(event.getMessage().getChannel().block(), "Configuration for "+ g.getEntity().getName(), null);
 		builder.setRequestedBy(event.getMember().get());
 
-		ConfigurationNode node = ConfigurationTree.optAbsoluteNode(g, args.get(0), null);
+		ConfigurationNode node = ConfigurationTree.getAbsoluteNode(g, args.get(0));
 
 		if (node == null)
 		{
@@ -80,7 +80,7 @@ public class ConfigCommand extends Command
 		EmbedBuilder builder = new EmbedBuilder(event.getMessage().getChannel().block(), "Configuration for "+ g.getEntity().getName(), null);
 		builder.setRequestedBy(event.getMember().get());
 
-		ConfigurationNode node = ConfigurationTree.optAbsoluteNode(g, args.get(0), null);
+		ConfigurationNode node = ConfigurationTree.getAbsoluteNode(g, args.get(0));
 
 		if (node == null)
 		{
@@ -113,7 +113,7 @@ public class ConfigCommand extends Command
 		Field output = new Field("Output", false);
 		builder.addField(output);
 
-		ConfigurationNode node = ConfigurationTree.optAbsoluteNode(g, args.get(0), null);
+		ConfigurationNode node = ConfigurationTree.getAbsoluteNode(g, args.get(0));
 
 		if (node == null)
 		{

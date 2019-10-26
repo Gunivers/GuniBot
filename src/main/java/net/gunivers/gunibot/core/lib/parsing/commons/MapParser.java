@@ -1,4 +1,4 @@
-package net.gunivers.gunibot.core.lib.parsing;
+package net.gunivers.gunibot.core.lib.parsing.commons;
 
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -7,6 +7,8 @@ import java.util.Map.Entry;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import net.gunivers.gunibot.core.lib.parsing.Parser;
+import net.gunivers.gunibot.core.lib.parsing.ParsingException;
 import net.gunivers.gunibot.core.utils.tuple.Tuple;
 import net.gunivers.gunibot.core.utils.tuple.Tuple2;
 

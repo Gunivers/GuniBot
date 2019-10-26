@@ -67,6 +67,8 @@ public class ConfigurationNode
 		return this.children.putIfAbsent(child.getName(), child) == null;
 	}
 
+	public Configuration<?> asConfiguration() { return null; }
+
 	public ConfigurationNode getChild(String name) { return this.children.get(name); }
 	public Map<String, ConfigurationNode> getChildren() { return Collections.unmodifiableMap(this.children); }
 	public <T> Configuration<T> getConfiguration(String name) { return (Configuration<T>) this.children.get(name); }

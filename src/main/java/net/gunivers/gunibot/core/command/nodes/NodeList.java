@@ -1,8 +1,8 @@
 package net.gunivers.gunibot.core.command.nodes;
 
 import net.gunivers.gunibot.core.command.JsonCommandFormatException;
-import net.gunivers.gunibot.core.lib.parsing.ListParser;
 import net.gunivers.gunibot.core.lib.parsing.ParsingException;
+import net.gunivers.gunibot.core.lib.parsing.commons.ListParser;
 import net.gunivers.gunibot.core.utils.tuple.Tuple;
 import net.gunivers.gunibot.core.utils.tuple.Tuple2;
 
