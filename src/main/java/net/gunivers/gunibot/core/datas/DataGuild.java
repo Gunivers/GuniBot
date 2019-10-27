@@ -14,7 +14,8 @@ import net.gunivers.gunibot.core.datas.config.Configuration;
 import net.gunivers.gunibot.core.datas.config.ConfigurationHolder;
 import net.gunivers.gunibot.core.datas.config.ConfigurationTree;
 import net.gunivers.gunibot.core.datas.config.WrappedConfiguration;
-import net.gunivers.gunibot.core.datas.guild.WelcomeChannelSystem;
+import net.gunivers.gunibot.core.datas.guild.CustomChannelSystem;
+import net.gunivers.gunibot.core.datas.guild.WelcomeSystem;
 import net.gunivers.gunibot.core.lib.parsing.commons.StringParser;
 import net.gunivers.gunibot.core.utils.BotUtils;
 
@@ -46,11 +47,8 @@ public class DataGuild extends DataObject<Guild> implements ConfigurationHolder
 	private HashMap<String, ConfigurationTree> configuration = new HashMap<>();
 
 	private Configuration<String> prefix;
-	private WelcomeChannelSystem welcome;
-
-	private boolean ccEnabled = false;
-	private long ccActive = -1L;
-	private long ccArchive = -1L;
+	private WelcomeSystem welcome;
+	private CustomChannelSystem customChannel;
 
 	public boolean inBigTask = false;
 	private HashMap<String, JSONObject> backups = new HashMap<>();
@@ -64,7 +62,8 @@ public class DataGuild extends DataObject<Guild> implements ConfigurationHolder
 
 	{
 		ConfigurationTree global = ConfigurationTree.getOrNew(this, "global");
-		this.welcome = new WelcomeChannelSystem(global.createPath("welcome"));
+		this.welcome = new WelcomeSystem(global.createPath("welcome"));
+		this.customChannel = new CustomChannelSystem(global.createPath("cchannel"));
 
 		ConfigurationTree cmd = ConfigurationTree.getOrNew(this, "cmd");
 		this.prefix = new Configuration<>(cmd.getRoot(), "prefix", new StringParser("[^ ]+"), Configuration.STRING, "/");
@@ -210,12 +209,7 @@ public class DataGuild extends DataObject<Guild> implements ConfigurationHolder
 
 		json.putOpt("prefix", this.prefix);
 		json.putOpt("welcome", this.welcome.save());
-
-		JSONObject cc = new JSONObject();
-		cc.putOpt("enabled", this.ccEnabled);
-		cc.putOpt("active", this.ccActive);
-		cc.putOpt("archive", this.ccArchive);
-		json.put("cchannel", cc);
+		json.putOpt("custom_channel", this.customChannel.save());
 
 		json.putOpt("backups", this.backups);
 
@@ -282,14 +276,7 @@ public class DataGuild extends DataObject<Guild> implements ConfigurationHolder
 
 		this.prefix.setValue(json.optString("prefix", this.prefix.getValue()));
 		this.welcome.load(json.optJSONObject("welcome"));
-
-		JSONObject customChannel = json.optJSONObject("cchannel");
-		if (customChannel == null)
-			customChannel = new JSONObject();
-
-		this.ccEnabled = customChannel.optBoolean("enabled", false);
-		this.ccActive = customChannel.optLong("active", -1L);
-		this.ccArchive = customChannel.optLong("archive", -1L);
+		this.customChannel.load(json.optJSONObject("custom_channel"));
 
 		JSONObject jsonBackups = json.optJSONObject("backups");
 
@@ -299,17 +286,11 @@ public class DataGuild extends DataObject<Guild> implements ConfigurationHolder
 	}
 
 	public Configuration<String> prefix() { return this.prefix; }
-	public WelcomeChannelSystem welcomeSystem() { return this.welcome; }
+	public WelcomeSystem getWelcomeSystem() { return this.welcome; }
+	public CustomChannelSystem getCustomChannelSystem() { return this.customChannel; }
 
 	public String getPrefix() { return this.prefix.getValue(); }
-	public boolean isCCEnabled() { return this.ccEnabled; }
-	public long getCCActive() { return this.ccActive; }
-	public long getCCArchive() { return this.ccArchive; }
-
 	public void setPrefix(String prefix) { this.prefix.setValue(prefix); }
-	public void setCCEnable(boolean enable) { this.ccEnabled = enable; }
-	public void setCCActive(long c) { this.ccActive = c; }
-	public void setCCArchive(long c) { this.ccArchive = c; }
 
 	public void addBackup(String backupName, JSONObject jsonDatas) { this.backups.put(backupName, jsonDatas); }
 	public boolean hasBackup(String backupName) { return this.backups.containsKey(backupName); }

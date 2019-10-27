@@ -19,7 +19,7 @@ public class FirstConnectionListener extends Events<MemberJoinEvent>
 
 	@Override
 	protected void apply(MemberJoinEvent event) {
-		Main.getBotInstance().getDataCenter().getDataGuild(event.getGuild().block()).welcomeSystem().welcome(event.getMember()); }
+		Main.getBotInstance().getDataCenter().getDataGuild(event.getGuild().block()).getWelcomeSystem().welcome(event.getMember()); }
 
 	public List<Member> getHistory() { return Collections.unmodifiableList(this.history); }
 	public void clearHistory() { this.history.clear(); }

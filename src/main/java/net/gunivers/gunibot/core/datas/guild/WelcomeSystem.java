@@ -7,26 +7,21 @@ import net.gunivers.gunibot.core.datas.DataGuild;
 import net.gunivers.gunibot.core.datas.config.Configuration;
 import net.gunivers.gunibot.core.datas.config.ConfigurationNode;
 import net.gunivers.gunibot.core.lib.EmbedBuilder;
-import net.gunivers.gunibot.core.lib.parsing.commons.BooleanParser;
 import net.gunivers.gunibot.core.lib.parsing.commons.NumberParser.LongParser;
 
 import discord4j.core.object.entity.Member;
 import discord4j.core.object.entity.TextChannel;
 import discord4j.core.object.util.Snowflake;
 
-public class WelcomeChannelSystem
+public class WelcomeSystem extends System
 {
-	private ConfigurationNode parent;
-	private Configuration<Boolean> enabled;
 	private Configuration<String> message;
 	private Configuration<Long> channel;
 
-	public WelcomeChannelSystem(ConfigurationNode parent)
+	public WelcomeSystem(ConfigurationNode parent)
 	{
-		this.parent = parent;
-
-		this.enabled = new Configuration<>(parent, "enabled", new BooleanParser(), Configuration.BOOLEAN, true);
-		this.channel = new Configuration<>(parent, "channel", new LongParser(), "Text Channel", null);
+		super(parent);
+		this.channel = new Configuration<>(parent, "channel", new LongParser(0), "Text Channel ID", null);
 		this.message = new Configuration<>(parent, "message", String::trim, Configuration.STRING, "Server: {server} ; User: {user} ; Mention: {user.mention}");
 	}
 
@@ -34,43 +29,39 @@ public class WelcomeChannelSystem
 	{
 		DataGuild guild = Main.getBotInstance().getDataCenter().getDataGuild(member.getGuild().block());
 
-		if (this.enabled.getValue() && this.channel.getValue() != null && this.channel.getValue() >= 0)
+		if (this.isEnabled() && this.channel.getValue() != null)
 		{
 			TextChannel tc = guild.getEntity().getChannelById(Snowflake.of(this.channel.getValue())).ofType(TextChannel.class).block();
-
 			EmbedBuilder builder = new EmbedBuilder(tc, "Welcome to "+ guild.getEntity().getName() +'!', null);
+
 			builder.setColor(member.getClient().getSelf().block().asMember(member.getGuildId()).block().getColor().block());
 			builder.setDescription(this.message.getDefaultValue().replace("{server}", guild.getEntity().getName()).replace("{user}", member.getDisplayName()).replace("{user.mention}", member.getMention()));
 			builder.buildAndSend();
 		}
 	}
 
+	@Override
 	public void load(JSONObject source)
 	{
 		if (source == null) source = new JSONObject();
-		this.enabled.setValue(source.optBoolean("enabled", this.enabled.getDefaultValue()));
+		super.load(source);
+
 		this.message.setValue(source.optString("message", this.message.getDefaultValue()));
 		this.channel.setValue(source.optLong("channel", this.channel.getDefaultValue()));
 	}
 
+	@Override
 	public JSONObject save()
 	{
-		JSONObject welcome = new JSONObject();
-		welcome.putOpt("enabled", this.enabled.getValue());
-		welcome.putOpt("message", this.message.getValue());
-		welcome.putOpt("channel", this.channel.getValue());
-		return welcome;
+		JSONObject obj = super.save();
+		obj.putOpt("message", this.message.getValue());
+		obj.putOpt("channel", this.channel.getValue());
+		return obj;
 	}
 
-	public ConfigurationNode getParent() { return this.parent; }
-
-	public boolean isEnabled() { return this.enabled.getValue(); }
 	public String getMessage() { return this.message.getValue(); }
 	public long getChannel() { return this.channel.getValue(); }
 
-	public void setEnable(boolean enable) { this.enabled.setValue(enable); }
 	public void setMessage(String msg) { this.message.setValue(msg); }
 	public void setChannel(long channel) { this.channel.setValue(channel); }
-
-	public String toJSONString() { return this.save().toString(); }
 }
