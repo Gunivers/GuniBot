@@ -15,8 +15,8 @@ public class CustomChannelSystem extends System
 	public CustomChannelSystem(DataGuild guild, ConfigurationNode parent)
 	{
 		super(guild, parent);
-		this.activeCategory = new Configuration<>(parent, "active", new LongParser(0), "Category ID", null);
-		this.archiveCategory = new Configuration<>(parent, "archive", new LongParser(0), "Category ID", null);
+		this.activeCategory = new Configuration<>(parent, "active", new LongParser(0), "Category ID", -1L);
+		this.archiveCategory = new Configuration<>(parent, "archive", new LongParser(0), "Category ID", -1L);
 	}
 
 	{
