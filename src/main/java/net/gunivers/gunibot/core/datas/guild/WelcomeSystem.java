@@ -20,8 +20,8 @@ public class WelcomeSystem extends System
 	public WelcomeSystem(DataGuild guild, ConfigurationNode parent)
 	{
 		super(guild, parent);
-		this.channel = new Configuration<>(parent, "channel", new LongParser(0), "Text Channel ID", null);
 		this.message = new Configuration<>(parent, "message", String::trim, Configuration.STRING, "Server: {server} ; User: {user} ; Mention: {user.mention}");
+		this.channel = new Configuration<>(parent, "channel", new LongParser(0), "Text Channel ID", 0L);
 	}
 
 	public void welcome(Member member)
