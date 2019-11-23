@@ -2,7 +2,6 @@ package net.gunivers.gunibot.core.datas.guild;
 
 import org.json.JSONObject;
 
-import net.gunivers.gunibot.Main;
 import net.gunivers.gunibot.core.datas.DataGuild;
 import net.gunivers.gunibot.core.datas.config.Configuration;
 import net.gunivers.gunibot.core.datas.config.ConfigurationNode;
@@ -18,24 +17,26 @@ public class WelcomeSystem extends System
 	private Configuration<String> message;
 	private Configuration<Long> channel;
 
-	public WelcomeSystem(ConfigurationNode parent)
+	public WelcomeSystem(DataGuild guild, ConfigurationNode parent)
 	{
-		super(parent);
+		super(guild, parent);
 		this.channel = new Configuration<>(parent, "channel", new LongParser(0), "Text Channel ID", null);
 		this.message = new Configuration<>(parent, "message", String::trim, Configuration.STRING, "Server: {server} ; User: {user} ; Mention: {user.mention}");
 	}
 
 	public void welcome(Member member)
 	{
-		DataGuild guild = Main.getBotInstance().getDataCenter().getDataGuild(member.getGuild().block());
-
 		if (this.isEnabled() && this.channel.getValue() != null)
 		{
-			TextChannel tc = guild.getEntity().getChannelById(Snowflake.of(this.channel.getValue())).ofType(TextChannel.class).block();
-			EmbedBuilder builder = new EmbedBuilder(tc, "Welcome to "+ guild.getEntity().getName() +'!', null);
+			TextChannel tc = super.guild.getEntity().getChannelById(Snowflake.of(this.channel.getValue())).ofType(TextChannel.class).block();
+			EmbedBuilder builder = new EmbedBuilder(tc, "Welcome to "+ super.guild.getEntity().getName() +'!', null);
+
+			builder.setDescription(this.message.getDefaultValue()
+					.replace("{server}", super.guild.getEntity().getName())
+					.replace("{user}", member.getDisplayName())
+					.replace("{user.mention}", member.getMention()));
 
 			builder.setColor(member.getClient().getSelf().block().asMember(member.getGuildId()).block().getColor().block());
-			builder.setDescription(this.message.getDefaultValue().replace("{server}", guild.getEntity().getName()).replace("{user}", member.getDisplayName()).replace("{user.mention}", member.getMention()));
 			builder.buildAndSend();
 		}
 	}

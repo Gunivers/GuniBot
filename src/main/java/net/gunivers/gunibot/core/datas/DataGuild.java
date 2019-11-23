@@ -62,8 +62,8 @@ public class DataGuild extends DataObject<Guild> implements ConfigurationHolder
 
 	{
 		ConfigurationTree global = ConfigurationTree.getOrNew(this, "global");
-		this.welcome = new WelcomeSystem(global.createPath("welcome"));
-		this.customChannel = new CustomChannelSystem(global.createPath("cchannel"));
+		this.welcome = new WelcomeSystem(this, global.createPath("welcome"));
+		this.customChannel = new CustomChannelSystem(this, global.createPath("cchannel"));
 
 		ConfigurationTree cmd = ConfigurationTree.getOrNew(this, "cmd");
 		this.prefix = new Configuration<>(cmd.getRoot(), "prefix", new StringParser("[^ ]+"), Configuration.STRING, "/");

@@ -2,6 +2,7 @@ package net.gunivers.gunibot.core.datas.guild;
 
 import org.json.JSONObject;
 
+import net.gunivers.gunibot.core.datas.DataGuild;
 import net.gunivers.gunibot.core.datas.config.Configuration;
 import net.gunivers.gunibot.core.datas.config.ConfigurationNode;
 import net.gunivers.gunibot.core.lib.parsing.commons.NumberParser.LongParser;
@@ -11,11 +12,16 @@ public class CustomChannelSystem extends System
 	private Configuration<Long> activeCategory;
 	private Configuration<Long> archiveCategory;
 
-	public CustomChannelSystem(ConfigurationNode parent)
+	public CustomChannelSystem(DataGuild guild, ConfigurationNode parent)
 	{
-		super(parent);
+		super(guild, parent);
 		this.activeCategory = new Configuration<>(parent, "active", new LongParser(0), "Category ID", null);
 		this.archiveCategory = new Configuration<>(parent, "archive", new LongParser(0), "Category ID", null);
+	}
+
+	{
+		this.enabled.setDefaultValue(false);
+		this.enabled.reset();
 	}
 
 	@Override

@@ -2,17 +2,20 @@ package net.gunivers.gunibot.core.datas.guild;
 
 import org.json.JSONObject;
 
+import net.gunivers.gunibot.core.datas.DataGuild;
 import net.gunivers.gunibot.core.datas.config.Configuration;
 import net.gunivers.gunibot.core.datas.config.ConfigurationNode;
 import net.gunivers.gunibot.core.lib.parsing.commons.BooleanParser;
 
 public class System
 {
+	protected final DataGuild guild;
 	protected final ConfigurationNode parent;
 	protected final Configuration<Boolean> enabled;
 
-	public System(ConfigurationNode parent)
+	public System(DataGuild guild, ConfigurationNode parent)
 	{
+		this.guild = guild;
 		this.parent = parent;
 		this.enabled = new Configuration<>(parent, "enabled", new BooleanParser(), Configuration.BOOLEAN, true);
 	}
