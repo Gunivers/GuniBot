@@ -30,8 +30,9 @@ public abstract class Events<E extends discord4j.core.event.domain.Event>
 
 	protected E last = null;
 
-	protected Events(Class<E> clazz) {
-	// TODO e.printStackTrace() need to be fixed
+	protected Events(Class<E> clazz)
+	{
+		// TODO e.printStackTrace() need to be fixed
 		dispatcher.on(clazz).filter(this::precondition)
 		.onErrorContinue((e, obj) ->
 		{

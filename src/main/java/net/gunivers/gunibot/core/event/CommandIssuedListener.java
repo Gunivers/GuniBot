@@ -47,9 +47,7 @@ public class CommandIssuedListener extends Events<MessageCreateEvent>
 			return false;
 
 		System.out.println(event.getMember().get().getDisplayName() + " issued command: " + event.getMessage().getContent().get());
-
-		if (!this.history.containsKey(dataGuild))
-			this.history.put(dataGuild, new ArrayList<>());
+		this.history.putIfAbsent(dataGuild, new ArrayList<>());
 
 		this.last = Tuple.newTuple(dataGuild, Command.commands.get(optList.get()));
 		this.history.get(dataGuild).add(this.last.value2);
