@@ -14,14 +14,16 @@ import discord4j.core.object.util.Snowflake;
 
 public class WelcomeSystem extends System
 {
+	public static final String NAME = "welcome";
+
 	private Configuration<String> message;
 	private Configuration<Long> channel;
 
 	public WelcomeSystem(DataGuild guild, ConfigurationNode parent)
 	{
-		super(guild, parent);
-		this.message = new Configuration<>(parent, "message", String::trim, Configuration.STRING, "Server: {server} ; User: {user} ; Mention: {user.mention}");
-		this.channel = new Configuration<>(parent, "channel", new LongParser(0), "Text Channel ID", 0L);
+		super(NAME, guild, parent);
+		this.message = parent.createConfiguration("message", String::trim, Configuration.STRING, "Server: {server} ; User: {user} ; Mention: {user.mention}");
+		this.channel = parent.createConfiguration("channel", new LongParser(0), "Text Channel ID", 0L);
 	}
 
 	public void welcome(Member member)

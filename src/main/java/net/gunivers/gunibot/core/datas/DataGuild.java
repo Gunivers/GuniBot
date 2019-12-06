@@ -38,6 +38,8 @@ import reactor.core.publisher.Mono;
  */
 public class DataGuild extends DataObject<Guild> implements ConfigurationHolder
 {
+	private static final long serialVersionUID = 4488734455209974150L;
+
 	private ConcurrentHashMap<Snowflake, DataMember> dataMembers = new ConcurrentHashMap<>();
 	private ConcurrentHashMap<Snowflake, DataTextChannel> dataTextChannels = new ConcurrentHashMap<>();
 	private ConcurrentHashMap<Snowflake, DataRole> dataRoles = new ConcurrentHashMap<>();
@@ -62,11 +64,11 @@ public class DataGuild extends DataObject<Guild> implements ConfigurationHolder
 
 	{
 		ConfigurationTree global = ConfigurationTree.getOrNew(this, "global");
-		this.welcome = new WelcomeSystem(this, global.createPath("welcome"));
-		this.customChannel = new CustomChannelSystem(this, global.createPath("cchannel"));
+		this.welcome = new WelcomeSystem(this, global.createPath(WelcomeSystem.NAME));
+		this.customChannel = new CustomChannelSystem(this, global.createPath(CustomChannelSystem.NAME));
 
 		ConfigurationTree cmd = ConfigurationTree.getOrNew(this, "cmd");
-		this.prefix = new Configuration<>(cmd.getRoot(), "prefix", new StringParser("[^ ]+"), Configuration.STRING, "/");
+		this.prefix = cmd.getRoot().createConfiguration("prefix", new StringParser("[^ ]+"), Configuration.STRING, "/");
 	}
 
 	/**
@@ -208,8 +210,8 @@ public class DataGuild extends DataObject<Guild> implements ConfigurationHolder
 		json.putOpt("categories", DataGuild.extractJsonDatas(this.dataCategories));
 
 		json.putOpt("prefix", this.prefix);
-		json.putOpt("welcome", this.welcome.save());
-		json.putOpt("custom_channel", this.customChannel.save());
+		json.putOpt(WelcomeSystem.NAME, this.welcome.save());
+		json.putOpt(CustomChannelSystem.NAME, this.customChannel.save());
 
 		json.putOpt("backups", this.backups);
 
@@ -275,8 +277,8 @@ public class DataGuild extends DataObject<Guild> implements ConfigurationHolder
 		this.hydratateDataObject(this.dataCategories, DataCategory::new, this.getEntity()::getChannelById, json.optJSONObject("categories"), Category.class);
 
 		this.prefix.setValue(json.optString("prefix", this.prefix.getValue()));
-		this.welcome.load(json.optJSONObject("welcome"));
-		this.customChannel.load(json.optJSONObject("custom_channel"));
+		this.welcome.load(json.optJSONObject(this.welcome.getName()));
+		this.customChannel.load(json.optJSONObject(this.customChannel.getName()));
 
 		JSONObject jsonBackups = json.optJSONObject("backups");
 

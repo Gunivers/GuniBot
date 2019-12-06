@@ -9,14 +9,16 @@ import net.gunivers.gunibot.core.lib.parsing.commons.NumberParser.LongParser;
 
 public class CustomChannelSystem extends System
 {
+	public static final String NAME = "cchannel";
+
 	private Configuration<Long> activeCategory;
 	private Configuration<Long> archiveCategory;
 
 	public CustomChannelSystem(DataGuild guild, ConfigurationNode parent)
 	{
-		super(guild, parent);
-		this.activeCategory = new Configuration<>(parent, "active", new LongParser(0), "Category ID", -1L);
-		this.archiveCategory = new Configuration<>(parent, "archive", new LongParser(0), "Category ID", -1L);
+		super(NAME, guild, parent);
+		this.activeCategory = parent.createConfiguration("active", new LongParser(0), "Category ID", -1L);
+		this.archiveCategory = parent.createConfiguration("archive", new LongParser(0), "Category ID", -1L);
 	}
 
 	{
