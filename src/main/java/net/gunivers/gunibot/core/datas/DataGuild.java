@@ -46,7 +46,7 @@ public class DataGuild extends DataObject<Guild> implements ConfigurationHolder
 	private ConcurrentHashMap<Snowflake, DataVoiceChannel> dataVoiceChannels = new ConcurrentHashMap<>();
 	private ConcurrentHashMap<Snowflake, DataCategory> dataCategories = new ConcurrentHashMap<>();
 
-	private HashMap<String, ConfigurationTree> configuration = new HashMap<>();
+	private WrappedConfiguration configuration = new WrappedConfiguration(new HashMap<>());
 
 	private Configuration<String> prefix;
 	private WelcomeSystem welcome;
@@ -287,10 +287,10 @@ public class DataGuild extends DataObject<Guild> implements ConfigurationHolder
 				this.backups.put(backupName, jsonBackups.getJSONObject(backupName));
 	}
 
-	public Configuration<String> prefix() { return this.prefix; }
 	public WelcomeSystem getWelcomeSystem() { return this.welcome; }
 	public CustomChannelSystem getCustomChannelSystem() { return this.customChannel; }
 
+	public Configuration<String> prefix() { return this.prefix; }
 	public String getPrefix() { return this.prefix.getValue(); }
 	public void setPrefix(String prefix) { this.prefix.setValue(prefix); }
 
@@ -301,5 +301,5 @@ public class DataGuild extends DataObject<Guild> implements ConfigurationHolder
 	public void removeBackup(String backupName) { this.backups.remove(backupName); }
 
 	@Override
-	public WrappedConfiguration getConfiguration() { return new WrappedConfiguration(this.configuration); }
+	public WrappedConfiguration getConfiguration() { return this.configuration; }
 }
