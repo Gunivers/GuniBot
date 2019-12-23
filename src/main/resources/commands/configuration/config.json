@@ -9,13 +9,19 @@
 				"tag": "list",
 				"type": "string",
 				"matches": "list",
-				"execute": "list"
+				"execute": "list",
+				"arguments":
+				[{
+					"tag": "path",
+					"type": "string",
+					"keep_value": true,
+					"execute": "listNode"
+				}]
 			},
 			{
 				"tag": "get",
 				"type": "string",
 				"matches": "get",
-				"keep_value": true,
 				"arguments":
 				[{
 					"tag": "path",
@@ -33,7 +39,6 @@
 					"tag": "path",
 					"type": "string",
 					"keep_value": true,
-					"execute": "get",
 					"arguments":
 					[{
 						"tag": "value",
@@ -41,6 +46,18 @@
 						"keep_value": true,
 						"execute": "set"
 					}]
+				}]
+			},
+			{
+				"tag": "reset",
+				"type": "string",
+				"matches": "reset",
+				"arguments":
+				[{
+					"tag": "path",
+					"type": "string",
+					"keep_value": true,
+					"execute": "reset"
 				}]
 			}
 		]
